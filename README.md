@@ -1,2 +1,2 @@
 # movietracker
-Movie Tracker Website
+Interactive Personal Movie Tracker Website
