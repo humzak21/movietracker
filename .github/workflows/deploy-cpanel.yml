@@ -91,7 +91,7 @@ jobs:
         username: ${{ secrets.CPANEL_FTP_USERNAME }}
         password: ${{ secrets.CPANEL_FTP_PASSWORD }}
         local-dir: ./deployment/
-        server-dir: /home/squareds/public_html/
+        server-dir: /public_html/
         exclude: |
           **/.git*
           **/.git*/**
