@@ -30,37 +30,102 @@ jobs:
     - name: Build application
       run: npm run build
       
+    - name: Verify build output
+      run: |
+        echo "Build completed. Checking dist directory:"
+        ls -la dist/
+        echo "Checking for index.html:"
+        ls -la dist/index.html || echo "ERROR: index.html not found in dist/"
+        
     - name: Prepare deployment files
       run: |
         # Create deployment directory
         mkdir -p deploy
         
-        # Copy built React app
-        cp -r dist/* deploy/
+        # Copy built React app (check if dist exists first)
+        if [ -d "dist" ]; then
+          echo "SUCCESS: Copying React build files..."
+          cp -r dist/* deploy/
+        else
+          echo "ERROR: dist directory not found!"
+          exit 1
+        fi
         
-        # Copy API files
-        cp -r api deploy/
+        # Copy API files (check if api exists first)
+        if [ -d "api" ]; then
+          echo "SUCCESS: Copying API files..."
+          cp -r api deploy/
+        else
+          echo "ERROR: api directory not found!"
+          exit 1
+        fi
         
         # Copy server configuration
-        cp .htaccess deploy/
+        if [ -f ".htaccess" ]; then
+          echo "SUCCESS: Copying .htaccess..."
+          cp .htaccess deploy/
+        else
+          echo "ERROR: .htaccess file not found!"
+          exit 1
+        fi
         
-        # Copy data files (CSV files)
-        cp *.csv deploy/ 2>/dev/null || echo "No CSV files found"
+        # Copy data files (CSV files) - make this optional
+        echo "INFO: Copying CSV data files..."
+        find . -maxdepth 1 -name "*.csv" -exec cp {} deploy/ \; 2>/dev/null || echo "WARNING: No CSV files found"
         
-        # Copy router.php if exists
-        cp router.php deploy/ 2>/dev/null || echo "No router.php found"
+        # Copy router.php if exists (optional)
+        if [ -f "router.php" ]; then
+          echo "SUCCESS: Copying router.php..."
+          cp router.php deploy/
+        else
+          echo "WARNING: router.php not found - skipping"
+        fi
         
         # Create config.php from environment variable
+        echo "INFO: Creating API configuration..."
+        if [ -z "${{ secrets.TMDB_API_KEY }}" ]; then
+          echo "ERROR: TMDB_API_KEY secret is not set!"
+          exit 1
+        fi
+        
         echo "<?php" > deploy/api/config.php
         echo "return [" >> deploy/api/config.php
         echo "    'tmdb_api_key' => '${{ secrets.TMDB_API_KEY }}'" >> deploy/api/config.php
         echo "];" >> deploy/api/config.php
         echo "?>" >> deploy/api/config.php
         
+        echo "SUCCESS: config.php created successfully"
+        
     - name: Verify deployment structure
       run: |
-        echo "Deployment structure:"
-        find deploy -type f -name "*.php" -o -name "*.html" -o -name "*.htaccess" | head -20
+        echo "INFO: Deployment structure:"
+        find deploy -type f | head -20
+        echo ""
+        echo "INFO: Key files check:"
+        [ -f "deploy/index.html" ] && echo "SUCCESS: index.html" || echo "ERROR: index.html missing"
+        [ -f "deploy/.htaccess" ] && echo "SUCCESS: .htaccess" || echo "ERROR: .htaccess missing"
+        [ -f "deploy/api/tmdb.php" ] && echo "SUCCESS: api/tmdb.php" || echo "ERROR: api/tmdb.php missing"
+        [ -f "deploy/api/config.php" ] && echo "SUCCESS: api/config.php" || echo "ERROR: api/config.php missing"
+        
+        echo ""
+        echo "INFO: CSV files found:"
+        find deploy -name "*.csv" | wc -l
+        
+    - name: Validate secrets
+      run: |
+        echo "INFO: Validating required secrets..."
+        [ -n "${{ secrets.CPANEL_FTP_SERVER }}" ] && echo "SUCCESS: CPANEL_FTP_SERVER" || echo "ERROR: CPANEL_FTP_SERVER missing"
+        [ -n "${{ secrets.CPANEL_FTP_USERNAME }}" ] && echo "SUCCESS: CPANEL_FTP_USERNAME" || echo "ERROR: CPANEL_FTP_USERNAME missing"
+        [ -n "${{ secrets.CPANEL_FTP_PASSWORD }}" ] && echo "SUCCESS: CPANEL_FTP_PASSWORD" || echo "ERROR: CPANEL_FTP_PASSWORD missing"
+        [ -n "${{ secrets.CPANEL_SERVER_DIR }}" ] && echo "SUCCESS: CPANEL_SERVER_DIR" || echo "ERROR: CPANEL_SERVER_DIR missing"
+        [ -n "${{ secrets.TMDB_API_KEY }}" ] && echo "SUCCESS: TMDB_API_KEY" || echo "ERROR: TMDB_API_KEY missing"
+        
+        # Check if all required secrets are present
+        if [ -z "${{ secrets.CPANEL_FTP_SERVER }}" ] || [ -z "${{ secrets.CPANEL_FTP_USERNAME }}" ] || [ -z "${{ secrets.CPANEL_FTP_PASSWORD }}" ] || [ -z "${{ secrets.CPANEL_SERVER_DIR }}" ] || [ -z "${{ secrets.TMDB_API_KEY }}" ]; then
+          echo "ERROR: One or more required secrets are missing!"
+          echo "Please check your GitHub repository secrets configuration."
+          exit 1
+        fi
         
     - name: Deploy to cPanel via FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
@@ -70,38 +135,57 @@ jobs:
         password: ${{ secrets.CPANEL_FTP_PASSWORD }}
         local-dir: ./deploy/
         server-dir: ${{ secrets.CPANEL_SERVER_DIR }}
+        state-name: .ftp-deploy-sync-state.json
+        dry-run: false
+        log-level: verbose
         exclude: |
           **/.git*
           **/.git*/**
           **/node_modules/**
           **/.DS_Store
           **/Thumbs.db
+          **/.ftp-deploy-sync-state.json
           
     - name: Verify deployment
       run: |
-        echo "Deployment completed successfully!"
-        echo "Your application should be available at: ${{ secrets.CPANEL_DOMAIN }}"
+        echo "SUCCESS: Deployment completed successfully!"
+        echo "INFO: Your application should be available at: ${{ secrets.CPANEL_DOMAIN }}"
+        echo ""
+        echo "INFO: Next steps:"
+        echo "1. Visit your website to verify it loads"
+        echo "2. Check browser console for any errors"
+        echo "3. Test TMDB API functionality"
         
     - name: Post-deployment health check
-      if: ${{ secrets.CPANEL_DOMAIN }}
+      if: ${{ secrets.CPANEL_DOMAIN != '' }}
       run: |
+        echo "INFO: Running health checks..."
+        
         # Wait a moment for files to propagate
-        sleep 10
+        sleep 15
         
         # Check if the main page loads
+        echo "Testing main page..."
         HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.CPANEL_DOMAIN }}" || echo "000")
         
         if [ "$HTTP_STATUS" = "200" ]; then
-          echo "✅ Main page is accessible (HTTP $HTTP_STATUS)"
+          echo "SUCCESS: Main page is accessible (HTTP $HTTP_STATUS)"
         else
-          echo "⚠️ Main page returned HTTP $HTTP_STATUS"
+          echo "WARNING: Main page returned HTTP $HTTP_STATUS"
+          echo "This might be normal if your site takes time to propagate"
         fi
         
         # Check if API endpoint is accessible
+        echo "Testing API endpoint..."
         API_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.CPANEL_DOMAIN }}/api/tmdb/configuration" || echo "000")
         
         if [ "$API_STATUS" = "200" ]; then
-          echo "✅ API endpoint is accessible (HTTP $API_STATUS)"
+          echo "SUCCESS: API endpoint is accessible (HTTP $API_STATUS)"
         else
-          echo "⚠️ API endpoint returned HTTP $API_STATUS"
-        fi 
+          echo "WARNING: API endpoint returned HTTP $API_STATUS"
+          echo "This might be normal if .htaccess rules take time to activate"
+        fi
+        
+        echo ""
+        echo "NOTE: If health checks fail, wait a few minutes and test manually"
+        echo "      Some hosting providers take time to propagate new files" 
