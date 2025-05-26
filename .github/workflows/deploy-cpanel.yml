@@ -11,7 +11,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    # Only run on direct pushes to main OR when a PR is merged to main
+    # Only run on direct pushes to main OR when a PR merged to main
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
     
     steps:
