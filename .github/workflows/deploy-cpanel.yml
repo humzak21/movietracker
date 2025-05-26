@@ -157,7 +157,7 @@ jobs:
         echo "3. Test TMDB API functionality"
         
     - name: Post-deployment health check
-      if: ${{ secrets.CPANEL_DOMAIN != '' }}
+      if: secrets.CPANEL_DOMAIN
       run: |
         echo "INFO: Running health checks..."
         
