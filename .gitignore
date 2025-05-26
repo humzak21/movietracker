@@ -18,6 +18,10 @@ deployment/
 
 # Local Files
 *.xlsx
+TMDB_INTEGRATION.md
+troubleshoot-posters.md
+GITHUB_ACTIONS_SETUP.md
+GITHUB_SECRETS_REFERENCE.md
 
 # Logs
 npm-debug.log*

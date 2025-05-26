@@ -1,0 +1,107 @@
+name: Deploy to cPanel
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+    types: [ closed ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to cPanel
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true) || github.event_name == 'workflow_dispatch'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build application
+      run: npm run build
+      
+    - name: Prepare deployment files
+      run: |
+        # Create deployment directory
+        mkdir -p deploy
+        
+        # Copy built React app
+        cp -r dist/* deploy/
+        
+        # Copy API files
+        cp -r api deploy/
+        
+        # Copy server configuration
+        cp .htaccess deploy/
+        
+        # Copy data files (CSV files)
+        cp *.csv deploy/ 2>/dev/null || echo "No CSV files found"
+        
+        # Copy router.php if exists
+        cp router.php deploy/ 2>/dev/null || echo "No router.php found"
+        
+        # Create config.php from environment variable
+        echo "<?php" > deploy/api/config.php
+        echo "return [" >> deploy/api/config.php
+        echo "    'tmdb_api_key' => '${{ secrets.TMDB_API_KEY }}'" >> deploy/api/config.php
+        echo "];" >> deploy/api/config.php
+        echo "?>" >> deploy/api/config.php
+        
+    - name: Verify deployment structure
+      run: |
+        echo "Deployment structure:"
+        find deploy -type f -name "*.php" -o -name "*.html" -o -name "*.htaccess" | head -20
+        
+    - name: Deploy to cPanel via FTP
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      with:
+        server: ${{ secrets.CPANEL_FTP_SERVER }}
+        username: ${{ secrets.CPANEL_FTP_USERNAME }}
+        password: ${{ secrets.CPANEL_FTP_PASSWORD }}
+        local-dir: ./deploy/
+        server-dir: ${{ secrets.CPANEL_SERVER_DIR }}
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/node_modules/**
+          **/.DS_Store
+          **/Thumbs.db
+          
+    - name: Verify deployment
+      run: |
+        echo "Deployment completed successfully!"
+        echo "Your application should be available at: ${{ secrets.CPANEL_DOMAIN }}"
+        
+    - name: Post-deployment health check
+      if: ${{ secrets.CPANEL_DOMAIN }}
+      run: |
+        # Wait a moment for files to propagate
+        sleep 10
+        
+        # Check if the main page loads
+        HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.CPANEL_DOMAIN }}" || echo "000")
+        
+        if [ "$HTTP_STATUS" = "200" ]; then
+          echo "✅ Main page is accessible (HTTP $HTTP_STATUS)"
+        else
+          echo "⚠️ Main page returned HTTP $HTTP_STATUS"
+        fi
+        
+        # Check if API endpoint is accessible
+        API_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.CPANEL_DOMAIN }}/api/tmdb/configuration" || echo "000")
+        
+        if [ "$API_STATUS" = "200" ]; then
+          echo "✅ API endpoint is accessible (HTTP $API_STATUS)"
+        else
+          echo "⚠️ API endpoint returned HTTP $API_STATUS"
+        fi 
