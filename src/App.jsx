@@ -16,6 +16,29 @@ import {
   getGenreStats
 } from './utils/movieData';
 
+// Dynamic import function for slideshow images
+const importSlideshowImages = () => {
+  try {
+    // Use Vite's import.meta.glob to dynamically import all images from the directory
+    // Support common image formats
+    const imageModules = import.meta.glob('/src/assets/images_frontpage/*.{jpg,jpeg,png,webp,gif,bmp}', { eager: true });
+    
+    console.log('Found image modules:', Object.keys(imageModules));
+    
+    // Extract the URLs from the imported modules
+    const imageUrls = Object.values(imageModules)
+      .map(module => module.default)
+      .filter(url => url); // Filter out any undefined URLs
+    
+    console.log('Loaded slideshow images:', imageUrls);
+    
+    return imageUrls;
+  } catch (error) {
+    console.error('Error in importSlideshowImages:', error);
+    return [];
+  }
+};
+
 function App() {
   const [activeTab, setActiveTab] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
@@ -29,6 +52,7 @@ function App() {
   const [headerVisible, setHeaderVisible] = useState(true);
   const [scrollDirection, setScrollDirection] = useState('up');
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [slideshowImages, setSlideshowImages] = useState([]);
   const scrollTimeoutRef = useRef(null);
 
   // Scroll detection for header animation
@@ -83,6 +107,18 @@ function App() {
       }
     }
   });
+
+  // Load slideshow images on component mount
+  useEffect(() => {
+    try {
+      const images = importSlideshowImages();
+      setSlideshowImages(images);
+    } catch (error) {
+      console.error('Error loading slideshow images:', error);
+      // Fallback to empty array if dynamic import fails
+      setSlideshowImages([]);
+    }
+  }, []);
 
   // Progressive poster loading system
   const loadPostersProgressively = async (moviesToEnhance, batchSize = 5) => {
@@ -334,48 +370,52 @@ function App() {
     // Slideshow settings
     const sliderSettings = {
       dots: false,
-      infinite: true,
+      infinite: slideshowImages.length > 1, // Only enable infinite if we have multiple images
       speed: 1000,
       slidesToShow: 1,
       slidesToScroll: 1,
-      autoplay: true,
+      autoplay: slideshowImages.length > 1, // Only autoplay if we have multiple images
       autoplaySpeed: 10000,
       fade: false,
       arrows: false,
       pauseOnHover: false,
     };
 
-    // Image list from images_frontpage directory
-    // In development, images are in src/assets/images_frontpage
-    // In production, they're copied to assets/images_frontpage
-    // For deployment builds running on localhost, always use production path
-    const imagePath = 'assets/images_frontpage';
-    
-    const slideshowImages = [
-      `${imagePath}/inception-10-years_orig-1.jpg`,
-      `${imagePath}/inglourious_basterds_featured.jpg`,
-      `${imagePath}/Prisoners-Featured.jpeg`,
-      `${imagePath}/blade-runner-2049-dop-roger-deakins-cbe-bsc-asc.jpg`,
-      `${imagePath}/MV5BMTY1Nzk4ODUwMF5BMl5BanBnXkFtZTcwMzc0OTk1Mw@@._V1_.jpg`,
-      `${imagePath}/MV5BMTYyOTk3Njg1M15BMl5BanBnXkFtZTgwMzA1MjcxMDE@._V1_.jpg`,
-    ];
-
     return (
       <>
         {/* Fullscreen Slideshow Section */}
         <div className="slideshow-container">
-          <Slider {...sliderSettings}>
-            {slideshowImages.map((image, index) => (
-              <div key={index} className="slide">
-                <div 
-                  className="slide-image"
-                  style={{
-                    backgroundImage: `url(${image})`,
-                  }}
-                />
+          {slideshowImages.length > 0 ? (
+            <Slider {...sliderSettings}>
+              {slideshowImages.map((image, index) => (
+                <div key={index} className="slide">
+                  <div 
+                    className="slide-image"
+                    style={{
+                      backgroundImage: `url(${image})`,
+                    }}
+                  />
+                </div>
+              ))}
+            </Slider>
+          ) : (
+            // Fallback when no images are loaded
+            <div className="slide">
+              <div 
+                className="slide-image"
+                style={{
+                  backgroundColor: '#1a1a1a',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#666',
+                  fontSize: '18px'
+                }}
+              >
+                <Film size={64} style={{ opacity: 0.3 }} />
               </div>
-            ))}
-          </Slider>
+            </div>
+          )}
           
           {/* Black Overlay */}
           <div className="slideshow-black-overlay"></div>
