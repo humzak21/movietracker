@@ -58,7 +58,7 @@ jobs:
         # Copy images_frontpage folder to assets directory
         if [ -d "images_frontpage" ]; then
           mkdir -p deployment/assets
-          cp -r images_frontpage deployment/assets/
+          cp -r src/assets/images_frontpage deployment/assets/
           echo "Copied images_frontpage to deployment/assets/"
         else
           echo "Warning: images_frontpage directory not found, skipping..."
