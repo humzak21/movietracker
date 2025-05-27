@@ -55,6 +55,15 @@ jobs:
         # Copy CSV files if they exist
         find . -maxdepth 1 -name "*.csv" -exec cp {} deployment/ \;
         
+        # Copy images_frontpage folder to assets directory
+        if [ -d "images_frontpage" ]; then
+          mkdir -p deployment/assets
+          cp -r images_frontpage deployment/assets/
+          echo "Copied images_frontpage to deployment/assets/"
+        else
+          echo "Warning: images_frontpage directory not found, skipping..."
+        fi
+        
         # Create config.php from secrets
         cat > deployment/api/config.php << EOF
         <?php
@@ -100,6 +109,7 @@ jobs:
         echo "- API proxy (api/)"
         echo "- Configuration files (.htaccess, router.php)"
         echo "- Movie data (CSV files)"
+        echo "- Frontend images (assets/images_frontpage/)"
         echo "- API configuration (with TMDB key from secrets)"
         echo ""
         echo "Next steps:"
