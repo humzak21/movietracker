@@ -1,5 +1,9 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Star, Calendar, TrendingUp, Film, Search, Filter } from 'lucide-react';
+import { motion, useScroll, useMotionValueEvent } from 'motion/react';
+import Slider from 'react-slick';
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 import {
   parseMovieData,
   getEnhancedMovieData,
@@ -18,11 +22,67 @@ function App() {
   const [ratingFilter, setRatingFilter] = useState(0);
   const [yearFilter, setYearFilter] = useState('all');
   const [movies, setMovies] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [timelineLimit, setTimelineLimit] = useState(50);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isLoadingPosters, setIsLoadingPosters] = useState(false);
   const [loadingMovieTitles, setLoadingMovieTitles] = useState(new Set());
+  const [headerVisible, setHeaderVisible] = useState(true);
+  const [scrollDirection, setScrollDirection] = useState('up');
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const scrollTimeoutRef = useRef(null);
+
+  // Scroll detection for header animation
+  const { scrollY } = useScroll();
+  
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    const previous = scrollY.getPrevious() || 0;
+    const currentScrollY = latest;
+    
+    // Clear any existing scroll timeout
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+    
+    // Always show header when near the top of the page
+    if (currentScrollY < 100) {
+      setHeaderVisible(true);
+      setScrollDirection('up');
+      setLastScrollY(currentScrollY);
+      return;
+    }
+    
+    // Calculate scroll direction and movement
+    const direction = currentScrollY > previous ? 'down' : 'up';
+    const scrollDelta = Math.abs(currentScrollY - previous);
+    const significantMovement = Math.abs(currentScrollY - lastScrollY);
+    
+    // Only update if there's meaningful scroll movement (prevents jitter)
+    if (scrollDelta > 5) {
+      setScrollDirection(direction);
+      
+      // Hide header when scrolling down significantly
+      if (direction === 'down' && currentScrollY > 100) {
+        setHeaderVisible(false);
+      }
+      // Show header when scrolling up significantly AND we've moved up considerably from last position
+      else if (direction === 'up' && significantMovement > 80) {
+        setHeaderVisible(true);
+      }
+      
+      // Set a timeout to handle scroll end behavior in deployment
+      scrollTimeoutRef.current = setTimeout(() => {
+        // Only show header on scroll end if we're near the top
+        if (currentScrollY < 150) {
+          setHeaderVisible(true);
+        }
+      }, 150); // 150ms delay to detect scroll end
+      
+      // Update last scroll position only on significant movements
+      if (significantMovement > 30) {
+        setLastScrollY(currentScrollY);
+      }
+    }
+  });
 
   // Progressive poster loading system
   const loadPostersProgressively = async (moviesToEnhance, batchSize = 5) => {
@@ -142,7 +202,7 @@ function App() {
 
   // Auto-load posters in background after initial load
   useEffect(() => {
-    if (movies.length === 0 || loading) return;
+    if (movies.length === 0) return;
     
     const moviesWithoutPosters = movies.filter(movie => !movie.posterUrl && !movie.tmdb);
     
@@ -156,11 +216,11 @@ function App() {
       
       return () => clearTimeout(timer);
     }
-  }, [movies, loading]);
+  }, [movies]);
 
   // Set up intersection observer when movies change
   useEffect(() => {
-    if (movies.length === 0 || loading) return;
+    if (movies.length === 0) return;
     
     const timer = setTimeout(() => {
       const cleanup = observeMovieCards();
@@ -174,7 +234,6 @@ function App() {
   useEffect(() => {
     const loadMovies = async () => {
       try {
-        setLoading(true);
         const csvMovieData = await parseMovieData();
         
         // For initial load, enhance recent movies first to ensure visible movies have posters
@@ -216,12 +275,19 @@ function App() {
         setMovies(allMovies);
       } catch (error) {
         console.error('Error loading movies:', error);
-      } finally {
-        setLoading(false);
       }
     };
 
     loadMovies();
+  }, []);
+
+  // Cleanup scroll timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
   }, []);
 
   // Reset timeline limit when filters change
@@ -265,127 +331,145 @@ function App() {
   }, [movies, searchQuery, ratingFilter, yearFilter]);
 
   const renderOverview = () => {
-    if (loading) {
-      return (
-        <div className="section">
-          <div className="container">
-            <div style={{ textAlign: 'center', padding: '60px 0' }}>
-              <h2>Loading movie data...</h2>
-              <p>Parsing your complete movie collection from CSV...</p>
-            </div>
-          </div>
-        </div>
-      );
-    }
+    // Slideshow settings
+    const sliderSettings = {
+      dots: false,
+      infinite: true,
+      speed: 1000,
+      slidesToShow: 1,
+      slidesToScroll: 1,
+      autoplay: true,
+      autoplaySpeed: 10000,
+      fade: false,
+      arrows: false,
+      pauseOnHover: false,
+    };
 
-    if (!stats) {
-      return (
-        <div className="section">
-          <div className="container">
-            <div style={{ textAlign: 'center', padding: '60px 0' }}>
-              <h2>No movie data available</h2>
-              <p>Unable to load movie data from CSV</p>
-            </div>
-          </div>
-        </div>
-      );
-    }
+    // Image list from images_frontpage directory
+    // In development, images are in src/assets/images_frontpage
+    // In production, they're copied to assets/images_frontpage
+    // For deployment builds running on localhost, always use production path
+    const imagePath = 'assets/images_frontpage';
+    
+    const slideshowImages = [
+      `${imagePath}/inception-10-years_orig-1.jpg`,
+      `${imagePath}/inglourious_basterds_featured.jpg`,
+      `${imagePath}/Prisoners-Featured.jpeg`,
+      `${imagePath}/blade-runner-2049-dop-roger-deakins-cbe-bsc-asc.jpg`,
+      `${imagePath}/MV5BMTY1Nzk4ODUwMF5BMl5BanBnXkFtZTcwMzc0OTk1Mw@@._V1_.jpg`,
+      `${imagePath}/MV5BMTYyOTk3Njg1M15BMl5BanBnXkFtZTgwMzA1MjcxMDE@._V1_.jpg`,
+    ];
 
     return (
-      <div className="section">
-        <div className="container">
-          <div className="hero">
-            <h1>Hak Movie Tracker</h1>
-            <p>Humza's Personal Movie Tracker - Now with {movies.length} entries!</p>
-            
-            <div className="stats-grid">
-              <div className="stat-card">
-                <span className="stat-number">{stats.totalMovies || 0}</span>
-                <span className="stat-label">Total Movies</span>
-              </div>
-              <div className="stat-card">
-                <span className="stat-number">{stats.uniqueMovies || 0}</span>
-                <span className="stat-label">Unique Films</span>
-              </div>
-              <div className="stat-card">
-                <span className="stat-number">{stats.averageRating || 0}</span>
-                <span className="stat-label">Average Rating</span>
-              </div>
-              <div className="stat-card">
-                <span className="stat-number">{stats.fiveStarMovies || 0}</span>
-                <span className="stat-label">5-Star Movies</span>
-              </div>
-              <div className="stat-card">
-                <span className="stat-number">{stats.rewatchPercentage || 0}%</span>
-                <span className="stat-label">Rewatches</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="recent-movies">
-            <h2>Recent Movies</h2>
-            <div className="movie-grid">
-              {recentMovies.slice(0, 12).map((movie, index) => (
+      <>
+        {/* Fullscreen Slideshow Section */}
+        <div className="slideshow-container">
+          <Slider {...sliderSettings}>
+            {slideshowImages.map((image, index) => (
+              <div key={index} className="slide">
                 <div 
-                  key={`${movie.title}-${movie.date}-${index}`}
-                  className="movie-card"
-                  data-movie-title={movie.title}
-                  data-needs-poster={!movie.posterUrl ? "true" : undefined}
-                >
-                  <div className="movie-poster">
-                    {movie.posterUrl ? (
-                      <img
-                        src={movie.posterUrl}
-                        alt={`${movie.title} poster`}
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                          e.target.nextSibling.style.display = 'flex';
-                        }}
-                      />
-                    ) : null}
-                    <div className="poster-fallback" style={{ display: movie.posterUrl ? 'none' : 'flex' }}>
-                      <Film size={48} />
-                    </div>
+                  className="slide-image"
+                  style={{
+                    backgroundImage: `url(${image})`,
+                  }}
+                />
+              </div>
+            ))}
+          </Slider>
+          
+          {/* Black Overlay */}
+          <div className="slideshow-black-overlay"></div>
+          
+          {/* Overlay Content */}
+          <div className="slideshow-overlay">
+            <div className="container">
+              <div className="hero-content">
+                <h1>Hak Movie Tracker</h1>
+                <p>Humza's Personal Movie Tracker - Now with {movies.length} entries!</p>
+                
+                <div className="stats-grid">
+                  <div className="stat-card">
+                    <span className="stat-number">{stats?.totalMovies || 0}</span>
+                    <span className="stat-label">Total Movies</span>
                   </div>
-                  <div className="movie-info">
-                    <h4 className="movie-title">{movie.title}</h4>
-                    <div className="movie-meta">
-                      <div className="movie-rating">
-                        <Star size={16} fill="currentColor" />
-                        {movie.rating}
-                      </div>
-                      {movie.detailedRating && (
-                        <div className="detailed-rating" style={{ marginLeft: '10px', fontSize: '12px', color: '#666' }}>
-                          ({movie.detailedRating}/100)
-                        </div>
-                      )}
-                    </div>
-                    <div className="movie-date">
-                      {movie.month}/{movie.day}/{movie.year}
-                    </div>
+                  <div className="stat-card">
+                    <span className="stat-number">{stats?.uniqueMovies || 0}</span>
+                    <span className="stat-label">Unique Films</span>
+                  </div>
+                  <div className="stat-card">
+                    <span className="stat-number">{stats?.averageRating || 0}</span>
+                    <span className="stat-label">Average Rating</span>
+                  </div>
+                  <div className="stat-card">
+                    <span className="stat-number">{stats?.fiveStarMovies || 0}</span>
+                    <span className="stat-label">5-Star Movies</span>
+                  </div>
+                  <div className="stat-card">
+                    <span className="stat-number">{stats?.rewatchPercentage || 0}%</span>
+                    <span className="stat-label">Rewatches</span>
                   </div>
                 </div>
-              ))}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+
+        {/* Recent Movies Section */}
+        <div className="section">
+          <div className="container">
+            <div className="recent-movies">
+              <h2>Recent Movies</h2>
+              <div className="movie-grid">
+                {recentMovies.slice(0, 12).map((movie, index) => (
+                  <div 
+                    key={`${movie.title}-${movie.date}-${index}`}
+                    className="movie-card"
+                    data-movie-title={movie.title}
+                    data-needs-poster={!movie.posterUrl ? "true" : undefined}
+                  >
+                    <div className="movie-poster">
+                      {movie.posterUrl ? (
+                        <img
+                          src={movie.posterUrl}
+                          alt={`${movie.title} poster`}
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
+                      <div className="poster-fallback" style={{ display: movie.posterUrl ? 'none' : 'flex' }}>
+                        <Film size={48} />
+                      </div>
+                    </div>
+                    <div className="movie-info">
+                      <h4 className="movie-title">{movie.title}</h4>
+                      <div className="movie-meta">
+                        <div className="movie-rating">
+                          <Star size={16} fill="currentColor" />
+                          {movie.rating}
+                        </div>
+                        {movie.detailedRating && (
+                          <div className="detailed-rating" style={{ marginLeft: '10px', fontSize: '12px', color: '#666' }}>
+                            ({movie.detailedRating}/100)
+                          </div>
+                        )}
+                      </div>
+                      <div className="movie-date">
+                        {movie.month}/{movie.day}/{movie.year}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
     );
   };
 
   const renderTimeline = () => {
-    if (loading) {
-      return (
-        <div className="section">
-          <div className="container">
-            <div style={{ textAlign: 'center', padding: '60px 0' }}>
-              <h2>Loading timeline...</h2>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
     const timelineEntries = Object.entries(
       filteredMovies
         .sort((a, b) => new Date(b.date) - new Date(a.date))
@@ -490,18 +574,6 @@ function App() {
   };
 
   const renderMovies = () => {
-    if (loading) {
-      return (
-        <div className="section">
-          <div className="container">
-            <div style={{ textAlign: 'center', padding: '60px 0' }}>
-              <h2>Loading movie collection...</h2>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
     return (
       <div className="section">
         <div className="container">
@@ -602,18 +674,6 @@ function App() {
  };
 
   const renderTopMovies = () => {
-    if (loading) {
-      return (
-        <div className="section">
-          <div className="container">
-            <div style={{ textAlign: 'center', padding: '60px 0' }}>
-              <h2>Loading top movies...</h2>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
     return (
       <div className="section">
         <div className="container">
@@ -678,52 +738,6 @@ function App() {
               </div>
             ))}
           </div>
-
-          {/* <h2 className="section-title" style={{ marginTop: '60px' }}>Recently Watched</h2> */}
-          
-          {/* <div className="movie-grid">
-            {recentMovies.slice(0, 12).map((movie, index) => (
-              <div 
-                key={`${movie.title}-${movie.date}-${index}`}
-                className="movie-card"
-                data-movie-title={movie.title}
-                data-needs-poster={!movie.posterUrl ? "true" : undefined}
-              >
-                <div className="movie-poster">
-                  {movie.posterUrl ? (
-                    <img
-                      src={movie.posterUrl}
-                      alt={`${movie.title} poster`}
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                        e.target.nextSibling.style.display = 'flex';
-                      }}
-                    />
-                  ) : null}
-                  <div className="poster-fallback" style={{ display: movie.posterUrl ? 'none' : 'flex' }}>
-                    <Film size={48} />
-                  </div>
-                </div>
-                <div className="movie-info">
-                  <h3 className="movie-title">{movie.title}</h3>
-                  <div className="movie-meta">
-                    <div className="movie-rating">
-                      <Star size={16} fill="currentColor" />
-                      {movie.rating}
-                    </div>
-                    {movie.detailedRating && (
-                      <div className="detailed-rating" style={{ marginLeft: '10px', fontSize: '14px', color: '#666' }}>
-                        ({movie.detailedRating}/100)
-                      </div>
-                    )}
-                  </div>
-                  <div className="movie-date">
-                    Watched: {movie.month}/{movie.day}/{movie.year}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div> */}
         </div>
       </div>
     );
@@ -731,10 +745,37 @@ function App() {
 
   return (
     <div className="App">
-      <header className="header">
-        <div className="container">
-          <nav className="nav">
-            <a href="#" className="logo">🎬 Movie Tracker</a>
+      <motion.header 
+        className="header"
+        initial={{ scale: 1, opacity: 1 }}
+        animate={{ 
+          scale: headerVisible ? 1 : 0.7,
+          opacity: headerVisible ? 1 : 0,
+          translateY: headerVisible ? 0 : -30
+        }}
+        transition={{ 
+          duration: headerVisible ? 0.4 : 0.2,
+          ease: headerVisible ? [0.34, 1.56, 0.64, 1] : [0.25, 0.46, 0.45, 0.94],
+          type: "spring",
+          stiffness: headerVisible ? 300 : 400,
+          damping: headerVisible ? 25 : 30
+        }}
+        style={{
+          pointerEvents: headerVisible ? 'auto' : 'none'
+        }}
+      >
+        <nav className="nav">
+          <motion.div 
+            className="nav-left"
+            animate={{ 
+              opacity: headerVisible ? 1 : 0,
+              x: headerVisible ? 0 : -10
+            }}
+            transition={{ 
+              duration: 0.3,
+              delay: headerVisible ? 0.1 : 0
+            }}
+          >
             <ul className="nav-links">
               <li>
                 <a 
@@ -742,7 +783,7 @@ function App() {
                   className={`nav-link ${activeTab === 'overview' ? 'active' : ''}`}
                   onClick={() => setActiveTab('overview')}
                 >
-                  <TrendingUp size={16} />
+                  <TrendingUp size={14} />
                   Overview
                 </a>
               </li>
@@ -752,17 +793,47 @@ function App() {
                   className={`nav-link ${activeTab === 'timeline' ? 'active' : ''}`}
                   onClick={() => setActiveTab('timeline')}
                 >
-                  <Calendar size={16} />
+                  <Calendar size={14} />
                   Timeline
                 </a>
               </li>
+            </ul>
+          </motion.div>
+          
+          <motion.a 
+            href="#" 
+            className="logo"
+            animate={{ 
+              opacity: headerVisible ? 1 : 0,
+              scale: headerVisible ? 1 : 0.9
+            }}
+            transition={{ 
+              duration: 0.3,
+              delay: headerVisible ? 0.05 : 0
+            }}
+          >
+            Movie Tracker
+          </motion.a>
+          
+          <motion.div 
+            className="nav-right"
+            animate={{ 
+              opacity: headerVisible ? 1 : 0,
+              x: headerVisible ? 0 : 10
+            }}
+            transition={{ 
+              duration: 0.3,
+              delay: headerVisible ? 0.1 : 0
+            }}
+          >
+            <ul className="nav-links">
               <li>
                 <a 
                   href="#" 
                   className={`nav-link ${activeTab === 'movies' ? 'active' : ''}`}
                   onClick={() => setActiveTab('movies')}
                 >
-                  <Film size={16} />
+                  <Film size={14} />
                   Movies
                 </a>
               </li>
@@ -772,14 +843,14 @@ function App() {
                   className={`nav-link ${activeTab === 'top' ? 'active' : ''}`}
                   onClick={() => setActiveTab('top')}
                 >
-                  <Star size={16} />
+                  <Star size={14} />
                   Top Rated
                 </a>
               </li>
             </ul>
-          </nav>
-        </div>
-      </header>
+          </motion.div>
+        </nav>
+      </motion.header>
 
       <main>
         {activeTab === 'overview' && renderOverview()}

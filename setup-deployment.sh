@@ -33,6 +33,16 @@ cp .htaccess deployment/
 cp router.php deployment/ 2>/dev/null || echo "⚠️  router.php not found - creating one for local development"
 cp *.csv deployment/ 2>/dev/null || echo "⚠️  No CSV files found - make sure to upload them manually"
 
+# Copy images_frontpage to assets folder
+echo "🖼️  Copying slideshow images..."
+if [ -d "src/assets/images_frontpage" ]; then
+    mkdir -p deployment/assets
+    cp -r src/assets/images_frontpage deployment/assets/
+    echo "✅ Slideshow images copied to deployment/assets/images_frontpage/"
+else
+    echo "⚠️  src/assets/images_frontpage directory not found - slideshow images will not be available"
+fi
+
 # Step 4: Check if config.php exists
 if [ ! -f "api/config.php" ]; then
     echo "⚠️  Creating config.php from example..."
@@ -52,6 +62,7 @@ Movie Tracker - Upload Instructions
 2. UPLOAD ALL FILES in this directory to your cPanel public_html folder:
    - All HTML, CSS, JS files (from React build)
    - api/ folder (contains the backend proxy)
+   - assets/ folder (contains slideshow images)
    - .htaccess file (URL rewriting and security)
    - router.php file (for local PHP development server - not needed for production)
    - CSV files (your movie data)
@@ -63,6 +74,7 @@ Movie Tracker - Upload Instructions
 
 4. TEST THE DEPLOYMENT:
    - Visit your website
+   - Check that slideshow images load properly
    - Open browser console and run: window.debugTMDB()
    - Check for any errors
 
