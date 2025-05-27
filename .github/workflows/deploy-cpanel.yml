@@ -56,12 +56,12 @@ jobs:
         find . -maxdepth 1 -name "*.csv" -exec cp {} deployment/ \;
         
         # Copy images_frontpage folder to assets directory
-        if [ -d "images_frontpage" ]; then
+        if [ -d "src/assets/images_frontpage" ]; then
           mkdir -p deployment/assets
           cp -r src/assets/images_frontpage deployment/assets/
-          echo "Copied images_frontpage to deployment/assets/"
+          echo "Copied src/assets/images_frontpage to deployment/assets/"
         else
-          echo "Warning: images_frontpage directory not found, skipping..."
+          echo "Warning: src/assets/images_frontpage directory not found, skipping..."
         fi
         
         # Create config.php from secrets
