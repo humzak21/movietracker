@@ -55,14 +55,9 @@ jobs:
         # Copy CSV files if they exist
         find . -maxdepth 1 -name "*.csv" -exec cp {} deployment/ \;
         
-        # Copy images_frontpage folder to assets directory
-        if [ -d "src/assets/images_frontpage" ]; then
-          mkdir -p deployment/assets
-          cp -r src/assets/images_frontpage deployment/assets/
-          echo "Copied src/assets/images_frontpage to deployment/assets/"
-        else
-          echo "Warning: src/assets/images_frontpage directory not found, skipping..."
-        fi
+        # Note: Slideshow images are automatically included in the Vite build process
+        # and will be available in the dist/assets/ directory that's already copied above
+        echo "Slideshow images are included in the Vite build output"
         
         # Create config.php from secrets
         cat > deployment/api/config.php << EOF
@@ -109,7 +104,7 @@ jobs:
         echo "- API proxy (api/)"
         echo "- Configuration files (.htaccess, router.php)"
         echo "- Movie data (CSV files)"
-        echo "- Frontend images (assets/images_frontpage/)"
+        echo "- Slideshow images (included in Vite build output)"
         echo "- API configuration (with TMDB key from secrets)"
         echo ""
         echo "Next steps:"
