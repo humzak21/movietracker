@@ -21,7 +21,7 @@ const importSlideshowImages = () => {
   try {
     // Use Vite's import.meta.glob to dynamically import all images from the directory
     // Support common image formats
-    const imageModules = import.meta.glob('/src/assets/images_frontpage/*.{jpg,jpeg,png,webp,gif,bmp}', { eager: true });
+    const imageModules = import.meta.glob('/src/assets/*.{jpg,jpeg,png,webp,gif,bmp}', { eager: true });
     
     console.log('Found image modules:', Object.keys(imageModules));
     
