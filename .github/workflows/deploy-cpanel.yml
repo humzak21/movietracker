@@ -21,7 +21,7 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '22'
         cache: 'npm'
         
     - name: Install dependencies
@@ -81,7 +81,7 @@ jobs:
         echo "Created deployment archive"
         
     - name: Deploy to cPanel via FTP
-      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
         server: ${{ secrets.CPANEL_FTP_SERVER }}
         username: ${{ secrets.CPANEL_FTP_USERNAME }}
