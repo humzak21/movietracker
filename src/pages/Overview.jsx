@@ -1,11 +1,19 @@
 import React, { useMemo, useRef, useState, useEffect } from 'react';
 import { Star, Film } from 'lucide-react';
 import Slider from 'react-slick';
-import { useMovieData } from '../hooks/useMovieData';
+import { useSupabaseMovieData } from '../hooks/useSupabaseMovieData';
 import { importSlideshowImages } from '../utils/slideshowImages';
 
 function Overview() {
-  const { movies, movieStats, recentMovies, observeMovieCards } = useMovieData();
+  const { 
+    movies, 
+    movieStats, 
+    recentMovies, 
+    observeMovieCards,
+    loading,
+    error
+  } = useSupabaseMovieData();
+  
   const [isTabVisible, setIsTabVisible] = useState(true);
   const sliderRef = useRef(null);
 
@@ -59,6 +67,27 @@ function Overview() {
     arrows: false,
     pauseOnHover: false,
   };
+
+  if (loading) {
+    return (
+      <div className="section">
+        <div className="container">
+          <h2 className="section-title">Loading Movie Data...</h2>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="section">
+        <div className="container">
+          <h2 className="section-title">Error Loading Movie Data</h2>
+          <p style={{ color: '#ff4444' }}>{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -116,7 +145,7 @@ function Overview() {
                   <span className="stat-label">Unique Films</span>
                 </div>
                 <div className="stat-card">
-                  <span className="stat-number">{movieStats?.averageRating || 0}</span>
+                  <span className="stat-number">{movieStats?.averageUserRating || movieStats?.averageRating || 0}</span>
                   <span className="stat-label">Average Rating</span>
                 </div>
                 <div className="stat-card">
@@ -124,7 +153,7 @@ function Overview() {
                   <span className="stat-label">5-Star Movies</span>
                 </div>
                 <div className="stat-card">
-                  <span className="stat-number">{movieStats?.rewatchPercentage || 0}%</span>
+                  <span className="stat-number">{movieStats?.rewatchCount || 0}</span>
                   <span className="stat-label">Rewatches</span>
                 </div>
               </div>
@@ -141,10 +170,9 @@ function Overview() {
             <div className="movie-grid">
               {recentMovies.slice(0, 12).map((movie, index) => (
                 <div 
-                  key={`${movie.title}-${movie.date}-${index}`}
+                  key={movie.id || `${movie.title}-${movie.date}-${index}`}
                   className="movie-card"
                   data-movie-title={movie.title}
-                  data-needs-poster={!movie.posterUrl ? "true" : undefined}
                 >
                   <div className="movie-poster">
                     {movie.posterUrl ? (

@@ -1,4 +1,4 @@
-name: Deploy to cPanel
+name: Deploy Full-Stack Movie Tracker to cPanel
 
 on:
   push:
@@ -21,57 +21,76 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '22'
+        node-version: '18'
         cache: 'npm'
         
-    - name: Install dependencies
+    - name: Install frontend dependencies
       run: npm ci
       
     - name: Build React application
       run: npm run build
       
-    - name: Prepare deployment files
+    - name: Install backend dependencies
       run: |
-        echo "Preparing deployment files..."
+        cd backend
+        npm ci --only=production
+        cd ..
+      
+    - name: Prepare full-stack deployment files
+      run: |
+        echo "Preparing full-stack deployment files..."
         
         # Create deployment directory
         rm -rf deployment
         mkdir -p deployment
         
-        # Copy built files from dist
+        # Copy built frontend files from dist
+        echo "Copying frontend build files..."
         cp -r dist/* deployment/
         
-        # Copy API files
-        cp -r api deployment/
+        # Copy backend files
+        echo "Copying backend files..."
+        mkdir -p deployment/backend
+        cp -r backend/* deployment/backend/
+        
+        # Clean up backend files
+        echo "Cleaning backend files..."
+        rm -rf deployment/backend/node_modules
+        rm -f deployment/backend/.env
+        rm -f deployment/backend/nodemon.json
+        rm -rf deployment/backend/.git*
         
         # Copy configuration files
-        cp .htaccess deployment/
+        echo "Copying configuration files..."
+        cp .htaccess deployment/ 2>/dev/null || echo "Creating .htaccess"
         
-        # Copy router.php if it exists
-        if [ -f "router.php" ]; then
-          cp router.php deployment/
+        # Create frontend .htaccess if it doesn't exist
+        if [ ! -f "deployment/.htaccess" ]; then
+          cat > deployment/.htaccess << 'EOF'
+        # Movie Tracker Frontend Configuration
+        RewriteEngine On
+        
+        # Handle React Router (redirect all requests to index.html)
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteCond %{REQUEST_FILENAME} !-d
+        RewriteCond %{REQUEST_URI} !^/backend
+        RewriteRule . /index.html [L]
+        
+        # Security headers
+        Header always set X-Content-Type-Options nosniff
+        Header always set X-Frame-Options DENY
+        Header always set X-XSS-Protection "1; mode=block"
+        
+        # Cache static assets
+        <filesMatch "\.(css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$">
+            ExpiresActive On
+            ExpiresDefault "access plus 1 month"
+        </filesMatch>
+        EOF
         fi
         
-        # Copy CSV files if they exist
-        find . -maxdepth 1 -name "*.csv" -exec cp {} deployment/ \;
-        
-        # Note: Slideshow images are automatically included in the Vite build process
-        # and will be available in the dist/assets/ directory that's already copied above
-        echo "Slideshow images are included in the Vite build output"
-        
-        # Create config.php from secrets
-        cat > deployment/api/config.php << EOF
-        <?php
-        // TMDB API Configuration
-        // IMPORTANT: Keep this file secure and never commit it to version control
-
-        return [
-            'tmdb_api_key' => '${{ secrets.TMDB_API_KEY }}'
-        ];
-        ?>
-        EOF
-        
-        echo "Deployment files prepared"
+        # Note: Backend will load .env from /home/squareds (parent directory)
+        echo "Backend configured to load .env from parent directory (/home/squareds)"
         
     - name: Create deployment archive
       run: |
@@ -94,28 +113,45 @@ jobs:
           **/node_modules/**
           **/.env*
           **/deployment.tar.gz
+          **/nodemon.json
         
     - name: Verify deployment
       run: |
-        echo "Deployment completed!"
+        echo "🎉 Full-stack deployment completed!"
         echo ""
-        echo "Deployed files:"
-        echo "- React application (built from dist/)"
-        echo "- API proxy (api/)"
-        echo "- Configuration files (.htaccess, router.php)"
-        echo "- Movie data (CSV files)"
-        echo "- Slideshow images (included in Vite build output)"
-        echo "- API configuration (with TMDB key from secrets)"
+        echo "📦 Deployed components:"
+        echo "  ✅ React frontend (built from dist/)"
+        echo "  ✅ Node.js backend API (backend/)"
+        echo "  ✅ Environment configuration (from GitHub secrets)"
+        echo "  ✅ Frontend routing (.htaccess)"
+        echo "  ✅ Backend API wrapper (PHP for shared hosting)"
         echo ""
-        echo "Next steps:"
-        echo "1. Visit your website to test the deployment"
-        echo "2. Open browser console and run: window.debugTMDB()"
-        echo "3. Check for any errors in the browser console"
+        echo "🚨 IMPORTANT: The following are NO LONGER DEPLOYED:"
+        echo "  ❌ PHP api/ folder (deprecated)"
+        echo "  ❌ CSV files (data should be in Supabase)"
+        echo "  ❌ router.php (not needed)"
         echo ""
-        echo "If you encounter issues:"
-        echo "- Verify file permissions (PHP files: 644, directories: 755)"
-        echo "- Check that TMDB_API_KEY secret is properly set"
-        echo "- Ensure cPanel FTP credentials are correct"
+        echo "🔧 Next steps for your server:"
+        echo "1. Ensure Node.js v18+ is installed on your server"
+        echo "2. In the backend/ directory: npm install"
+        echo "3. Start the backend: npm start (or use PM2 for production)"
+        echo "4. Configure reverse proxy if needed"
+        echo ""
+        echo "🧪 Testing your deployment:"
+        echo "1. Visit your website - should show the React app"
+        echo "2. Open browser console - check for API errors"
+        echo "3. Test adding a movie to verify backend connection"
+        echo "4. Check Supabase dashboard for new entries"
+        echo ""
+        echo "📊 Required GitHub Secrets:"
+        echo "  - SUPABASE_URL"
+        echo "  - SUPABASE_ANON_KEY" 
+        echo "  - SUPABASE_SERVICE_ROLE_KEY"
+        echo "  - TMDB_API_KEY"
+        echo "  - FRONTEND_URL"
+        echo "  - CPANEL_FTP_SERVER"
+        echo "  - CPANEL_FTP_USERNAME"
+        echo "  - CPANEL_FTP_PASSWORD"
         
     - name: Cleanup
       run: |

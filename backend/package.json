@@ -1,0 +1,38 @@
+{
+  "name": "movietracker-backend",
+  "version": "1.0.0",
+  "description": "Backend API for Movie Tracker with TMDB and Supabase integration",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "migrate": "node scripts/migrate.js",
+    "seed": "node scripts/seed.js",
+    "enhance": "node scripts/enhanceWithTMDB.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.3",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "helmet": "^7.1.0",
+    "morgan": "^1.10.0",
+    "node-fetch": "^3.3.2",
+    "rate-limiter-flexible": "^5.0.5",
+    "csv-parser": "^3.0.0",
+    "multer": "^1.4.5-lts.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "keywords": [
+    "movie",
+    "tracker",
+    "tmdb",
+    "supabase",
+    "api"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+} 

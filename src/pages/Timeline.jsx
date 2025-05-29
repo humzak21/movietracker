@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useMovieData } from '../hooks/useMovieData';
+import { useSupabaseMovieData } from '../hooks/useSupabaseMovieData';
 
 function Timeline() {
   const { 
-    movies, 
-    filteredMovies, 
+    movies, // Use all movies (including duplicates) for timeline
     searchQuery, 
     setSearchQuery, 
     ratingFilter, 
@@ -12,8 +11,10 @@ function Timeline() {
     yearFilter, 
     setYearFilter,
     availableYears,
-    observeMovieCards 
-  } = useMovieData();
+    observeMovieCards,
+    loading,
+    error
+  } = useSupabaseMovieData();
   
   const [timelineLimit, setTimelineLimit] = useState(50);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -23,6 +24,35 @@ function Timeline() {
     const cleanup = observeMovieCards();
     return cleanup;
   }, [observeMovieCards]);
+
+  // Filter movies for timeline (allow duplicates)
+  const filteredMovies = React.useMemo(() => {
+    let filtered = movies;
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(movie => 
+        movie.title.toLowerCase().includes(query) ||
+        (movie.director && movie.director.toLowerCase().includes(query)) ||
+        (movie.overview && movie.overview.toLowerCase().includes(query)) ||
+        (movie.notes && movie.notes.toLowerCase().includes(query))
+      );
+    }
+
+    // Apply rating filter
+    if (ratingFilter > 0) {
+      filtered = filtered.filter(movie => (movie.rating || 0) >= ratingFilter);
+    }
+
+    // Apply year filter
+    if (yearFilter !== 'all') {
+      const year = parseInt(yearFilter);
+      filtered = filtered.filter(movie => movie.year === year);
+    }
+
+    return filtered;
+  }, [movies, searchQuery, ratingFilter, yearFilter]);
 
   const timelineEntries = Object.entries(
     filteredMovies
@@ -46,6 +76,27 @@ function Timeline() {
       setIsLoadingMore(false);
     }, 300);
   };
+
+  if (loading) {
+    return (
+      <div className="section">
+        <div className="container">
+          <h2 className="section-title">Loading Timeline...</h2>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="section">
+        <div className="container">
+          <h2 className="section-title">Error Loading Timeline</h2>
+          <p style={{ color: '#ff4444' }}>{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="section">
@@ -92,8 +143,13 @@ function Timeline() {
               <div className="timeline-date">{date}</div>
               <div className="timeline-movies">
                 {dayMovies.map((movie, idx) => (
-                  <div key={idx} className="timeline-movie">
+                  <div key={movie.id || idx} className="timeline-movie">
                     <strong>{movie.title}</strong> - {movie.rating}★
+                    {movie.detailedRating && (
+                      <span style={{ marginLeft: '8px', color: '#666', fontSize: '14px' }}>
+                        ({movie.detailedRating}/100)
+                      </span>
+                    )}
                   </div>
                 ))}
               </div>

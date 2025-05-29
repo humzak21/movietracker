@@ -1,0 +1,893 @@
+title,month,day,year,ratingstars
+Arrival,1,1,2019,5
+Moana,1,1,2019,3
+Prisoners,1,2,2019,5
+"Crazy, Stupid, Love",1,2,2019,3.5
+The Ballad of Buster Scruggs,1,3,2019,3.5
+12 Years a Slave,1,4,2019,4.5
+The Grand Budapest Hotel,1,9,2019,4.5
+Django Unchained,1,10,2019,4
+Shaun of the Dead,1,13,2019,3.5
+Hot Fuzz,1,14,2019,3.5
+"O Brother, Where Art Thou?",1,15,2019,3.5
+The Green Mile,1,17,2019,4
+Enemy,1,23,2019,4.5
+Children of Men,1,29,2019,4
+Mandy,1,30,2019,1.5
+Velvet Buzzsaw,2,2,2019,2.5
+Eighth Grade,2,4,2019,3
+Gone Baby Gone,2,5,2019,4
+Moon,2,5,2019,4
+Zodiac,2,8,2019,4.5
+Darkest Hour,2,10,2019,3.5
+Room,2,10,2019,4.5
+Solo: A Star Wars Story,2,13,2019,3
+Bumblebee,2,17,2019,3.5
+The Edge of Seventeen,2,17,2019,5
+The World's End,2,20,2019,3.5
+Birdman,3,1,2019,4.5
+Shaft,3,3,2019,2.5
+Gone Girl,3,6,2019,4.5
+Life,3,7,2019,3.5
+American Psycho,3,10,2019,4
+In Bruges,3,12,2019,3
+Transformers,3,13,2019,3.5
+Batman Begins,3,16,2019,4
+The Dark Knight,3,17,2019,5
+The Dark Knight Rises,3,21,2019,5
+Eternal Sunshine of the Spotless Mind,3,23,2019,3
+Avengers: Infinity War,3,25,2019,5
+Reservoir Dogs,3,25,2019,4
+Transformers: Revenge of the Fallen,3,26,2019,2.5
+Casino Royale,3,27,2019,4
+Whiplash,3,30,2019,4.5
+Rain Man,3,30,2019,4
+Se7en,4,2,2019,4.5
+Mad Max: Fury Road,4,3,2019,4.5
+Sicario,4,5,2019,4.5
+The Death of Stalin,4,6,2019,4
+Blade Runner,4,13,2019,4.5
+Iron Man,4,15,2019,5
+Iron Man 2,4,15,2019,3.5
+The Avengers,4,16,2019,4.5
+Blade Runner 2049,4,16,2019,5
+Captain America: The Winter Soldier,4,17,2019,4
+The Godfather,4,18,2019,4.5
+Jackie,4,18,2019,2.5
+No Country for Old Men,4,19,2019,5
+The Prestige,4,22,2019,4.5
+La La Land,4,23,2019,5
+Avengers: Age of Ultron,4,23,2019,3
+Captain America: Civil War,4,24,2019,4
+Thor: Ragnarok,4,25,2019,4
+Avengers: Infinity War,4,26,2019,5
+Avengers: Endgame,4,26,2019,5
+Vice,4,27,2019,3.5
+Requiem for a Dream,5,4,2019,4
+Dunkirk,5,5,2019,4.5
+Psycho,5,8,2019,4
+Demolition,5,9,2019,3.5
+District 9,5,9,2019,3.5
+John Wick,5,10,2019,4
+The Big Short,5,13,2019,5
+"Hail, Caesar!",5,14,2019,3.5
+Inglorious Basterds,5,15,2019,5
+Pulp Fiction,5,22,2019,5
+"Synecdoche, New York",5,22,2019,3
+Shark Tale,5,28,2019,2.5
+Booksmart,5,29,2019,3.5
+Now You See Me,5,29,2019,2.5
+Zombieland,5,30,2019,4
+Edge of Tomorrow,5,31,2019,4
+The Perfection,5,31,2019,3.5
+Going in Style,6,1,2019,2
+Horrible Bosses,6,2,2019,4
+Mulholland Drive,6,3,2019,3.5
+Fargo,6,4,2019,4.5
+The Blues Brothers,6,5,2019,4
+Interstellar,6,5,2019,5
+There Will Be Blood,6,6,2019,5
+Kill Bill: Vol. 1,6,6,2019,4.5
+The Silence of the Lambs,6,7,2019,4.5
+Horrible Bosses 2,6,7,2019,3.5
+BlacKkKlansman,6,8,2019,5
+Bad Times at the El Royale,6,9,2019,3.5
+State of Play,6,10,2019,3
+A Star is Born,6,10,2019,4.5
+The Thing,6,11,2019,4
+Paddington 2,6,11,2019,4
+The Girl with the Dragon Tattoo,6,11,2019,4.5
+The Terminator,6,12,2019,3.5
+Terminator 2: Judgement Day,6,13,2019,4.5
+The Wolf of Wall Street,6,14,2019,4.5
+Nightcrawler,6,14,2019,5
+Batman Begins,6,16,2019,4
+The Revenant,6,17,2019,4.5
+The Shining,6,19,2019,4.5
+The Usual Suspects,6,20,2019,3.5
+The Nice Guys,6,21,2019,5
+Wind River,6,21,2019,4.5
+Hereditary,6,22,2019,5
+Toy Story,6,22,2019,5
+The Dark Knight,6,23,2019,5
+Star Wars,6,24,2019,5
+Looper,6,24,2019,3.5
+Kill Bill Vol. 2,6,25,2019,4
+Spider-Man: Into the Spider-Verse,6,26,2019,5
+What We Do In The Shadows,6,26,2019,3.5
+Alien,6,27,2019,4
+Memento,6,27,2019,5
+Inception,6,28,2019,5
+Shaft (2019),6,28,2019,2
+Punch-Drunk Love,6,29,2019,4.5
+The Dark Knight Rises,6,30,2019,5
+Inherent Vice,6,30,2019,3.5
+ANIMA,7,1,2019,4
+Annihilation,7,1,2019,3
+Rise of the Planet of the Apes,7,1,2019,3.5
+Aliens,7,2,2019,4.5
+Independence Day,7,2,2019,1.5
+Roma,7,3,2019,4
+Mission Impossible: Ghost Protocol,7,4,2019,4.5
+"Three Billboards, outside Ebbing, Missouri",7,4,2019,4
+Collateral,7,4,2019,4
+Spider-Man: Far From Home,7,6,2019,4
+The Lion King (2019),7,19,2019,1.5
+The Third Man,7,25,2019,4
+Seven Samurai,8,1,2019,4.5
+Strangers on a Train,8,1,2019,3.5
+Incendies,8,2,2019,4.5
+Avengers: Endgame,8,2,2019,5
+12 Angry Men,8,3,2019,5
+The Favourite,8,4,2019,4
+Boogie Nights,8,6,2019,4.5
+Snatch,8,7,2019,3.5
+Snowpiercer,8,10,2019,4.5
+Logan Lucky,8,11,2019,4
+Inglorious Basterds,8,15,2019,5
+Once Upon A Time...in Hollywood,8,18,2019,4
+IT,9,1,2019,3.5
+Rush Hour,9,27,2019,4.5
+The Informant!,10,3,2019,3.5
+Good Time,10,5,2019,4.5
+Superbad,10,6,2019,4
+Sin Nombre,10,7,2019,3
+Taxi Driver,10,8,2019,4
+Joker,10,11,2019,4
+Airplane!,10,12,2019,4
+Ip Man,10,20,2019,4
+The Laundromat,10,21,2019,2
+Dolomite is My Name,10,31,2019,4
+Blind Shaft,11,5,2019,3
+Midsommar,11,17,2019,3.5
+Hostiles,11,18,2019,3.5
+Prisoners,11,22,2019,5
+Star Wars: The Force Awakens,11,23,2019,4
+Rounders,11,24,2019,3.5
+One Flew Over the Cuckoo's Nest,11,25,2019,4
+Moonlight,11,25,2019,4
+Incredibles 2,11,26,2019,4
+You Were Never Really Here,11,26,2019,3.5
+The Irishman,11,27,2019,4
+The Game,11,28,2019,4.5
+Popstar: Never Stop Stopping,11,29,2019,3.5
+Fight Club,11,29,2019,4
+Star Wars: The Last Jedi,11,30,2019,3
+The Meyerowitz Stories (New and Selected),11,30,2019,4.5
+Phantom Thread,12,1,2019,4.5
+Nightcrawler,12,7,2019,5
+Se7en,12,8,2019,5
+Star Wars: The Phantom Menace,12,9,2019,2
+The Lighthouse,12,9,2019,4
+Parasite,12,16,2019,5
+Harry Potter and the Philosopher's Stone,12,17,2019,3.5
+Star Wars: Attack of the Clones,12,18,2019,2.5
+Ad Astra,12,19,2019,4
+Star Wars: Revenge of the Sith,12,19,2019,3
+Manchester by the Sea,12,19,2019,4
+Ford v. Ferrari,12,23,2019,4.5
+Inside Llewyn Davis,12,24,2019,4
+Nocturnal Animals,12,24,2019,4
+Uncut Gems,12,25,2019,4
+Hell or High Water,12,25,2019,4.5
+Star Wars: The Rise of Skywalker,12,27,2019,3
+The Master,12,30,2019,4
+Ocean's Eleven,12,31,2019,5
+Marriage Story,12,31,2019,5
+Arrival,12,31,2019,5
+The Matrix,1,1,2020,4
+The Other Guys,1,1,2020,3.5
+South Park: Bigger Longer Uncut,1,2,2020,4
+Game Night,1,2,2020,4
+John Mulaney and the Sack Lunch Bunch,1,3,2020,3.5
+Old School,1,3,2020,2
+Drive,1,3,2020,5
+Call Me By Your Name,1,4,2020,3
+Rush Hour 2,1,5,2020,4
+Bad Boys,1,8,2020,3
+Hustlers,1,8,2020,4
+Ocean's Twelve,1,9,2020,4.5
+First Reformed,1,10,2020,3.5
+Get Hard,1,11,2020,2
+Knives Out,1,12,2020,4.5
+Bad Boys II,1,13,2020,2
+Blade Runner 2049,1,14,2020,5
+Dunkirk,1,14,2020,5
+2001: A Space Odyssey,1,15,2020,4.5
+10 Cloverfield Lane,1,16,2020,4.5
+Ocean's Thirteen,1,16,2020,3.5
+L.A. Confidential,1,16,2020,4
+Friday,1,17,2020,4.5
+1917,1,17,2020,5
+Quantum of Solace,1,18,2020,2
+Bad Boys for Life,1,18,2020,3.5
+Skyfall,1,23,2020,4.5
+Pain and Glory,1,27,2020,4
+The Departed,1,28,2020,4.5
+Klaus,1,30,2020,4
+Ready or Not,1,31,2020,3.5
+The Empire Strikes Back,1,31,2020,4.5
+Citizen Kane,2,1,2020,4
+Oldboy,2,1,2020,5
+Toy Story 4,2,2,2020,5
+What Did Jack Do?,2,2,2020,3
+The Two Popes,2,3,2020,4.5
+How To Train Your Dragon: The Hidden World,2,4,2020,4
+Jojo Rabbit,2,5,2020,4
+Little Women,2,6,2020,4.5
+A Beautiful Day in the Neighborhood,2,7,2020,3.5
+Spectre,2,8,2020,2.5
+Memories of Murder,2,11,2020,4.5
+Batman: Mask of the Phantasm,2,16,2020,3.5
+Sherlock Jr.,2,17,2020,4
+Speed Racer,2,22,2020,2
+Dial M for Murder,2,23,2020,4.5
+Good Boys,2,29,2020,2.5
+"Lock, Stock, and Two Smoking Barrels",3,4,2020,4
+Blade Runner 2049,3,6,2020,5
+The Nice Guys,3,6,2020,5
+Vertigo,3,7,2020,4
+Blade Runner,3,7,2020,4.5
+Her,3,8,2020,4.5
+The Assassination of Jesse James by the Coward Robert Ford,3,10,2020,4
+Clue,3,10,2020,4
+The Talented Mr. Ripley,3,10,2020,4
+Pirates of the Caribbean: Curse of the Black Pearl,3,11,2020,3.5
+John Wick: Chapter 3 - Parabellum,3,12,2020,3.5
+Shine,3,13,2020,4
+Sicario,3,13,2020,4.5
+Pokemon: Detective Pikachu,3,14,2020,2.5
+Rear Window,3,14,2020,4.5
+Kiss Kiss Bang Bang,3,15,2020,5
+The Hustle,3,18,2020,1
+Avengers: Infinity War,3,19,2020,5
+Insomnia,3,21,2020,4
+Burning,3,23,2020,4
+The Gentleman,3,24,2020,4
+Harry Potter and the Chamber of Secrets,4,10,2020,3
+Rock n' Rolla,4,17,2020,3.5
+Batman Begins,4,25,2020,4
+The Town,5,5,2020,4
+Inside Man,5,6,2020,2.5
+mother!,5,8,2020,4.5
+Blazing Saddles,5,8,2020,3.5
+Harry Potter and the Prisoner of Azkaban,5,11,2020,4.5
+Argo,5,14,2020,4.5
+The Big Short,5,15,2020,5
+Men in Black: International,5,15,2020,1.5
+Napoleon Dynamite,5,17,2020,4
+Def Comedy Jam 25,5,18,2020,3.5
+Green Room,5,20,2020,4
+Harry Potter and the Goblet of Fire,5,28,2020,4
+Harry Potter and the Order of the Phoenix,5,31,2020,3.5
+The Dark Knight,5,31,2020,5
+Dead Poets Society,6,1,2020,3.5
+Harry Potter and the Half-Blood Prince,6,1,2020,4
+Transformers: Dark of the Moon,6,2,2020,3.5
+Transformers: Age of Extinction,6,2,2020,0.5
+The Day After Tomorrow,6,2,2020,3.5
+Harry Potter and the Deathly Hallows Part 1,6,3,2020,4.5
+Harry Potter and the Deathly Hallows Part 2,6,3,2020,4
+Heat,6,3,2020,4
+The Fellowship of the Ring,6,4,2020,3.5
+Just Mercy,6,7,2020,4
+The Two Towers,6,8,2020,4
+Leave No Trace,6,8,2020,3.5
+Blue Streak,6,8,2020,2.5
+The Adventures of Tintin,6,9,2020,4.5
+Blade Runner 2049,6,10,2020,5
+The Dark Knight Rises,6,10,2020,5
+World War Z,6,11,2020,4
+Infernal Affairs,6,12,2020,3.5
+3:10 to Yuma,6,12,2020,4
+Layer Cake,6,13,2020,4
+Dawn of the Planet of the Apes,6,13,2020,4
+War for the Planet of the Apes,6,14,2020,5
+Transformers: The Last Knight,6,15,2020,0.5
+The Way Back,6,16,2020,3.5
+Tropic Thunder,6,16,2020,4.5
+Unforgiven,6,17,2020,4
+The Fugitive,6,17,2020,3.5
+Man on Fire,6,18,2020,1
+Escape from New York,6,18,2020,4.5
+A Fistful of Dollars,6,19,2020,3.5
+Iron Man 3,6,19,2020,3.5
+The Hunt for Red October,6,19,2020,4.5
+Raiders of the Lost Ark,6,22,2020,4.5
+Sicario,6,25,2020,4.5
+For a Few Dollars More,6,25,2020,4
+Indiana Jones and the Temple of Doom,6,25,2020,5
+The Handmaiden,6,27,2020,4.5
+A Quiet Place,6,28,2020,4
+Pirates of the Caribbean: Dead Man's Chest,6,30,2020,3
+Widows,6,30,2020,3.5
+The Godfather,7,1,2020,5
+Jaws,7,4,2020,4.5
+The Godfather Part II,7,5,2020,4.5
+The Last Dance,7,8,2020,4.5
+Halloween,7,10,2020,4
+Young Frankenstein,7,10,2020,3
+"The Good, the Bad and the Ugly",7,11,2020,4.5
+Hard Eight,7,11,2020,3
+Spirited Away,7,16,2020,5
+Donnie Darko,7,18,2020,2.5
+North by Northwest,7,19,2020,5
+Touch of Evil,7,20,2020,3.5
+Monty Python and the Holy Grail,7,20,2020,4.5
+Chinatown,7,22,2020,4.5
+"Planes, Trains, and Automobiles",7,22,2020,3
+Murder on the Orient Express (1979),7,24,2020,3.5
+Oldboy,7,29,2020,5
+Raging Bull,7,30,2020,4
+Apocalypse Now,7,31,2020,3.5
+Dr. Strangelove,7,31,2020,5
+High Noon,7,26,2020,4
+Palm Springs,8,1,2020,4
+The Pink Panther,8,2,2020,4
+Boyz n the Hood,8,2,2020,4.5
+Mean Streets,8,5,2020,3.5
+High Anxiety,8,8,2020,2.5
+The Conversation,8,8,2020,4.5
+Green Room,9,12,2020,4
+The Prestige,9,19,2020,4.5
+Hereditary,9,19,2020,5
+Kiss Kiss Bang Bang,9,23,2020,5
+Enemy,9,26,2020,4.5
+Prisoners,10,3,2020,5
+Nocturnal Animals,10,6,2020,4.5
+Borat,10,31,2020,3.5
+Iron Man,11,15,2020,5
+Iron Man 2,11,20,2020,3.5
+Thor,11,24,2020,2.5
+Captain America: The First Avenger,11,27,2020,3
+The Avengers,11,29,2020,4.5
+Iron Man 3,11,30,2020,3
+Thor: The Dark World,12,2,2020,2.5
+Captain America: The Winter Soldier,12,3,2020,4
+Guardians of the Galaxy,12,7,2020,4
+Avengers: Age of Ultron,12,11,2020,3
+Ant-Man,12,16,2020,3.5
+Sky High,12,21,2020,1.5
+Hamilton,12,21,2020,4
+The Nice Guys,12,23,2020,5
+Captain America: Civil War,12,24,2020,4
+Doctor Strange,12,27,2020,3.5
+TENET,1,18,2021,4.5
+Interstellar,1,20,2021,5
+Mystic River,1,24,2021,3.5
+Shutter Island,1,25,2021,4
+Soul,1,31,2021,4.5
+Sicario,2,6,2021,4.5
+Basic Instinct,2,18,2021,3
+Slumdog Millionaire,2,20,2021,4
+No Country for Old Men,2,20,2021,5
+The Tree of Life,2,21,2021,1.5
+Guardians of the Galaxy Vol. 2,2,22,2021,3
+Spider-Man: Homecoming,2,23,2021,4.5
+Thor: Ragnarok,2,24,2021,4
+Black Panther,2,25,2021,3
+The Cabin in the Woods,2,26,2021,4
+Avengers: Infinity War,3,4,2021,5
+War Dogs,3,6,2021,3.5
+mother!,3,7,2021,4.5
+Ant-Man and the Wasp,3,12,2021,3
+Captain Marvel,3,20,2021,3
+Avengers: Endgame,3,22,2021,5
+Spider-Man: Far From Home,3,24,2021,4
+Zack Snyder's Justice League,3,27,2021,3
+Justice League: The Flashpoint Paradox,3,28,2021,3.5
+Justice League: War,4,8,2021,3
+Promising Young Woman,4,22,2021,4.5
+Dragged Across Concrete,4,26,2021,3.5
+The Hateful Eight,4,27,2021,5
+Jerry Maguire,5,1,2021,4
+The Comeback Trail,5,9,2021,3
+Judas and the Black Messiah,5,9,2021,4.5
+Kangaroo Jack,5,11,2021,1.5
+The Place Beyond the Pines,5,12,2021,4.5
+The Aviator,5,12,2021,4
+The Woman in the Window,5,15,2021,3
+The Trial of the Chicago 7,5,16,2021,4.5
+Nobody,5,17,2021,3.5
+Andhadhun,5,16,2021,4.5
+Kabhi Khushi Khabhie Gham,5,26,2021,5
+I Care A Lot,6,8,2021,3.5
+Bridge of Spies,6,8,2021,4
+Rush Hour,6,9,2021,4.5
+A Quiet Place Part II,6,13,2021,4
+The Italian Job (1969),6,14,2021,3
+Fear Street: 1994,6,11,2021,3
+Fear Street: 1978,6,15,2021,3
+The Queen's Gambit,6,17,2021,4.5
+Luca,6,18,2021,3.5
+Fear Street: 1666,6,19,2021,3
+Panic Room,7,9,2021,3.5
+Black Widow,7,12,2021,3
+Solaris,7,13,2021,1.5
+Gravity,7,14,2021,3.5
+Road to Perdition,7,15,2021,4
+In the Heights,7,19,2021,4
+Speed,7,20,2021,3.5
+Polytechnique,7,21,2021,4
+Another Round,7,22,2021,5
+Pineapple Express,7,29,2021,2.5
+Spider-Man,7,29,2021,3.5
+Spider-Man 2,7,30,2021,4.5
+The Birds,7,31,2021,3.5
+Sanju,8,1,2021,4
+Double Indemnity,8,1,2021,4
+Upgrade,8,4,2021,3.5
+Rope,8,4,2021,4
+The Suicide Squad,8,9,2021,4
+The Maltese Falcon,8,10,2021,5
+"Batman: The Long Halloween, Part 1",8,12,2021,3
+TENET (rewatch),8,15,2021,4.5
+Beckett,8,16,2021,2.5
+"Batman: The Long Halloween, Part 2",8,16,2021,3.5
+Gangster Squad,8,16,2021,2
+The Green Knight,8,19,2021,4.5
+21 Jump Street,8,19,2021,4
+The Manchurian Candidate,8,19,2021,5
+22 Jump Street,8,24,2021,4
+Midnight Run,8,30,2021,3.5
+Shang-Chi and the Legend of the Ten Rings,9,8,2021,3.5
+Spider-Man 3,9,12,2021,2
+The Amazing Spider-Man,9,12,2021,3
+The Amazing Spider-Man 2,9,16,2021,2
+Reminiscence,9,16,2021,3
+Princess Mononoke,9,18,2021,3
+Rush Hour,9,19,2021,4.5
+Venom,9,26,2021,2
+Titane,10,1,2021,1.5
+The Incredible Hulk,10,5,2021,2
+Burn After Reading,10,10,2021,4
+BlacKkKlansman,10,15,2021,5
+DUNE,10,22,2021,5
+First Man,11,1,2021,4
+The Lobster,11,2,2021,4.5
+The Harder They Fall,11,3,2021,4
+Mad Max,11,4,2021,3
+A Clockwork Orange,11,4,2021,5
+Only God Forgives,11,5,2021,0.5
+Dirty Rotten Scoundrels,11,6,2021,3.5
+Batman Begins,11,8,2021,4
+The Dark Knight,11,10,2021,5
+Snatch,11,14,2021,3.5
+The Dark Knight Rises,11,17,2021,5
+Last Night in Soho,11,20,2021,3
+"tick, tick...BOOM!",11,21,2021,4
+The Card Counter,11,22,2021,1
+A Serious Man,11,22,2021,3.5
+Gangs of New York,11,24,2021,1.5
+The Wrong Man,11,25,2021,3.5
+Casablanca,11,27,2021,5
+Hotel Rwanda,12,1,2021,4
+The Game,12,10,2021,4.5
+The Last Duel,12,11,2021,4
+Spencer,12,12,2021,4.5
+Eternals,12,13,2021,3
+Spider-Man Homecoming,12,17,2021,4.5
+Spider-Man: Far From Home,12,18,2021,4
+Spider-Man: No Way Home,12,18,2021,5
+The French Dispatch,12,19,2021,3.5
+F9,12,20,2021,1
+Nightmare Alley,12,21,2021,3.5
+No Time to Die,12,23,2021,4
+The Matrix Resurrections,12,24,2021,2
+Don't Look Up,12,24,2021,3.5
+No Sudden Move,12,24,2021,3
+Candyman,12,25,2021,2.5
+Candyman,12,25,2021,3
+The Mitchells vs. the Machines,12,26,2021,4
+King Richard,12,27,2021,3.5
+Malcolm & Marie,12,27,2021,2.5
+The Little Things,12,28,2021,1
+Licorice Pizza,12,29,2021,4
+Cruella,12,30,2021,3.5
+The Lost Daughter,12,31,2021,3
+Avatar,1,1,2022,2.5
+The General,1,2,2022,4.5
+The Invisible Man,1,3,2022,4
+Metropolis,1,3,2022,3.5
+Frankenstein,1,4,2022,3
+M,1,5,2022,5
+The Great Dictator,1,6,2022,4.5
+It's a Wonderful Life,1,7,2022,5
+The Searchers,1,8,2022,4
+The Bridge on the River Kwai,1,9,2022,5
+Charade,1,10,2022,4.5
+The Killing,1,11,2022,4.5
+The Graduate,1,11,2022,3.5
+Rocky,1,12,2022,3.5
+A Few Good Men,1,13,2022,4
+The Exorcist,1,13,2022,3.5
+Die Hard,1,14,2022,3.5
+Scarface,1,15,2022,4
+Leon: The Professional,1,16,2022,4.5
+Encanto,1,16,2022,1.5
+Eyes Wide Shut,1,17,2022,4
+Brick,1,18,2022,4.5
+Lost in Translation,1,19,2022,5
+The Hunt,1,20,2022,5
+Portrait of a Lady on Fire,1,21,2022,4.5
+Da 5 Bloods,1,22,2022,4.5
+Sound of Metal,1,23,2022,4
+Operation Finale,1,24,2022,2.5
+Body of Lies,1,26,2022,2
+The Apartment,1,28,2022,5
+Us,1,29,2022,3.5
+Blade Runner,2,6,2022,5
+The Day the Earth Stood Still,2,8,2022,4
+The House That Jack Built,2,25,2022,2.5
+The Batman,3,2,2022,5
+28 Days Later,3,3,2022,3.5
+Ted,3,7,2022,3.5
+The Fighter,3,8,2022,4
+The Batman (rewatch),3,10,2022,5
+Belfast,3,16,2022,4.5
+Ford v. Ferrari,3,16,2022,5
+Jujutsu Kaisen 0,3,17,2022,4
+Primer,3,27,2022,4.5
+Psych: The Movie,3,28,2022,4
+Psych 2: Lassie Come Home,3,28,2022,3.5
+Psych 3: This is Gus,3,29,2022,4
+The Treasure of the Sierra Madre,3,28,2022,3
+Kingsman: The Golden Circle,4,1,2022,3
+Blade Runner 2049,4,3,2022,5
+Fantastic Mr. Fox,4,5,2022,4.5
+The Outfit,4,5,2022,3.5
+Demon Slayer - The Movie: Mugen Train,5,6,2022,4.5
+Doctor Strange in the Multiverse of Madness,5,7,2022,3.5
+The Adam Project,5,13,2022,3
+Four Brothers,5,17,2022,2.5
+Casino Royale,5,20,2022,4.5
+Harold & Kumar Go to White Castle,5,20,2022,3.5
+Possessor,5,21,2022,4
+"Good Morning, Vietnam",5,20,2022,4
+Hustle,5,23,2022,4
+Top Gun,5,25,2022,3.5
+The Nice Guys,5,25,2022,5
+Spiderhead,5,25,2022,2.5
+Blood Diamond,6,5,2022,3.5
+Mr. & Mrs. Smith,6,5,2022,4.5
+Mission: Impossible,6,12,2022,4
+Starsky & Hutch,6,12,2022,3.5
+Anchorman: The Legend of Ron Burgundy,6,14,2022,3
+I Now Pronounce You Chuck & Larry,6,14,2022,2.5
+The Other Guys,6,14,2022,3.5
+Thor: Love and Thunder,7,8,2022,3
+Top Gun: Maverick,7,14,2022,5
+Pulp Fiction,7,15,2022,5
+Old School,7,16,2022,2.5
+The Gray Man,8,7,2022,2
+Knives Out,8,17,2022,4.5
+Memories of Murder,8,22,2022,4.5
+Bullet Train,8,28,2022,3.5
+To Catch a Thief,11,2,2022,3.5
+Smile,10,7,2022,4
+Terrifier,10,31,2022,1
+Fury,11,20,2022,2
+Minions: The Rise of Gru,11,20,2022,2.5
+After Hours,11,21,2022,4.5
+Network,11,22,2022,4
+My Cousin Vinny,11,30,2022,4
+Witness for the Prosecution,12,10,2022,4
+21 Jump Street,12,10,2022,4
+The Road,12,15,2022,3.5
+Transformers,12,18,2022,3.5
+The Northman,12,20,2022,4
+Amsterdam,12,20,2022,2.5
+It's a Wonderful Life,12,21,2022,5
+Babylon,12,22,2022,4.5
+The Unbearable Weight of Massive Talent,12,24,2022,3.5
+Wendell & Wild,12,24,2022,3.5
+Emily the Criminal,12,24,2022,4
+Cha Cha Real Smooth,12,25,2022,5
+"""Sr.""",12,29,2022,5
+12 Kilometers,1,3,2023,1
+Molly's Game,1,2,2023,2
+GdT's Pinocchio,1,3,2023,4.5
+Sunset Boulevard,1,8,2023,5
+Dracula,1,13,2023,3
+Puss in Boots,1,14,2023,3.5
+Rush,1,14,2023,3
+White Noise,1,14,2023,3
+Roman J. Israel Esq,1,14,2023,4
+Dr. Jekyll and Mr. Hyde,1,14,2023,2.5
+Penguins of Madagascar,1,14,2023,3.5
+Big Trouble in Little China,1,22,2023,3
+Dr. No,1,24,2023,2.5
+Shrek,1,24,2023,4.5
+The Invisible Man,1,26,2023,4
+The Menu,2,26,2023,3.5
+Train to Busan,3,23,2023,4
+Glass Onion: A Knives Out Mystery,3,6,2023,3.5
+John Wick,3,29,2023,4
+Coherence,4,9,2023,4
+Terrifier 2,4,12,2023,2.5
+Tucker and Dale vs. Evil,4,17,2023,4
+Air,4,26,2023,4
+The Meg,4,31,2023,3.5
+Oblivion,4,31,2023,4.5
+Guardians of the Galaxy Vol. 3,5,18,2023,4.5
+Superbad,5,19,2023,4.5
+John Wick: Chapter 4,5,13,2023,3
+Spider-Man: Across the Spider-Verse,6,4,2023,5
+Spider-Man: Into the Spider-Verse,6,9,2023,5
+Mission: Impossible - Dead Reckoning,7,13,2023,4
+Sound of Freedom,7,14,2023,4
+Man of Steel,7,22,2023,2.5
+Batman v. Superman: Dawn of Justice,7,23,2023,3
+Mission: Impossible III,7,23,2023,3.5
+Zack Snyder's Justice League,7,25,2023,3.5
+Birds of Prey: Harley Quinn,7,29,2023,3.5
+Strays,7,30,2023,3
+Oppenheimer,7,21,2023,4.5
+Mission: Impossible II,6,30,2023,1
+Predestination,8,7,2023,4
+The Flash,8,1,2023,2.5
+The King of Comedy,8,2,2023,5
+Wildlife,8,4,2023,5
+Overlord,8,5,2023,3
+Midnight in Paris,8,10,2023,3.5
+Lady Bird,8,10,2023,4
+Aquaman,8,13,2023,2.5
+Shazam!,8,14,2023,2.5
+Batman (1989),9,1,2023,3
+The Burial,10,13,2023,2.5
+Ocean's Eleven,10,29,2023,5
+The Cameraman,10,30,2023,4
+Surf's Up,11,12,2023,4
+Iron Man,11,13,2023,5
+Cars,11,24,2023,5
+The Super Mario Bros. Movie,12,1,2023,3.5
+The Killer,12,1,2023,4
+Bye Bye Barry,12,3,2023,4
+Asteroid City,12,3,2023,3
+Killers of the Flower Moon,12,4,2023,4
+Godzilla Minus One,12,5,2023,4
+Transformers: Rise of the Beasts,12,8,2023,3
+Bottoms,12,8,2023,4
+Eileen,12,8,2023,4
+Cocaine Bear,12,9,2023,2
+Indiana Jones and the Dial of Destiny,12,9,2023,3
+Inception,12,10,2023,5
+La La Land,12,10,2023,5
+Leave The World Behind,12,11,2023,3.5
+The Boy and the Heron,12,11,2023,3.5
+Renfield,12,12,2023,3
+Saltburn,12,12,2023,4.5
+Maestro,12,13,2023,4
+Fast X,12,13,2023,1.5
+The Blackening,12,14,2023,3
+Poor Things,12,14,2023,5
+The Holdovers,12,15,2023,4.5
+It's A Wonderful Life,12,16,2023,5
+Blackberry,12,16,2023,4
+Wonka,12,16,2023,3.5
+Interstellar,12,17,2023,5
+Teenage Mutant Ninja Turtles: Mutant Meyhem,12,17,2023,4
+Donnie Brasco,12,18,2023,3
+Meg 2: The Trench,12,18,2023,1
+The Archies,12,20,2023,1
+A Trip to the Moon,12,22,2023,4
+The Man Who Knew Too Much,12,25,2023,3.5
+Fantastic Planet,12,25,2023,3.5
+American Fiction,12,26,2023,4
+Safety Last!,12,27,2023,3.5
+Lot No. 249,12,27,2023,3
+Dredd,12,27,2023,3
+The Cabinet of Dr. Caligari,12,28,2023,4.5
+Ferrari,12,28,2023,4
+Save Ralph,12,31,2023,5
+Bao,12,31,2023,5
+The Cat Concerto,12,31,2023,5
+Dear Basketball,12,31,2023,5
+The Great Train Robbery,12,31,2023,3
+Reservoir Dogs (1991 short film),12,31,2023,3.5
+Steamboat Willie,12,31,2023,4
+The Big Shave,12,31,2023,4
+North By Northwest,1,2,2024,5
+Barbie,1,5,2024,4
+Blade Runner,1,6,2024,5
+Blade Runner 2049,1,6,2024,5
+Lawrence of Arabia,1,10,2024,4.5
+All of Us Strangers,1,11,2024,4
+Anatomy of a Fall,1,12,2024,5
+Saltburn,1,13,2024,4.5
+The Invitation,1,26,2024,1
+Air Force One,2,11,2024,4
+Planet of the Apes,2,12,2024,4.5
+Nope,2,12,2024,4.5
+Scoob!,2,13,2024,2
+The Greatest Night in Pop,3,2,2024,4
+Dune: Part Two,3,3,2024,5
+American Psycho,3,3,2024,4.5
+TENET,3,6,2024,4.5
+Bodies Bodies Bodies,3,10,2024,2.5
+Training Day,4,26,2024,4.5
+X-Men,5,31,2024,3.5
+X2,6,11,2024,3.5
+"Lock, Stock, and Two Smoking Barrels",6,8,2024,4
+X-Men: The Last Stand,6,14,2024,2
+X-Men Origins: Wolverine,6,19,2024,1.5
+X-Men: First Class,6,20,2024,4
+The Wolverine,6,20,2024,3.5
+X-Men: Days of Future Past,6,20,2024,4.5
+X-Men: Apocalypse,6,21,2024,1
+Logan,6,21,2024,5
+The Fall Guy,6,21,2024,3.5
+Hit Man,6,22,2024,4
+Werewolf By Night,6,22,2024,4
+Black Panther: Wakanda Forever,6,22,2024,3
+Ant-Man and the Wasp: Quantumania,6,23,2024,2.5
+The Marvels,6,23,2024,3
+Puss in Boots: The Last Wish,6,24,2024,4.5
+La Jetee,6,24,2024,4.5
+12 Monkeys,6,24,2024,4
+Dirty Harry,6,26,2024,4
+Risky Business,6,29,2024,4
+Triangle of Sadness,7,2,2024,4.5
+Beverly Hills Cop: Axel F,7,4,2024,2.5
+The Killing of a Sacred Deer,7,5,2024,4
+The Goonies,7,7,2024,5
+Vanilla Sky,7,7,2024,4.5
+Ice Age,7,8,2024,3.5
+Shrek 2,7,8,2024,4
+The Bear (1998),7,8,2024,4
+Mice Follies,7,8,2024,4
+Blue Cat Blues,7,8,2024,4
+Puttin' on the Dog,7,8,2024,3
+Mouse Trouble,7,8,2024,5
+The Framed Cat,7,8,2024,2.5
+The Million Dollar Cat,7,8,2024,4.5
+Tom and Cherie,7,8,2024,3.5
+The Yankee Doodle Mouse,7,8,2024,5
+Ice Age 2: The Meltdown,7,9,2024,2.5
+Modern Times,7,10,2024,3.5
+Serpico,7,10,2024,3.5
+Contact,7,11,2024,3.5
+The Haunted House,7,11,2024,3
+Bottle Rocket,7,11,2024,3.5
+Whiplash (2013),7,11,2024,4
+The Lady Vanishes,7,12,2024,4.5
+From Russia With Love,7,14,2024,3.5
+Challengers,7,15,2024,4
+Goldfinger,7,15,2024,4
+Wallace and Gromit in The Wrong Trousers,7,16,2024,4.5
+Wallace and Gromit in A Close Shave,7,16,2024,5
+Wallace and Gromit in A Grand Day Out,7,16,2024,4
+The French Connection,7,17,2024,5
+Carol,7,17,2024,4.5
+Thunderball,7,18,2024,3.5
+Goodfellas,7,18,2024,5
+Deadpool,7,22,2024,4
+Deadpool 2,7,23,2024,3.5
+Don't Breathe,7,23,2024,4
+Flushed Away,7,23,2024,3
+Tee for Two,7,24,2024,4.5
+You Only Live Twice,7,24,2024,2.5
+If Beale Street Could Talk,7,24,2024,3.5
+Ghostbusters: Frozen Empire,7,25,2024,2
+Deadpool and Wolverine,7,25,2024,4
+Butch Cassidy and the Sundance Kid,7,26,2024,4.5
+The Iron Giant,7,26,2024,5
+Notorious (1946),7,28,2024,2.5
+Point Break,7,28,2024,3
+The Missing Mouse,7,29,2024,4
+Rounders,7,29,2024,4
+Sky Captain and the World of Tomorrow,7,29,2024,2
+Willy Wonka and the Chocolate Factory,8,3,2024,4.5
+Ordinary People,8,5,2024,4.5
+Akira,8,6,2024,4.5
+Speak No Evil (2022),8,6,2024,2.5
+Batman Returns,8,6,2024,2.5
+Wallace and Gromit in The Curse of the Were-Rabbit,8,6,2024,4
+Spaceballs,8,7,2024,3
+Sleuth (1972),8,7,2024,4
+Rosemary's Baby,8,8,2024,4.5
+On Her Majesty's Secret Service,8,12,2024,1.5
+Bride of Frankenstein,8,13,2024,4
+Treasure Planet,8,13,2024,2.5
+Alien,8,16,2024,4.5
+Smokey and the Bandit,8,21,2024,4
+The Equalizer,8,22,2024,3.5
+Tinker Tailor Soldier Spy,8,24,2024,3
+The Mist,8,25,2024,3.5
+Barry Lyndon,8,26,2024,3.5
+Force Majeure,8,26,2024,3.5
+The Prince of Egypt,8,27,2024,3.5
+The Last Black Man in San Francisco,8,27,2024,3
+True Romance,8,27,2024,3
+Magnolia,8,28,2024,5
+High and Low,8,28,2024,4.5
+King Kong (1933),8,28,2024,3.5
+Sing 2,8,29,2024,3
+The Raid,8,29,2024,4
+8 1/2,8,29,2024,4
+"Crouching Tiger, Hidden Dragon",8,29,2024,4
+Society of the Snow,8,30,2024,4.5
+Over The Hedge,8,30,2024,3
+Team America: World Police,8,30,2024,2.5
+South Park: The 25th Anniversary Concert,8,31,2024,4
+WarGames,8,31,2024,3.5
+Gladiator,9,1,2024,5
+2001: A Space Odyssey,9,1,2024,4.5
+Obsessed,9,4,2024,1.5
+The Wizard of Oz,9,4,2024,4.5
+The Cheap Detective,9,5,2024,2.5
+Cape Fear,9,5,2024,3.5
+Aliens,9,6,2024,4.5
+Batman Begins,9,6,2024,4
+The Dark Knight,9,7,2024,5
+Spellbound,9,7,2024,4
+The Last Samurai,9,7,2024,4
+Alien 3,9,9,2024,1.5
+Dr. Jekyll and Mr. Mouse,9,9,2024,4.5
+PSCaDYEATCTY,9,9,2024,2
+Inception: The Cobol Job,9,9,2024,1.5
+Prometheus,9,11,2024,2.5
+Alien: Covenant,9,11,2024,3.5
+Alien: Romulus,9,11,2024,4.5
+Jarhead,9,16,2024,3
+The Fast and The Furious,9,18,2024,4
+2 Fast 2 Furious,9,19,2024,3.5
+The Fast and The Furious: Tokyo Drift,9,20,2024,3
+Fast & Furious,9,20,2024,3
+Fast Five,9,24,2024,4
+The Dark Knight Rises,9,25,2024,5
+Fast and Furious 6,9,26,2024,3.5
+Chicken Run,10,1,2024,3.5
+The Devil Wears Prada,10,14,2024,3
+A Shot In The Dark,10,17,2024,3
+Terrifier 3,10,31,2024,2.5
+Once Upon a Time in America,11,2,2024,4
+Top Gun: Maverick,11,11,2024,5
+The Next 365 Days,11,29,2024,0.5
+Project X,11,30,2024,4
+Transformers,11,30,2024,3.5
+Harry Potter and the Philosopher's Stone,12,10,2024,3.5
+Harry Potter and the Chamber of Secrets,12,11,2024,3
+Harry Potter and the Prisoner of Azkaban,12,16,2024,4.5
+Harry Potter and the Goblet of Fire,12,19,2024,3
+Paths of Glory,9,3,2024,4.5
+Se7en,1,3,2025,5
+Transformers: Revenge of the Fallen,1,21,2025,2.5
+Transformers: Dark of the Moon,1,22,2025,3.5
+The Man Who Shot Liberty Valence,1,24,2025,3.5
+Scooby Doo,1,25,2025,2
+Nosferatu: A Symphony of Horror,1,25,2025,3.5
+Past Lives,1,26,2025,4.5
+Cinema Paradiso,1,27,2025,5
+A Real Pain,1,28,2025,4
+The Abyss,1,30,2025,4
+Wallace & Gromit: Vengeance Most Fowl,1,30,2025,4
+Transformers: Age of Extinction,1,31,2025,0.5
+Nosferatu,1,31,2025,4
+Transformers: The Last Knight,2,1,2025,0.5
+The Driver (1978),2,1,2025,4
+Drive,2,2,2025,5
+Out of Sight,2,3,2025,3
+Conclave,2,4,2025,4
+Harry Potter and the Order of the Phoenix,2,22,2025,3
+Harry Potter and the Half-Blood Prince,3,21,2025,3

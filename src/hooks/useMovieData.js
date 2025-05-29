@@ -18,6 +18,7 @@ export const useMovieData = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [ratingFilter, setRatingFilter] = useState(0);
   const [yearFilter, setYearFilter] = useState('all');
+  const [enhancedMovieMap, setEnhancedMovieMap] = useState(new Map());
 
   // Load movies on component mount
   useEffect(() => {
@@ -30,20 +31,33 @@ export const useMovieData = () => {
         if (csvMovies.length > 0) {
           setMovies(csvMovies);
           
-          // Only try to load enhanced data if we have a working API
-          // For now, skip enhanced data loading to prevent overwriting CSV data
-          // setTimeout(async () => {
-          //   try {
-          //     console.log('Loading enhanced movie data...');
-          //     const enhancedMovies = await getEnhancedMovieData(csvMovies);
-          //     console.log('Enhanced movies loaded:', enhancedMovies.length);
-          //     if (enhancedMovies.length > 0) {
-          //       setMovies(enhancedMovies);
-          //     }
-          //   } catch (error) {
-          //     console.error('Error loading enhanced movie data:', error);
-          //   }
-          // }, 100);
+          // Load enhanced data progressively in the background
+          setTimeout(async () => {
+            try {
+              console.log('Loading enhanced movie data in background...');
+              const uniqueTitles = [...new Set(csvMovies.map(m => m.title))];
+              
+              // Load enhanced data for unique titles only
+              const enhancedMovies = await getEnhancedMovieData(csvMovies.filter((movie, index, arr) => 
+                arr.findIndex(m => m.title === movie.title) === index
+              ));
+              
+              console.log('Enhanced movies loaded:', enhancedMovies.length);
+              
+              // Create a map of enhanced data by title
+              const enhancedMap = new Map();
+              enhancedMovies.forEach(movie => {
+                if (movie.tmdb) {
+                  enhancedMap.set(movie.title.toLowerCase(), movie.tmdb);
+                }
+              });
+              
+              setEnhancedMovieMap(enhancedMap);
+              console.log('Enhanced movie map created with', enhancedMap.size, 'entries');
+            } catch (error) {
+              console.error('Error loading enhanced movie data:', error);
+            }
+          }, 100);
         }
       } catch (error) {
         console.error('Error loading movies:', error);
@@ -53,6 +67,34 @@ export const useMovieData = () => {
     loadMovies();
   }, []);
 
+  // Merge CSV movies with enhanced data
+  const enhancedMovies = useMemo(() => {
+    if (enhancedMovieMap.size === 0) {
+      return movies;
+    }
+
+    return movies.map(csvMovie => {
+      const tmdbMovie = enhancedMovieMap.get(csvMovie.title.toLowerCase());
+      
+      if (tmdbMovie) {
+        return {
+          ...csvMovie,
+          tmdb: tmdbMovie,
+          // Add convenient access to common TMDB fields
+          genres: tmdbMovie.genres || [],
+          posterUrl: tmdbMovie.posterUrl || null,
+          backdropUrl: tmdbMovie.backdropUrl || null,
+          overview: tmdbMovie.overview || null,
+          tmdbRating: tmdbMovie.voteAverage || null,
+          releaseDate: tmdbMovie.releaseDate || null,
+          runtime: tmdbMovie.runtime || null
+        };
+      }
+      
+      return csvMovie;
+    });
+  }, [movies, enhancedMovieMap]);
+
   // Progressive poster loading function
   const loadPostersProgressively = async (moviesToEnhance, batchSize = 5) => {
     if (!moviesToEnhance || moviesToEnhance.length === 0) return;
@@ -60,10 +102,34 @@ export const useMovieData = () => {
     setIsLoadingPosters(true);
     
     try {
-      // For now, skip poster loading to prevent data loss
-      // const enhancedMovies = await getEnhancedMovieData(moviesToEnhance);
-      // setMovies(enhancedMovies);
-      console.log('Poster loading temporarily disabled');
+      // Get unique titles from the movies to enhance
+      const uniqueTitles = [...new Set(moviesToEnhance.map(m => m.title))];
+      
+      // Load enhanced data for these specific titles
+      const sampleMovies = uniqueTitles.map(title => 
+        moviesToEnhance.find(m => m.title === title)
+      );
+      
+      const enhancedMovies = await getEnhancedMovieData(sampleMovies);
+      
+      // Update the enhanced movie map with new data
+      const newEnhancedMap = new Map(enhancedMovieMap);
+      enhancedMovies.forEach(movie => {
+        if (movie.tmdb) {
+          newEnhancedMap.set(movie.title.toLowerCase(), movie.tmdb);
+        }
+      });
+      
+      setEnhancedMovieMap(newEnhancedMap);
+      
+      // Remove from loading titles
+      setLoadingMovieTitles(prev => {
+        const newSet = new Set(prev);
+        uniqueTitles.forEach(title => newSet.delete(title));
+        return newSet;
+      });
+      
+      console.log('Loaded posters for:', uniqueTitles);
     } catch (error) {
       console.error('Error loading posters:', error);
     } finally {
@@ -105,22 +171,22 @@ export const useMovieData = () => {
     return () => observer.disconnect();
   };
 
-  // Computed values
+  // Computed values using enhanced movies
   const movieStats = useMemo(() => {
-    if (movies.length === 0) return null;
-    return getMovieStats(movies);
-  }, [movies]);
+    if (enhancedMovies.length === 0) return null;
+    return getMovieStats(enhancedMovies);
+  }, [enhancedMovies]);
 
   const topRatedMovies = useMemo(() => {
-    return getMoviesByDetailedRating(movies, 90);
-  }, [movies]);
+    return getMoviesByDetailedRating(enhancedMovies, 90);
+  }, [enhancedMovies]);
 
   const recentMovies = useMemo(() => {
-    return getRecentMovies(movies, 50);
-  }, [movies]);
+    return getRecentMovies(enhancedMovies, 50);
+  }, [enhancedMovies]);
 
   const filteredMovies = useMemo(() => {
-    let filtered = movies;
+    let filtered = enhancedMovies;
 
     // Apply search filter
     if (searchQuery.trim()) {
@@ -139,16 +205,16 @@ export const useMovieData = () => {
     }
 
     return filtered;
-  }, [movies, searchQuery, ratingFilter, yearFilter]);
+  }, [enhancedMovies, searchQuery, ratingFilter, yearFilter]);
 
   const availableYears = useMemo(() => {
-    const years = [...new Set(movies.map(movie => movie.year))].sort((a, b) => b - a);
+    const years = [...new Set(enhancedMovies.map(movie => movie.year))].sort((a, b) => b - a);
     return years;
-  }, [movies]);
+  }, [enhancedMovies]);
 
   return {
     // Data
-    movies,
+    movies: enhancedMovies,
     movieStats,
     topRatedMovies,
     recentMovies,
