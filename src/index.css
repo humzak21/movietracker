@@ -1,3 +1,5 @@
+/* Fonts are loaded dynamically via fontLoader.js */
+
 * {
   margin: 0;
   padding: 0;
@@ -58,7 +60,7 @@ body {
   border-radius: 50px;
   border: 1px solid var(--border-light);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  padding: 8px 16px;
+  padding: 0px 16px;
   transition: none; /* Remove CSS transitions since we're using motion */
 }
 
@@ -70,30 +72,44 @@ body {
 .nav {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   padding: 8px 0;
   gap: 24px;
+  min-width: 300px; /* Ensure minimum width for proper spacing */
 }
 
 .nav-left {
   display: flex;
   gap: 20px;
   align-items: center;
+  flex: 1;
+  justify-content: flex-start;
 }
 
 .nav-right {
   display: flex;
   gap: 20px;
   align-items: center;
+  flex: 1;
+  justify-content: flex-end;
 }
 
 .logo {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--text-primary);
+  font-family: 'Razed', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-size: 48px;
+  font-weight: trend;
+  color: var(--text-primary) !important;
   text-decoration: none;
-  padding: 8px 16px;
+  padding: 0px 0px;
   white-space: nowrap;
+  flex-shrink: 0; /* Prevent logo from shrinking */
+  text-align: center;
+  background: rgba(255, 255, 255, 0.1); /* Temporary background for debugging */
+  border-radius: 8px;
+  z-index: 10;
+  position: relative;
+  display: block;
+  letter-spacing: 0.5px;
 }
 
 .nav-links {
