@@ -12,16 +12,17 @@ import movieRoutes from './routes/movieRoutes.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Load environment variables from parent directory
-// This will look for .env in /home/squareds when deployed
-dotenv.config({ 
-  path: path.resolve(__dirname, '../../.env')
-});
-
-// Fallback to local .env if parent directory doesn't exist (for development)
-if (!process.env.NODE_ENV) {
-  dotenv.config({ 
+// Load environment variables
+// Railway automatically provides environment variables, but we'll load .env for local development
+if (process.env.NODE_ENV !== 'production') {
+  // Try local backend .env first
+  dotenv.config({
     path: path.resolve(__dirname, '.env')
+  });
+  
+  // Fallback to root .env
+  dotenv.config({
+    path: path.resolve(__dirname, '../.env')
   });
 }
 
@@ -29,7 +30,18 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Security middleware
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https://image.tmdb.org"],
+      fontSrc: ["'self'", "data:"],
+      connectSrc: ["'self'"]
+    }
+  }
+}));
 
 // CORS configuration
 const corsOrigins = [];
@@ -70,6 +82,17 @@ app.get('/health', (req, res) => {
 // API routes
 app.use('/api', movieRoutes);
 
+// Serve static files from the frontend build in production
+if (process.env.NODE_ENV === 'production') {
+  const frontendBuildPath = path.resolve(__dirname, '../dist');
+  app.use(express.static(frontendBuildPath));
+  
+  // Handle React Router - send all non-API requests to index.html
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve(frontendBuildPath, 'index.html'));
+  });
+}
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
@@ -83,11 +106,11 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 404 handler
-app.use('*', (req, res) => {
+// 404 handler for API routes only
+app.use('/api/*', (req, res) => {
   res.status(404).json({
     success: false,
-    error: 'Route not found'
+    error: 'API route not found'
   });
 });
 
