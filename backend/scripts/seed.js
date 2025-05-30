@@ -5,7 +5,10 @@ import dotenv from 'dotenv';
 import movieService from '../services/movieService.js';
 import tmdbService from '../services/tmdbService.js';
 
-dotenv.config();
+// Only load .env file in development
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config();
+}
 
 async function parseCSVData(filePath) {
   return new Promise((resolve, reject) => {

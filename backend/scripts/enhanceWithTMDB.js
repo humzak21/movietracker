@@ -3,7 +3,10 @@ import tmdbService from '../services/tmdbService.js';
 import movieService from '../services/movieService.js';
 import dotenv from 'dotenv';
 
-dotenv.config();
+// Only load .env file in development
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config();
+}
 
 const BATCH_SIZE = 10; // Process in smaller batches to respect rate limits
 const DELAY_BETWEEN_REQUESTS = 500; // 500ms delay between TMDB requests

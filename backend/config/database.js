@@ -1,7 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 
-dotenv.config();
+// Only load .env file in development
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config();
+}
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;

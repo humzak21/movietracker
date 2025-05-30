@@ -1,7 +1,10 @@
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
 
-dotenv.config();
+// Only load .env file in development
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config();
+}
 
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 const TMDB_BASE_URL = process.env.TMDB_BASE_URL || 'https://api.themoviedb.org/3';
