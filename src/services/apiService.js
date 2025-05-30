@@ -1,7 +1,9 @@
 // API service for Movie Tracker Backend
 
 // Use environment variable for API base URL, with fallback for development
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
+// In production, use relative path since frontend and backend are served from same domain
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ||
+  (import.meta.env.PROD ? '/api' : 'http://localhost:3001/api');
 
 class ApiService {
   constructor() {

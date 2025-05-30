@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 
-// Only load .env file in development
-if (process.env.NODE_ENV !== 'production') {
+// Load .env file if we're not on Railway (which sets RAILWAY_ENVIRONMENT)
+if (!process.env.RAILWAY_ENVIRONMENT) {
   dotenv.config();
 }
 

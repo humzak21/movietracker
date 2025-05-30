@@ -15,7 +15,8 @@ const __dirname = path.dirname(__filename);
 
 // Load environment variables
 // Railway automatically provides environment variables, but we'll load .env for local development
-if (process.env.NODE_ENV !== 'production') {
+// Load .env files if we're not on Railway (which sets RAILWAY_ENVIRONMENT)
+if (!process.env.RAILWAY_ENVIRONMENT) {
   // Try local backend .env first
   dotenv.config({
     path: path.resolve(__dirname, '.env')
