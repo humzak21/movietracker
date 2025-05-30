@@ -79,15 +79,15 @@ function Movies() {
     return uniqueTitles.size;
   }, [filteredMovies]);
 
-  if (loading && !searchLoading) {
-    return (
-      <div className="section">
-        <div className="container">
-          <h2 className="section-title">Loading Movies...</h2>
-        </div>
-      </div>
-    );
-  }
+  // if (loading && !searchLoading) {
+  //   return (
+  //     <div className="section">
+  //       <div className="container">
+  //         <h2 className="section-title">Loading Movies...</h2>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   if (error) {
     return (
@@ -104,10 +104,7 @@ function Movies() {
     <div className="section">
       <div className="container">
         <h2 className="section-title">
-          {isSearching ? 'Search Results' : 'Movie Diary'} ({filteredMovies.length} entries
-          {uniqueMoviesCount !== filteredMovies.length && ` / ${uniqueMoviesCount} unique movies`}
-          {!isSearching && moviesPagination && moviesPagination.hasNextPage && ` of ${moviesPagination.total} total`})
-          {searchLoading && ' - Searching...'}
+          {isSearching ? 'Search Results' : 'Movie Diary'} 
         </h2>
       
         <div className="filters">

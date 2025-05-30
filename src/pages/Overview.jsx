@@ -68,15 +68,15 @@ function Overview() {
     pauseOnHover: false,
   };
 
-  if (loading) {
-    return (
-      <div className="section">
-        <div className="container">
-          <h2 className="section-title">Loading Movie Data...</h2>
-        </div>
-      </div>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <div className="section">
+  //       <div className="container">
+  //         <h2 className="section-title">Loading Movie Data...</h2>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   if (error) {
     return (

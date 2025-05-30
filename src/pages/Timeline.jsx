@@ -81,7 +81,7 @@ function Timeline() {
     return (
       <div className="section">
         <div className="container">
-          <h2 className="section-title">Loading Timeline...</h2>
+          {/* <h2 className="section-title">Loading Timeline...</h2> */}
         </div>
       </div>
     );

@@ -46,7 +46,7 @@ function TopRated() {
     return (
       <div className="section">
         <div className="container">
-          <h2 className="section-title">Loading Top Rated Movies...</h2>
+          {/* <h2 className="section-title">Loading Top Rated Movies...</h2> */}
         </div>
       </div>
     );
