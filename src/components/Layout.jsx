@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { TrendingUp, Calendar, Film, Star } from 'lucide-react';
 import { motion, useScroll, useMotionValueEvent } from 'motion/react';
@@ -60,6 +60,21 @@ function Layout({ children }) {
       setLastScrollY(currentScrollY);
     }
   });
+
+  const [pageReady, setPageReady] = useState(false);
+
+  // Handle page readiness
+  useEffect(() => {
+    // Reset on route change
+    setPageReady(false);
+    
+    // Use requestAnimationFrame to ensure DOM is ready
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setPageReady(true);
+      });
+    });
+  }, [location.pathname, children]);
 
   const isActive = (path) => {
     if (path === '/' && location.pathname === '/') return true;
@@ -173,10 +188,11 @@ function Layout({ children }) {
       </motion.header>
 
       <main>
-        {children}
+        <div style={{ minHeight: '50vh' }}>
+          {children}
+        </div>
+        {pageReady && <DarkModeToggle />}
       </main>
-      
-      <DarkModeToggle />
     </div>
   );
 }

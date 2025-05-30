@@ -151,7 +151,6 @@ body {
   white-space: nowrap;
   flex-shrink: 0; /* Prevent logo from shrinking */
   text-align: center;
-  background: rgba(255, 255, 255, 0.1); /* Temporary background for debugging */
   border-radius: 8px;
   z-index: 10;
   position: relative;
@@ -783,29 +782,52 @@ main {
 
 /* Dark mode toggle container */
 .dark-mode-toggle-container {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  margin-top: 60px;
+  background: var(--background);
+  opacity: 0;
+  animation: fadeInToggle 0.5s ease-in-out 0.3s forwards;
+}
+
+@keyframes fadeInToggle {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dark-mode-toggle-wrapper {
   background: var(--surface);
-  padding: 12px;
+  padding: 16px;
   border-radius: 50px;
   border: 1px solid var(--border-light);
   box-shadow: 0 8px 32px var(--shadow);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.dark-mode-toggle-container:hover {
-  transform: translateX(-50%) translateY(-2px);
+.dark-mode-toggle-wrapper:hover {
+  transform: translateY(-2px);
   box-shadow: 0 12px 40px var(--shadow-hover);
 }
 
-/* Custom styling for the dark mode toggle component */
-.dark-mode-toggle-container dark-mode-toggle {
-  --dark-mode-toggle-light-icon-color: var(--text-secondary);
-  --dark-mode-toggle-dark-icon-color: var(--text-secondary);
-  --dark-mode-toggle-focus-outline-color: var(--primary-blue);
-  --dar
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .dark-mode-toggle-container {
+    padding: 30px 20px;
+    margin-top: 40px;
+  }
+  
+  .dark-mode-toggle-wrapper {
+    padding: 12px;
+  }
+}
