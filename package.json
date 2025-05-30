@@ -19,6 +19,9 @@
     "install:backend": "cd backend && npm install"
   },
   "dependencies": {
+    "@anatoliygatt/dark-mode-toggle": "^1.0.1",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
     "@supabase/supabase-js": "^2.49.8",
     "chart.js": "^4.4.0",
     "cors": "^2.8.5",

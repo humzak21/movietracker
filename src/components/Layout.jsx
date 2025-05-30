@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { TrendingUp, Calendar, Film, Star } from 'lucide-react';
 import { motion, useScroll, useMotionValueEvent } from 'motion/react';
+import DarkModeToggle from './DarkModeToggle';
 
 function Layout({ children }) {
   const [headerVisible, setHeaderVisible] = useState(true);
@@ -174,6 +175,8 @@ function Layout({ children }) {
       <main>
         {children}
       </main>
+      
+      <DarkModeToggle />
     </div>
   );
 }
