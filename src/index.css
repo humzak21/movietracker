@@ -253,7 +253,7 @@ body {
 }
 
 .section {
-  padding: 60px 0;
+  padding: 10px 0;
 }
 
 .section-title {
@@ -785,8 +785,7 @@ main {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px;
-  margin-top: 60px;
+  padding: 40px 10px;
   background: var(--background);
   opacity: 0;
   animation: fadeInToggle 0.5s ease-in-out 0.3s forwards;
@@ -823,11 +822,10 @@ main {
 /* Mobile responsive */
 @media (max-width: 768px) {
   .dark-mode-toggle-container {
-    padding: 30px 20px;
-    margin-top: 40px;
+    padding: 40px 20px;
   }
   
   .dark-mode-toggle-wrapper {
-    padding: 12px;
+    padding: 10px 14px;
   }
 }

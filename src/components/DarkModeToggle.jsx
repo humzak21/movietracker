@@ -32,7 +32,7 @@ const DarkModeToggleComponent = () => {
           mode={mode}
           dark="Dark"
           light="Light"
-          size="lg"
+          size="sm"
           inactiveTrackColor="#e2e8f0"
           inactiveTrackColorOnHover="#f8fafc"
           inactiveTrackColorOnActive="#cbd5e1"
