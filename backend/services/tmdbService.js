@@ -9,8 +9,11 @@ if (process.env.NODE_ENV !== 'production') {
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 const TMDB_BASE_URL = process.env.TMDB_BASE_URL || 'https://api.themoviedb.org/3';
 
-if (!TMDB_API_KEY) {
-  throw new Error('TMDB_API_KEY environment variable is required');
+// Check if TMDB is configured
+export const isTMDBConfigured = !!TMDB_API_KEY;
+
+if (!isTMDBConfigured) {
+  console.warn('⚠️  TMDB API key not configured. Movie data fetching will be disabled.');
 }
 
 class TMDBService {
@@ -21,9 +24,20 @@ class TMDBService {
   }
 
   /**
+   * Check if TMDB is available
+   */
+  _checkTMDB() {
+    if (!isTMDBConfigured) {
+      throw new Error('TMDB API key not configured. Please set TMDB_API_KEY environment variable.');
+    }
+  }
+
+  /**
    * Make a request to TMDB API with error handling and rate limiting
    */
   async makeRequest(endpoint, params = {}) {
+    this._checkTMDB();
+    
     const url = new URL(`${this.baseUrl}${endpoint}`);
     url.searchParams.append('api_key', this.apiKey);
     
@@ -51,6 +65,8 @@ class TMDBService {
    * Search for movies by title and optional year
    */
   async searchMovies(title, year = null) {
+    this._checkTMDB();
+    
     const params = {
       query: title,
       include_adult: false,
@@ -69,6 +85,8 @@ class TMDBService {
    * Get detailed movie information by TMDB ID
    */
   async getMovieDetails(tmdbId) {
+    this._checkTMDB();
+    
     const params = {
       append_to_response: 'credits,videos,keywords,release_dates,images'
     };
@@ -80,6 +98,8 @@ class TMDBService {
    * Find and fetch comprehensive movie data by title and year
    */
   async fetchMovieData(title, year = null) {
+    this._checkTMDB();
+    
     try {
       // Search for the movie
       const searchResults = await this.searchMovies(title, year);

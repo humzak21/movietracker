@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { existsSync } from 'fs';
 
 import movieRoutes from './routes/movieRoutes.js';
 
@@ -56,11 +57,20 @@ if (process.env.FRONTEND_URL) {
   corsOrigins.push(process.env.FRONTEND_URL);
 }
 
-app.use(cors({
-  origin: corsOrigins.length > 0 ? corsOrigins : false,
+// In production, if no FRONTEND_URL is set, allow all origins for Railway deployment
+const corsConfig = {
   credentials: true,
   optionsSuccessStatus: 200
-}));
+};
+
+if (process.env.NODE_ENV === 'production' && corsOrigins.length === 0) {
+  // Allow all origins in production if FRONTEND_URL is not set
+  corsConfig.origin = true;
+} else {
+  corsConfig.origin = corsOrigins.length > 0 ? corsOrigins : false;
+}
+
+app.use(cors(corsConfig));
 
 // Logging
 app.use(morgan('combined'));
@@ -85,11 +95,27 @@ app.use('/api', movieRoutes);
 // Serve static files from the frontend build in production
 if (process.env.NODE_ENV === 'production') {
   const frontendBuildPath = path.resolve(__dirname, '../dist');
+  
+  // Log the build path for debugging
+  console.log(`📁 Frontend build path: ${frontendBuildPath}`);
+  
+  // Check if dist directory exists
+  if (!existsSync(frontendBuildPath)) {
+    console.error(`❌ Frontend build directory not found: ${frontendBuildPath}`);
+  } else {
+    console.log(`✅ Frontend build directory found`);
+  }
+  
   app.use(express.static(frontendBuildPath));
   
   // Handle React Router - send all non-API requests to index.html
   app.get('*', (req, res) => {
-    res.sendFile(path.resolve(frontendBuildPath, 'index.html'));
+    const indexPath = path.resolve(frontendBuildPath, 'index.html');
+    if (!existsSync(indexPath)) {
+      console.error(`❌ index.html not found: ${indexPath}`);
+      return res.status(500).send('Frontend build not found');
+    }
+    res.sendFile(indexPath);
   });
 }
 
@@ -115,19 +141,24 @@ app.use('/api/*', (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Movie Tracker Backend running on port ${PORT}`);
   console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🔧 CORS Configuration: ${JSON.stringify(corsConfig, null, 2)}`);
   
   if (process.env.NODE_ENV === 'production') {
     console.log(`🔗 Health check: /health`);
     console.log(`📡 API base URL: /api`);
-    console.log(`🌐 CORS Origins: ${corsOrigins.join(', ')}`);
+    console.log(`🌐 CORS Origins: ${corsOrigins.length > 0 ? corsOrigins.join(', ') : 'All origins allowed'}`);
+    console.log(`📁 Serving static files from: ${path.resolve(__dirname, '../dist')}`);
   } else {
     console.log(`🔗 Health check: http://localhost:${PORT}/health`);
     console.log(`📡 API base URL: http://localhost:${PORT}/api`);
     console.log(`🌐 CORS Origins: ${corsOrigins.join(', ')}`);
   }
+}).on('error', (err) => {
+  console.error('❌ Server failed to start:', err);
+  process.exit(1);
 });
 
 export default app; 

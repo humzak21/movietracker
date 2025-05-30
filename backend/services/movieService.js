@@ -1,11 +1,22 @@
-import { supabase, supabaseAdmin } from '../config/database.js';
+import { supabase, supabaseAdmin, isSupabaseConfigured } from '../config/database.js';
 import tmdbService from './tmdbService.js';
 
 class MovieService {
   /**
+   * Check if database is available
+   */
+  _checkDatabase() {
+    if (!isSupabaseConfigured) {
+      throw new Error('Database not configured. Please set SUPABASE_URL and SUPABASE_ANON_KEY environment variables.');
+    }
+  }
+
+  /**
    * Create or update a movie in the diary table
    */
   async upsertMovie(movieData) {
+    this._checkDatabase();
+    
     try {
       // If we have an ID, update the existing entry
       if (movieData.id) {
@@ -39,6 +50,8 @@ class MovieService {
    * Create or update a director in the database
    */
   async upsertDirector(directorData) {
+    this._checkDatabase();
+    
     try {
       const { data, error } = await supabaseAdmin
         .from('directors')
@@ -61,6 +74,8 @@ class MovieService {
    * Create or update a genre in the database
    */
   async upsertGenre(genreData) {
+    this._checkDatabase();
+    
     try {
       const { data, error } = await supabaseAdmin
         .from('genres')
@@ -83,6 +98,8 @@ class MovieService {
    * Link a movie to its directors
    */
   async linkMovieDirectors(movieId, directorIds) {
+    this._checkDatabase();
+    
     try {
       // First, remove existing links
       await supabaseAdmin
@@ -113,6 +130,8 @@ class MovieService {
    * Link a movie to its genres
    */
   async linkMovieGenres(movieId, genreIds) {
+    this._checkDatabase();
+    
     try {
       // First, remove existing links
       await supabaseAdmin
@@ -143,6 +162,8 @@ class MovieService {
    * Add or update a user rating for a movie (update existing diary entry)
    */
   async upsertUserRating(ratingData) {
+    this._checkDatabase();
+    
     try {
       const { data, error } = await supabaseAdmin
         .from('diary')
@@ -170,6 +191,8 @@ class MovieService {
    * Fetch movie data from TMDB and save to database
    */
   async fetchAndSaveMovie(title, year = null, userRating = null, detailedRating = null, watchDate = null, isRewatch = false) {
+    this._checkDatabase();
+    
     try {
       // Fetch movie data from TMDB
       const tmdbData = await tmdbService.fetchMovieData(title, year);
@@ -266,6 +289,8 @@ class MovieService {
    * Get all movies with details and pagination
    */
   async getAllMoviesWithDetailsPaginated(limit = 50, offset = 0) {
+    this._checkDatabase();
+    
     try {
       // First, get the total count
       const { count, error: countError } = await supabaseAdmin
@@ -329,6 +354,8 @@ class MovieService {
    * Get top rated movies with pagination (unique titles only) above a minimum rating
    */
   async getTopRatedMoviesPaginated(minRating = 90, limit = 50, offset = 0) {
+    this._checkDatabase();
+    
     try {
       // Get all unique movies first (we need to process all to find unique)
       const uniqueMovies = await this.getUniqueMovies();
@@ -366,6 +393,8 @@ class MovieService {
    * Get all movies with their details
    */
   async getAllMoviesWithDetails() {
+    this._checkDatabase();
+    
     try {
       const { data, error } = await supabaseAdmin
         .from('diary')
@@ -409,6 +438,8 @@ class MovieService {
    * Returns the best-rated instance of each movie
    */
   async getUniqueMovies() {
+    this._checkDatabase();
+    
     try {
       const { data, error } = await supabaseAdmin
         .from('diary')
@@ -449,6 +480,8 @@ class MovieService {
    * Get top rated movies (unique titles only) above a minimum rating
    */
   async getTopRatedMovies(minRating = 90) {
+    this._checkDatabase();
+    
     try {
       const uniqueMovies = await this.getUniqueMovies();
       
@@ -509,6 +542,8 @@ class MovieService {
    * Get a single movie by ID with all details
    */
   async getMovieById(movieId) {
+    this._checkDatabase();
+    
     try {
       const { data, error } = await supabaseAdmin
         .from('diary')
@@ -530,6 +565,8 @@ class MovieService {
    * Search movies by title, director, or tags
    */
   async searchMovies(query) {
+    this._checkDatabase();
+    
     try {
       const { data, error } = await supabaseAdmin
         .from('diary')
@@ -551,6 +588,8 @@ class MovieService {
    * Get movie statistics
    */
   async getMovieStats() {
+    this._checkDatabase();
+    
     try {
       // Get all diary entries
       const { data: movies, error } = await supabaseAdmin
