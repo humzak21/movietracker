@@ -591,16 +591,22 @@ class MovieService {
     this._checkDatabase();
     
     try {
-      // Get all diary entries
+      // Get all diary entries for general stats
       const { data: movies, error } = await supabaseAdmin
         .from('diary')
         .select('rating, ratings100, watched_date, rewatch, genres, release_year');
 
       if (error) throw error;
 
+      // Get unique movies for 5-star count (no duplicates)
+      const uniqueMovies = await this.getUniqueMovies();
+
       const totalMovies = movies.length;
       const avgUserRating = movies.reduce((sum, m) => sum + (m.rating || 0), 0) / totalMovies;
       const avgDetailedRating = movies.reduce((sum, m) => sum + (m.ratings100 || 0), 0) / totalMovies;
+
+      // Count 5-star movies from unique movies only (no duplicates)
+      const fiveStarMovies = uniqueMovies.filter(m => m.rating === 5).length;
 
       // Get rating distribution
       const ratingDistribution = {};
@@ -631,9 +637,10 @@ class MovieService {
       return {
         totalMovies,
         totalRatings: totalMovies,
-        uniqueMovies: totalMovies, // Assuming each diary entry is unique
+        uniqueMovies: uniqueMovies.length, // Use actual unique movies count
         averageUserRating: Math.round(avgUserRating * 100) / 100,
         averageDetailedRating: Math.round(avgDetailedRating * 100) / 100,
+        fiveStarMovies,
         ratingDistribution,
         genreDistribution,
         yearCounts,
