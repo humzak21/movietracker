@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { useSupabaseMovieData } from '../hooks/useSupabaseMovieData';
+import React, { useEffect, useRef, useCallback } from 'react';
+import { useTimelineData } from '../hooks/useTimelineData';
 
 function Timeline() {
   const { 
-    movies, // Use all movies (including duplicates) for timeline
+    timelineEntries,
+    timelinePagination,
+    loadingMore,
+    loadMoreMovies,
     searchQuery, 
     setSearchQuery, 
     ratingFilter, 
@@ -11,81 +14,34 @@ function Timeline() {
     yearFilter, 
     setYearFilter,
     availableYears,
-    observeMovieCards,
     loading,
-    error
-  } = useSupabaseMovieData();
-  
-  const [timelineLimit, setTimelineLimit] = useState(50);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
+    error,
+    isSearching,
+    searchLoading
+  } = useTimelineData();
 
-  // Set up intersection observer for movie cards
+  const loadMoreTriggerRef = useRef(null);
+
+  // Infinite scroll intersection observer (disabled during search)
+  const handleIntersection = useCallback((entries) => {
+    const [entry] = entries;
+    if (entry.isIntersecting && timelinePagination?.hasNextPage && !loadingMore && !isSearching) {
+      loadMoreMovies();
+    }
+  }, [timelinePagination, loadingMore, loadMoreMovies, isSearching]);
+
   useEffect(() => {
-    const cleanup = observeMovieCards();
-    return cleanup;
-  }, [observeMovieCards]);
+    const observer = new IntersectionObserver(handleIntersection, {
+      threshold: 0.1,
+      rootMargin: '100px'
+    });
 
-  // Filter movies for timeline (allow duplicates)
-  const filteredMovies = React.useMemo(() => {
-    let filtered = movies;
-
-    // Apply search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(movie => 
-        movie.title.toLowerCase().includes(query) ||
-        (movie.director && movie.director.toLowerCase().includes(query)) ||
-        (movie.overview && movie.overview.toLowerCase().includes(query)) ||
-        (movie.notes && movie.notes.toLowerCase().includes(query))
-      );
+    if (loadMoreTriggerRef.current) {
+      observer.observe(loadMoreTriggerRef.current);
     }
 
-    // Apply rating filter
-    if (ratingFilter > 0) {
-      filtered = filtered.filter(movie => (movie.rating || 0) >= ratingFilter);
-    }
-
-    // Apply year filter
-    if (yearFilter !== 'all') {
-      const year = parseInt(yearFilter);
-      filtered = filtered.filter(movie => movie.year === year);
-    }
-
-    return filtered;
-  }, [movies, searchQuery, ratingFilter, yearFilter]);
-
-  const timelineEntries = Object.entries(
-    filteredMovies
-      .sort((a, b) => new Date(b.date) - new Date(a.date))
-      .reduce((acc, movie) => {
-        const date = `${movie.month}/${movie.day}/${movie.year}`;
-        if (!acc[date]) acc[date] = [];
-        acc[date].push(movie);
-        return acc;
-      }, {})
-  );
-
-  const displayedEntries = timelineEntries.slice(0, timelineLimit);
-  const hasMoreEntries = timelineEntries.length > timelineLimit;
-
-  const loadMoreEntries = () => {
-    setIsLoadingMore(true);
-    // Simulate loading delay for better UX
-    setTimeout(() => {
-      setTimelineLimit(prev => prev + 50);
-      setIsLoadingMore(false);
-    }, 300);
-  };
-
-  if (loading) {
-    return (
-      <div className="section">
-        <div className="container">
-          {/* <h2 className="section-title">Loading Timeline...</h2> */}
-        </div>
-      </div>
-    );
-  }
+    return () => observer.disconnect();
+  }, [handleIntersection]);
 
   if (error) {
     return (
@@ -101,11 +57,9 @@ function Timeline() {
   return (
     <div className="section">
       <div className="container">
-        <h2 className="section-title">Movie Timeline</h2>
-        <p className="timeline-info">
-          Showing {displayedEntries.length} of {timelineEntries.length} entries
-          {filteredMovies.length !== movies.length && ` (${filteredMovies.length} movies match your filters)`}
-        </p>
+        <h2 className="section-title">
+          {isSearching ? 'Timeline Search Results' : 'Movie Timeline'}
+        </h2>
         
         <div className="filters">
           <input
@@ -138,7 +92,7 @@ function Timeline() {
         </div>
 
         <div className="timeline">
-          {displayedEntries.map(([date, dayMovies]) => (
+          {timelineEntries.map(([date, dayMovies]) => (
             <div key={date} className="timeline-item">
               <div className="timeline-date">{date}</div>
               <div className="timeline-movies">
@@ -150,6 +104,11 @@ function Timeline() {
                         ({movie.detailedRating}/100)
                       </span>
                     )}
+                    {movie.isRewatch && (
+                      <span style={{ marginLeft: '8px', fontSize: '12px', color: '#888' }}>
+                        (Rewatch)
+                      </span>
+                    )}
                   </div>
                 ))}
               </div>
@@ -157,20 +116,86 @@ function Timeline() {
           ))}
         </div>
 
-        {hasMoreEntries && (
-          <div className="load-more-container">
+        {/* Show message when no results found */}
+        {timelineEntries.length === 0 && !loading && !searchLoading && (
+          <div style={{ 
+            textAlign: 'center', 
+            marginTop: '40px', 
+            color: '#666',
+            fontSize: '16px'
+          }}>
+            {isSearching ? 'No movies found matching your search.' : 'No timeline entries found.'}
+          </div>
+        )}
+
+        {/* Infinite scroll trigger (only when not searching) */}
+        {!isSearching && timelinePagination?.hasNextPage && (
+          <div
+            ref={loadMoreTriggerRef}
+            style={{
+              height: '20px',
+              margin: '40px 0',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}
+          >
+            {loadingMore && (
+              <div style={{ color: '#666', fontSize: '14px' }}>
+                Loading more timeline entries...
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Manual Load More Button (as fallback, only when not searching) */}
+        {!isSearching && timelinePagination?.hasNextPage && !loadingMore && (
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            marginTop: '20px' 
+          }}>
             <button
-              className="btn load-more-btn"
-              onClick={loadMoreEntries}
-              disabled={isLoadingMore}
+              onClick={loadMoreMovies}
+              style={{
+                padding: '12px 24px',
+                fontSize: '16px',
+                backgroundColor: '#007acc',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
             >
-              {isLoadingMore ? 'Loading...' : `Load More (${timelineEntries.length - timelineLimit} remaining)`}
+              Load More Timeline Entries
             </button>
           </div>
         )}
 
-        {!hasMoreEntries && timelineEntries.length > 0 && (
-          <div className="timeline-end">
+        {/* Pagination Info (only when not searching) */}
+        {!isSearching && timelinePagination && (
+          <div style={{ 
+            textAlign: 'center', 
+            marginTop: '20px', 
+            color: '#666',
+            fontSize: '14px'
+          }}>
+            {timelinePagination.totalPages > 1 && (
+              <span>Page {timelinePagination.page} of {timelinePagination.totalPages}</span>
+            )}
+          </div>
+        )}
+
+        {/* End of timeline message */}
+        {!isSearching && !timelinePagination?.hasNextPage && timelineEntries.length > 0 && (
+          <div className="timeline-end" style={{ 
+            textAlign: 'center', 
+            marginTop: '40px', 
+            padding: '20px',
+            color: '#666',
+            fontSize: '16px'
+          }}>
             <p>🎬 You've reached the beginning of your movie journey!</p>
           </div>
         )}

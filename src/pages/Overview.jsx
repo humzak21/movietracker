@@ -133,7 +133,7 @@ function Overview() {
           <div className="container">
             <div className="hero-content">
               <h1>Hak Movie Tracker</h1>
-              <p>Humza's Personal Movie Tracker - Now with {movies.length} entries!</p>
+              <p>Humza's Personal Movie Tracker</p>
               
               <div className="stats-grid">
                 <div className="stat-card">
