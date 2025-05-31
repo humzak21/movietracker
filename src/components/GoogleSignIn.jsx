@@ -19,6 +19,7 @@ const GoogleSignIn = ({ onSuccess, onError }) => {
         console.log('🔍 GoogleSignIn: Client ID:', import.meta.env.VITE_GOOGLE_CLIENT_ID);
         
         try {
+          // Initialize Google Identity Services
           window.google.accounts.id.initialize({
             client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
             callback: handleCredentialResponse,
@@ -26,6 +27,7 @@ const GoogleSignIn = ({ onSuccess, onError }) => {
             cancel_on_tap_outside: true,
           });
 
+          // Render the standard button
           window.google.accounts.id.renderButton(
             googleButtonRef.current,
             {
@@ -40,6 +42,15 @@ const GoogleSignIn = ({ onSuccess, onError }) => {
           );
 
           console.log('🔍 GoogleSignIn: Button rendered successfully');
+
+          // Also enable One Tap prompt as fallback
+          window.google.accounts.id.prompt((notification) => {
+            console.log('🔍 GoogleSignIn: One Tap notification:', notification);
+            if (notification.isNotDisplayed()) {
+              console.log('🔍 GoogleSignIn: One Tap not displayed, using button only');
+            }
+          });
+
         } catch (error) {
           console.error('🔍 GoogleSignIn: Error initializing Google Sign-In:', error);
           onError && onError('Failed to initialize Google Sign-In');
@@ -85,9 +96,42 @@ const GoogleSignIn = ({ onSuccess, onError }) => {
     }
   };
 
+  // Alternative manual sign-in function for testing
+  const handleManualSignIn = () => {
+    console.log('🔍 GoogleSignIn: Manual sign-in triggered');
+    if (window.google && window.google.accounts) {
+      try {
+        // Try to trigger the sign-in flow manually
+        window.google.accounts.id.prompt();
+      } catch (error) {
+        console.error('🔍 GoogleSignIn: Manual sign-in error:', error);
+        onError && onError('Manual sign-in failed');
+      }
+    }
+  };
+
   return (
     <div className="google-signin-container">
       <div ref={googleButtonRef} className="google-signin-button"></div>
+      
+      {/* Fallback manual button */}
+      <div style={{ marginTop: '10px' }}>
+        <button
+          onClick={handleManualSignIn}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: '#4285f4',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '14px'
+          }}
+        >
+          Alternative Sign In
+        </button>
+      </div>
+
       <div style={{ marginTop: '10px', fontSize: '12px', color: '#666' }}>
         Debug Info:
         <br />

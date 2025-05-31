@@ -6,19 +6,35 @@ import GoogleSignIn from '../components/GoogleSignIn';
 const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [debugInfo, setDebugInfo] = useState('');
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Debug environment on load
+  useEffect(() => {
+    const debug = {
+      apiUrl: import.meta.env.VITE_API_BASE_URL,
+      clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+      supabaseUrl: import.meta.env.VITE_SUPABASE_URL,
+      origin: window.location.origin,
+      userAgent: navigator.userAgent,
+    };
+    setDebugInfo(JSON.stringify(debug, null, 2));
+    console.log('🔍 Login Page Debug Info:', debug);
+  }, []);
+
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
+      console.log('🔍 Login: User already authenticated, redirecting');
       const from = location.state?.from?.pathname || '/statistics';
       navigate(from, { replace: true });
     }
   }, [isAuthenticated, navigate, location]);
 
   const handleSignInSuccess = () => {
+    console.log('🔍 Login: Sign-in success callback triggered');
     setError('');
     setLoading(false);
     const from = location.state?.from?.pathname || '/statistics';
@@ -26,6 +42,7 @@ const Login = () => {
   };
 
   const handleSignInError = (errorMessage) => {
+    console.error('🔍 Login: Sign-in error callback triggered:', errorMessage);
     setError(errorMessage);
     setLoading(false);
   };
@@ -117,6 +134,16 @@ const Login = () => {
               By signing in, you agree to our terms of service and privacy policy.
             </p>
           </div>
+
+          {/* Debug Information */}
+          <details className="mt-4">
+            <summary className="text-xs text-gray-500 cursor-pointer">
+              Debug Information (Click to expand)
+            </summary>
+            <pre className="mt-2 text-xs bg-gray-100 dark:bg-gray-800 p-2 rounded overflow-auto max-h-40">
+              {debugInfo}
+            </pre>
+          </details>
         </div>
       </div>
     </div>
