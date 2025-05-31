@@ -14,15 +14,21 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.3",
-    "express": "^4.18.2",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
-    "helmet": "^7.1.0",
-    "morgan": "^1.10.0",
-    "node-fetch": "^3.3.2",
-    "rate-limiter-flexible": "^5.0.5",
     "csv-parser": "^3.0.0",
-    "multer": "^2.0.0"
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-session": "^1.18.1",
+    "google-auth-library": "^9.15.1",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "multer": "^2.0.0",
+    "node-fetch": "^3.3.2",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
+    "rate-limiter-flexible": "^5.0.5"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
@@ -36,4 +42,4 @@
   ],
   "author": "Your Name",
   "license": "MIT"
-} 
+}

@@ -17,7 +17,10 @@ RAILWAY_DEPLOYMENT.md
 railway/README.md
 backend/railway/README.md
 backend/README.md
+AUTHENTICATION_SETUP.md
 
+# cursor ignore
+.cursorignore
 
 # Build output
 dist/

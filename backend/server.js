@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import { existsSync } from 'fs';
 
 import movieRoutes from './routes/movieRoutes.js';
+import authRoutes from './routes/auth.js';
 
 // Get current file directory for ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -37,10 +38,11 @@ app.use(helmet({
     directives: {
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https://image.tmdb.org"],
+      scriptSrc: ["'self'", "https://accounts.google.com"],
+      imgSrc: ["'self'", "data:", "https://image.tmdb.org", "https://lh3.googleusercontent.com"],
       fontSrc: ["'self'", "data:"],
-      connectSrc: ["'self'"]
+      connectSrc: ["'self'", "https://accounts.google.com"],
+      frameSrc: ["https://accounts.google.com"]
     }
   }
 }));
@@ -91,6 +93,7 @@ app.get('/health', (req, res) => {
 });
 
 // API routes
+app.use('/api/auth', authRoutes);
 app.use('/api', movieRoutes);
 
 // Serve static files from the frontend build in production
