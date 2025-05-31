@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { TrendingUp, Calendar, Film, Star } from 'lucide-react';
 import { motion, useScroll, useMotionValueEvent } from 'motion/react';
 import DarkModeToggle from './DarkModeToggle';
@@ -10,6 +10,7 @@ function Layout({ children }) {
   const [lastScrollY, setLastScrollY] = useState(0);
   const scrollTimeoutRef = useRef(null);
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Scroll detection for header animation
   const { scrollY } = useScroll();
@@ -118,11 +119,11 @@ function Layout({ children }) {
             <ul className="nav-links">
               <li>
                 <Link 
-                  to="/" 
-                  className={`nav-link ${isActive('/') ? 'active' : ''}`}
+                  to="/movies" 
+                  className={`nav-link ${isActive('/movies') ? 'active' : ''}`}
                 >
-                  <TrendingUp size={14} />
-                  Overview
+                  <Film size={14} />
+                  Movies
                 </Link>
               </li>
               <li>
@@ -137,9 +138,7 @@ function Layout({ children }) {
             </ul>
           </motion.div>
           
-          <motion.Link 
-            to="/" 
-            className="logo"
+          <motion.div
             animate={{ 
               opacity: headerVisible ? 1 : 0,
               scale: headerVisible ? 1 : 0.9
@@ -149,8 +148,19 @@ function Layout({ children }) {
               delay: headerVisible ? 0.05 : 0
             }}
           >
-            Hk
-          </motion.Link>
+            <button 
+              className="logo"
+              onClick={() => navigate('/overview')}
+              style={{ 
+                background: 'none', 
+                border: 'none',
+                padding: 0,
+                margin: 0
+              }}
+            >
+              Hk
+            </button>
+          </motion.div>
           
           <motion.div 
             className="nav-right"
@@ -166,11 +176,11 @@ function Layout({ children }) {
             <ul className="nav-links">
               <li>
                 <Link 
-                  to="/movies" 
-                  className={`nav-link ${isActive('/movies') ? 'active' : ''}`}
+                  to="/statistics" 
+                  className={`nav-link ${isActive('/statistics') ? 'active' : ''}`}
                 >
-                  <Film size={14} />
-                  Movies
+                  <TrendingUp size={14} />
+                  Statistics
                 </Link>
               </li>
               <li>

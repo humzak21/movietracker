@@ -156,6 +156,13 @@ body {
   position: relative;
   display: block;
   letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.logo:hover {
+  color: var(--primary-blue) !important;
+  transform: scale(1.05);
 }
 
 .nav-links {
