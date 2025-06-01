@@ -1,34 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { TrendingUp, Calendar, Film, Star, User, LogOut, Settings } from 'lucide-react';
+import { TrendingUp, Calendar, Film, Star } from 'lucide-react';
 import { motion, useScroll, useMotionValueEvent } from 'motion/react';
 import DarkModeToggle from './DarkModeToggle';
-import { useAuth } from '../contexts/AuthContext';
 
 function Layout({ children }) {
   const [headerVisible, setHeaderVisible] = useState(true);
   const [scrollDirection, setScrollDirection] = useState('up');
   const [lastScrollY, setLastScrollY] = useState(0);
-  const [showUserMenu, setShowUserMenu] = useState(false);
   const scrollTimeoutRef = useRef(null);
-  const userMenuRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, isAuthenticated, logout } = useAuth();
-
-  // Close user menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
-        setShowUserMenu(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
 
   // Scroll detection for header animation
   const { scrollY } = useScroll();
@@ -99,12 +81,6 @@ function Layout({ children }) {
     if (path === '/' && location.pathname === '/') return true;
     if (path !== '/' && location.pathname.startsWith(path)) return true;
     return false;
-  };
-
-  const handleLogout = async () => {
-    await logout();
-    setShowUserMenu(false);
-    navigate('/login');
   };
 
   return (
@@ -216,123 +192,6 @@ function Layout({ children }) {
                   Top Rated
                 </Link>
               </li>
-              {isAuthenticated && (
-                <li className="user-menu-container" ref={userMenuRef}>
-                  <button
-                    className="user-menu-trigger"
-                    onClick={() => setShowUserMenu(!showUserMenu)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      padding: '8px',
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: 'pointer',
-                      transition: 'background-color 0.2s ease'
-                    }}
-                  >
-                    {user?.picture ? (
-                      <img
-                        src={user.picture}
-                        alt={user.name}
-                        style={{
-                          width: '24px',
-                          height: '24px',
-                          borderRadius: '50%',
-                          objectFit: 'cover'
-                        }}
-                      />
-                    ) : (
-                      <User size={16} />
-                    )}
-                  </button>
-                  
-                  {showUserMenu && (
-                    <motion.div
-                      className="user-menu"
-                      initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                      transition={{ duration: 0.15 }}
-                      style={{
-                        position: 'absolute',
-                        top: '100%',
-                        right: 0,
-                        marginTop: '8px',
-                        backgroundColor: 'var(--bg-color)',
-                        border: '1px solid var(--border-color)',
-                        borderRadius: '8px',
-                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                        minWidth: '200px',
-                        zIndex: 1000,
-                        overflow: 'hidden'
-                      }}
-                    >
-                      <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-color)' }}>
-                        <div style={{ fontWeight: '500', fontSize: '14px', color: 'var(--text-color)' }}>
-                          {user?.name}
-                        </div>
-                        <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                          {user?.email}
-                        </div>
-                      </div>
-                      
-                      <div style={{ padding: '8px 0' }}>
-                        <button
-                          onClick={() => {
-                            setShowUserMenu(false);
-                            // Navigate to profile page when implemented
-                          }}
-                          style={{
-                            width: '100%',
-                            padding: '8px 16px',
-                            background: 'none',
-                            border: 'none',
-                            textAlign: 'left',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            fontSize: '14px',
-                            color: 'var(--text-color)',
-                            transition: 'background-color 0.2s ease'
-                          }}
-                          onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--hover-bg)'}
-                          onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                        >
-                          <Settings size={14} />
-                          Profile Settings
-                        </button>
-                        
-                        <button
-                          onClick={handleLogout}
-                          style={{
-                            width: '100%',
-                            padding: '8px 16px',
-                            background: 'none',
-                            border: 'none',
-                            textAlign: 'left',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            fontSize: '14px',
-                            color: 'var(--text-color)',
-                            transition: 'background-color 0.2s ease'
-                          }}
-                          onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--hover-bg)'}
-                          onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                        >
-                          <LogOut size={14} />
-                          Sign Out
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-                </li>
-              )}
             </ul>
           </motion.div>
         </nav>
