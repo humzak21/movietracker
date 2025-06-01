@@ -40,7 +40,7 @@ app.use(helmet({
       scriptSrc: ["'self'"],
       imgSrc: ["'self'", "data:", "https://image.tmdb.org"],
       fontSrc: ["'self'", "data:"],
-      connectSrc: ["'self'"]
+      connectSrc: ["'self'", "https://*.supabase.co", "https://api.themoviedb.org"]
     }
   }
 }));
