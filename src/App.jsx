@@ -3,13 +3,11 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { DarkModeProvider } from './hooks/useDarkMode.jsx';
 import { AuthProvider } from './contexts/AuthContext';
 import Layout from './components/Layout';
-import ProtectedRoute from './components/ProtectedRoute';
 import Overview from './pages/Overview';
 import Timeline from './pages/Timeline';
 import Movies from './pages/Movies';
 import TopRated from './pages/TopRated';
 import Statistics from './pages/Statistics';
-import Admin from './pages/Admin';
 import ForgotPassword from './pages/ForgotPassword';
 
 function App() {
@@ -21,17 +19,7 @@ function App() {
             {/* Public routes */}
             <Route path="/forgot-password" element={<ForgotPassword />} />
             
-            {/* Protected admin route */}
-            <Route 
-              path="/admin" 
-              element={
-                <ProtectedRoute>
-                  <Admin />
-                </ProtectedRoute>
-              } 
-            />
-            
-            {/* Main app routes (currently public) */}
+            {/* Main app routes */}
             <Route path="/*" element={
               <Layout>
                 <Routes>

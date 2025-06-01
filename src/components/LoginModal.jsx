@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Eye, EyeOff, Mail, Lock, User, X } from 'lucide-react';
 
@@ -14,6 +14,7 @@ const LoginModal = ({ isOpen, onClose }) => {
   const [successMessage, setSuccessMessage] = useState('');
 
   const { signIn, signUp, loading, error } = useAuth();
+  const location = useLocation();
 
   // Handle body overflow when modal is open
   useEffect(() => {
@@ -72,7 +73,7 @@ const LoginModal = ({ isOpen, onClose }) => {
       if (error) {
         setLocalError(error.message);
       } else {
-        // Close modal on successful login
+        // Close modal on successful login - user stays on current page
         onClose();
       }
     }

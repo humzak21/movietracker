@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { TrendingUp, Calendar, Film, Star, Settings, LogIn } from 'lucide-react';
+import { TrendingUp, Calendar, Film, Star, LogIn } from 'lucide-react';
 import { motion, useScroll, useMotionValueEvent } from 'motion/react';
 import DarkModeToggle from './DarkModeToggle';
 import LoginModal from './LoginModal';
+import UserDropdown from './UserDropdown';
 import { useAuth } from '../contexts/AuthContext';
 
 function Layout({ children }) {
@@ -21,66 +22,54 @@ function Layout({ children }) {
   const { scrollY } = useScroll();
   
   useMotionValueEvent(scrollY, "change", (latest) => {
-    const previous = scrollY.getPrevious() || 0;
     const currentScrollY = latest;
     
-    // Clear any existing scroll timeout
+    if (currentScrollY > lastScrollY && currentScrollY > 100) {
+      // Scrolling down
+      if (scrollDirection !== 'down') {
+        setScrollDirection('down');
+        setHeaderVisible(false);
+      }
+    } else if (currentScrollY < lastScrollY) {
+      // Scrolling up
+      if (scrollDirection !== 'up') {
+        setScrollDirection('up');
+        setHeaderVisible(true);
+      }
+    }
+    
+    setLastScrollY(currentScrollY);
+    
+    // Clear existing timeout
     if (scrollTimeoutRef.current) {
       clearTimeout(scrollTimeoutRef.current);
     }
     
-    // Always show header when near the top of the page
-    if (currentScrollY < 100) {
+    // Set timeout to show header after scroll stops
+    scrollTimeoutRef.current = setTimeout(() => {
       setHeaderVisible(true);
-      setScrollDirection('up');
-      setLastScrollY(currentScrollY);
-      return;
-    }
-    
-    // Calculate scroll direction and movement
-    const direction = currentScrollY > previous ? 'down' : 'up';
-    const scrollDelta = Math.abs(currentScrollY - previous);
-    const significantMovement = Math.abs(currentScrollY - lastScrollY);
-    
-    // Only update if there's meaningful scroll movement (prevents jitter)
-    if (scrollDelta > 5) {
-      setScrollDirection(direction);
-      
-      // Hide header when scrolling down significantly
-      if (direction === 'down' && currentScrollY > 100) {
-        setHeaderVisible(false);
-      }
-      // Show header when scrolling up significantly AND we've moved up considerably from last position
-      else if (direction === 'up' && significantMovement > 80) {
-        setHeaderVisible(true);
-      }
-      
-      // Set a timeout to handle scroll end behavior in deployment
-      scrollTimeoutRef.current = setTimeout(() => {
-        // Only show header on scroll end if we're near the top
-        if (currentScrollY < 150) {
-          setHeaderVisible(true);
-        }
-      }, 150); // 150ms delay to detect scroll end
-      
-      setLastScrollY(currentScrollY);
-    }
+    }, 150);
   });
 
+  // Page ready state for animations
   const [pageReady, setPageReady] = useState(false);
-
-  // Handle page readiness
+  
   useEffect(() => {
-    // Reset on route change
-    setPageReady(false);
+    const timer = setTimeout(() => {
+      setPageReady(true);
+    }, 100);
     
-    // Use requestAnimationFrame to ensure DOM is ready
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        setPageReady(true);
-      });
-    });
-  }, [location.pathname, children]);
+    return () => clearTimeout(timer);
+  }, [location.pathname]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const isActive = (path) => {
     if (path === '/' && location.pathname === '/') return true;
@@ -108,7 +97,7 @@ function Layout({ children }) {
 
   return (
     <div className="App">
-      {/* Top right hover area for login pill */}
+      {/* Top right hover area for login pill (only when not authenticated) */}
       {!isAuthenticated && (
         <div 
           className="login-pill-trigger"
@@ -142,23 +131,18 @@ function Layout({ children }) {
         </div>
       )}
 
+      {/* User dropdown (only when authenticated) */}
+      {isAuthenticated && <UserDropdown />}
+
       <motion.header 
         className="header"
-        initial={{ scale: 1, opacity: 1 }}
         animate={{ 
-          scale: headerVisible ? 1 : 0.7,
           opacity: headerVisible ? 1 : 0,
-          translateY: headerVisible ? 0 : -30
+          y: headerVisible ? 0 : -20
         }}
         transition={{ 
-          duration: headerVisible ? 0.4 : 0.2,
-          ease: headerVisible ? [0.34, 1.56, 0.64, 1] : [0.25, 0.46, 0.45, 0.94],
-          type: "spring",
-          stiffness: headerVisible ? 300 : 400,
-          damping: headerVisible ? 25 : 30
-        }}
-        style={{
-          pointerEvents: headerVisible ? 'auto' : 'none'
+          duration: 0.3,
+          ease: [0.4, 0, 0.2, 1]
         }}
       >
         <nav className="nav">
@@ -194,8 +178,9 @@ function Layout({ children }) {
               </li>
             </ul>
           </motion.div>
-          
-          <motion.div
+
+          <motion.div 
+            className="nav-center"
             animate={{ 
               opacity: headerVisible ? 1 : 0,
               scale: headerVisible ? 1 : 0.9
@@ -249,17 +234,6 @@ function Layout({ children }) {
                   Top Rated
                 </Link>
               </li>
-              {isAuthenticated && (
-                <li>
-                  <Link 
-                    to="/admin" 
-                    className={`nav-link ${isActive('/admin') ? 'active' : ''}`}
-                  >
-                    <Settings size={14} />
-                    Admin
-                  </Link>
-                </li>
-              )}
             </ul>
           </motion.div>
         </nav>
