@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { TrendingUp, Calendar, Film, Star } from 'lucide-react';
+import { TrendingUp, Calendar, Film, Star, Settings } from 'lucide-react';
 import { motion, useScroll, useMotionValueEvent } from 'motion/react';
 import DarkModeToggle from './DarkModeToggle';
+import { useAuth } from '../contexts/AuthContext';
 
 function Layout({ children }) {
   const [headerVisible, setHeaderVisible] = useState(true);
@@ -11,6 +12,7 @@ function Layout({ children }) {
   const scrollTimeoutRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   // Scroll detection for header animation
   const { scrollY } = useScroll();
@@ -192,6 +194,28 @@ function Layout({ children }) {
                   Top Rated
                 </Link>
               </li>
+              {isAuthenticated && (
+                <li>
+                  <Link 
+                    to="/admin" 
+                    className={`nav-link ${isActive('/admin') ? 'active' : ''}`}
+                  >
+                    <Settings size={14} />
+                    Admin
+                  </Link>
+                </li>
+              )}
+              {!isAuthenticated && (
+                <li>
+                  <Link 
+                    to="/login" 
+                    className={`nav-link ${isActive('/login') ? 'active' : ''}`}
+                  >
+                    <Settings size={14} />
+                    Login
+                  </Link>
+                </li>
+              )}
             </ul>
           </motion.div>
         </nav>

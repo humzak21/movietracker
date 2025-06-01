@@ -1,28 +1,54 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { DarkModeProvider } from './hooks/useDarkMode.jsx';
+import { AuthProvider } from './contexts/AuthContext';
 import Layout from './components/Layout';
+import ProtectedRoute from './components/ProtectedRoute';
 import Overview from './pages/Overview';
 import Timeline from './pages/Timeline';
 import Movies from './pages/Movies';
 import TopRated from './pages/TopRated';
 import Statistics from './pages/Statistics';
+import Login from './pages/Login';
+import Admin from './pages/Admin';
+import ForgotPassword from './pages/ForgotPassword';
 
 function App() {
   return (
     <DarkModeProvider>
-      <Router>
-        <Layout>
+      <AuthProvider>
+        <Router>
           <Routes>
-            <Route path="/" element={<Navigate to="/statistics" replace />} />
-            <Route path="/overview" element={<Overview />} />
-            <Route path="/timeline" element={<Timeline />} />
-            <Route path="/movies" element={<Movies />} />
-            <Route path="/statistics" element={<Statistics />} />
-            <Route path="/toprated" element={<TopRated />} />
+            {/* Public routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            
+            {/* Protected admin route */}
+            <Route 
+              path="/admin" 
+              element={
+                <ProtectedRoute>
+                  <Admin />
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Main app routes (currently public) */}
+            <Route path="/*" element={
+              <Layout>
+                <Routes>
+                  <Route path="/" element={<Navigate to="/statistics" replace />} />
+                  <Route path="/overview" element={<Overview />} />
+                  <Route path="/timeline" element={<Timeline />} />
+                  <Route path="/movies" element={<Movies />} />
+                  <Route path="/statistics" element={<Statistics />} />
+                  <Route path="/toprated" element={<TopRated />} />
+                </Routes>
+              </Layout>
+            } />
           </Routes>
-        </Layout>
-      </Router>
+        </Router>
+      </AuthProvider>
     </DarkModeProvider>
   );
 }
