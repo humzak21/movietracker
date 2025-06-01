@@ -9,7 +9,6 @@ import Timeline from './pages/Timeline';
 import Movies from './pages/Movies';
 import TopRated from './pages/TopRated';
 import Statistics from './pages/Statistics';
-import Login from './pages/Login';
 import Admin from './pages/Admin';
 import ForgotPassword from './pages/ForgotPassword';
 
@@ -20,7 +19,6 @@ function App() {
         <Router>
           <Routes>
             {/* Public routes */}
-            <Route path="/login" element={<Login />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             
             {/* Protected admin route */}

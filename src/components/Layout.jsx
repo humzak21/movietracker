@@ -1,14 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { TrendingUp, Calendar, Film, Star, Settings } from 'lucide-react';
+import { TrendingUp, Calendar, Film, Star, Settings, LogIn } from 'lucide-react';
 import { motion, useScroll, useMotionValueEvent } from 'motion/react';
 import DarkModeToggle from './DarkModeToggle';
+import LoginModal from './LoginModal';
 import { useAuth } from '../contexts/AuthContext';
 
 function Layout({ children }) {
   const [headerVisible, setHeaderVisible] = useState(true);
   const [scrollDirection, setScrollDirection] = useState('up');
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
+  const [loginPillVisible, setLoginPillVisible] = useState(false);
   const scrollTimeoutRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
@@ -85,8 +88,60 @@ function Layout({ children }) {
     return false;
   };
 
+  const openLoginModal = () => {
+    setLoginModalOpen(true);
+  };
+
+  const closeLoginModal = () => {
+    setLoginModalOpen(false);
+  };
+
+  const handleTopRightHover = () => {
+    if (!isAuthenticated) {
+      setLoginPillVisible(true);
+    }
+  };
+
+  const handleTopRightLeave = () => {
+    setLoginPillVisible(false);
+  };
+
   return (
     <div className="App">
+      {/* Top right hover area for login pill */}
+      {!isAuthenticated && (
+        <div 
+          className="login-pill-trigger"
+          onMouseEnter={handleTopRightHover}
+          onMouseLeave={handleTopRightLeave}
+        >
+          <motion.div
+            className="login-pill"
+            initial={{ opacity: 0, scale: 0.8, y: -10 }}
+            animate={{ 
+              opacity: loginPillVisible ? 1 : 0,
+              scale: loginPillVisible ? 1 : 0.8,
+              y: loginPillVisible ? 0 : -10
+            }}
+            transition={{ 
+              duration: 0.3,
+              ease: [0.4, 0, 0.2, 1]
+            }}
+            style={{
+              pointerEvents: loginPillVisible ? 'auto' : 'none'
+            }}
+          >
+            <button 
+              onClick={openLoginModal}
+              className="login-pill-btn"
+            >
+              <LogIn size={16} />
+              Login
+            </button>
+          </motion.div>
+        </div>
+      )}
+
       <motion.header 
         className="header"
         initial={{ scale: 1, opacity: 1 }}
@@ -205,17 +260,6 @@ function Layout({ children }) {
                   </Link>
                 </li>
               )}
-              {!isAuthenticated && (
-                <li>
-                  <Link 
-                    to="/login" 
-                    className={`nav-link ${isActive('/login') ? 'active' : ''}`}
-                  >
-                    <Settings size={14} />
-                    Login
-                  </Link>
-                </li>
-              )}
             </ul>
           </motion.div>
         </nav>
@@ -227,6 +271,8 @@ function Layout({ children }) {
         </div>
         {pageReady && <DarkModeToggle />}
       </main>
+
+      <LoginModal isOpen={loginModalOpen} onClose={closeLoginModal} />
     </div>
   );
 }
