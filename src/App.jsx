@@ -5,6 +5,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
+import AuthCallback from './pages/AuthCallback';
 import Overview from './pages/Overview';
 import Timeline from './pages/Timeline';
 import Movies from './pages/Movies';
@@ -26,6 +27,9 @@ function App() {
                 </ProtectedRoute>
               } 
             />
+            
+            {/* OAuth callback route */}
+            <Route path="/auth/callback" element={<AuthCallback />} />
             
             {/* Protected routes */}
             <Route 

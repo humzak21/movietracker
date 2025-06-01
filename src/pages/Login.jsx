@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import GoogleSignIn from '../components/GoogleSignIn';
+import GoogleSignInRedirect from '../components/GoogleSignInRedirect';
 
 const Login = () => {
   const [error, setError] = useState('');
@@ -114,10 +115,21 @@ const Login = () => {
               </p>
             </div>
             
-            <GoogleSignIn
-              onSuccess={handleSignInSuccess}
-              onError={handleSignInError}
-            />
+            {/* Use redirect-based sign-in for better reliability */}
+            <GoogleSignInRedirect />
+            
+            {/* Fallback to popup-based sign-in */}
+            <details className="mt-4">
+              <summary className="text-xs text-gray-500 cursor-pointer">
+                Alternative Sign-In Methods (Click to expand)
+              </summary>
+              <div className="mt-2 space-y-2">
+                <GoogleSignIn
+                  onSuccess={handleSignInSuccess}
+                  onError={handleSignInError}
+                />
+              </div>
+            </details>
             
             {loading && (
               <div className="flex items-center justify-center">
