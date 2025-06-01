@@ -20,18 +20,24 @@ export const AuthProvider = ({ children }) => {
     // Check if supabase is available
     if (!supabase) {
       console.warn('Supabase not configured. Authentication will not work.');
+      console.warn('VITE_SUPABASE_URL:', import.meta.env.VITE_SUPABASE_URL);
+      console.warn('VITE_SUPABASE_ANON_KEY:', import.meta.env.VITE_SUPABASE_ANON_KEY ? 'Set' : 'Not set');
       setLoading(false);
       return;
     }
 
+    console.log('Supabase client initialized successfully');
+
     // Get initial session
     const getInitialSession = async () => {
       try {
+        console.log('Getting initial session...');
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) {
           console.error('Error getting session:', error);
           setError(error.message);
         } else {
+          console.log('Initial session:', session ? 'Found' : 'None');
           setUser(session?.user ?? null);
         }
       } catch (err) {
@@ -90,22 +96,40 @@ export const AuthProvider = ({ children }) => {
       setError(null);
       setLoading(true);
       
+      console.log('SignIn: Starting authentication process...');
+      
       if (!supabase) {
+        console.error('SignIn: Supabase client not available');
         throw new Error('Supabase not configured');
       }
 
+      console.log('SignIn: Calling supabase.auth.signInWithPassword...');
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
+      console.log('SignIn: Response received', { 
+        hasData: !!data, 
+        hasUser: !!data?.user, 
+        hasSession: !!data?.session,
+        error: error?.message 
+      });
+
       if (error) {
+        console.error('SignIn: Authentication error:', error);
         throw error;
       }
 
+      console.log('SignIn: Authentication successful');
       return { data, error: null };
     } catch (err) {
-      console.error('Sign in error:', err);
+      console.error('SignIn: Caught error:', err);
+      console.error('SignIn: Error details:', {
+        message: err.message,
+        name: err.name,
+        stack: err.stack
+      });
       setError(err.message);
       return { data: null, error: err };
     } finally {
