@@ -420,7 +420,15 @@ body::before {
 
 .movie-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 32px var(--shadow-hover);
+  box-shadow: 
+    0 8px 32px var(--shadow-hover),
+    0 0 15px rgba(0, 113, 227, 0.6),
+    0 0 30px rgba(0, 113, 227, 0.4),
+    0 0 45px rgba(59, 130, 246, 0.3),
+    0 0 60px rgba(99, 102, 241, 0.2),
+    0 0 80px rgba(139, 92, 246, 0.15),
+    0 0 100px rgba(168, 85, 247, 0.1);
+  border-color: rgba(0, 113, 227, 0.5);
 }
 
 .movie-poster {
