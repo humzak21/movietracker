@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useEffect, useRef, useCallback, useMemo, useState } from 'react';
 import { Star, Film } from 'lucide-react';
 import { useSupabaseMovieData } from '../hooks/useSupabaseMovieData';
+import MovieDetailsModal from '../components/MovieDetailsModal';
 
 function Movies() {
   const { 
@@ -22,6 +23,9 @@ function Movies() {
     searchLoading
   } = useSupabaseMovieData();
 
+  const [selectedMovie, setSelectedMovie] = useState(null);
+  const [selectedMovieIndex, setSelectedMovieIndex] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const loadMoreTriggerRef = useRef(null);
 
   // Set up intersection observer for movie cards
@@ -79,6 +83,27 @@ function Movies() {
     return uniqueTitles.size;
   }, [filteredMovies]);
 
+  // Handle movie card click
+  const handleMovieClick = (movie, index) => {
+    setSelectedMovie(movie);
+    setSelectedMovieIndex(index);
+    setIsModalOpen(true);
+  };
+
+  // Handle modal close
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedMovie(null);
+  };
+
+  // Handle navigation in modal
+  const handleModalNavigate = (newIndex) => {
+    if (newIndex >= 0 && newIndex < filteredMovies.length) {
+      setSelectedMovie(filteredMovies[newIndex]);
+      setSelectedMovieIndex(newIndex);
+    }
+  };
+
   // if (loading && !searchLoading) {
   //   return (
   //     <div className="section">
@@ -103,32 +128,35 @@ function Movies() {
   return (
     <div className="section">
       <div className="container">
-        <h2 className="section-title">
-          {isSearching ? 'Search Results' : 'Movie Diary'} 
-        </h2>
-      
+        <h2 className="section-title">All Movies</h2>
+        
+        {/* Filters */}
         <div className="filters">
           <input
             type="text"
             placeholder="Search movies..."
-            className="search-input"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            className="search-input"
           />
-          <select 
-            className="filter-select"
+          
+          <select
             value={ratingFilter}
-            onChange={(e) => setRatingFilter(parseFloat(e.target.value))}
+            onChange={(e) => setRatingFilter(Number(e.target.value))}
+            className="filter-select"
           >
             <option value={0}>All Ratings</option>
+            <option value={1}>1+ Stars</option>
+            <option value={2}>2+ Stars</option>
+            <option value={3}>3+ Stars</option>
             <option value={4}>4+ Stars</option>
-            <option value={4.5}>4.5+ Stars</option>
-            <option value={5}>5 Stars Only</option>
+            <option value={5}>5 Stars</option>
           </select>
-          <select 
-            className="filter-select"
+          
+          <select
             value={yearFilter}
             onChange={(e) => setYearFilter(e.target.value)}
+            className="filter-select"
           >
             <option value="all">All Years</option>
             {availableYears.map(year => (
@@ -137,12 +165,21 @@ function Movies() {
           </select>
         </div>
 
+        {/* Results count */}
+        <p style={{ marginBottom: '30px', color: '#666' }}>
+          {isSearching && searchQuery ? 'Search results: ' : ''}
+          {filteredMovies.length} movie{filteredMovies.length !== 1 ? 's' : ''} 
+          {uniqueMoviesCount !== filteredMovies.length && ` (${uniqueMoviesCount} unique film${uniqueMoviesCount !== 1 ? 's' : ''})`}
+          {searchLoading && ' (searching...)'}
+        </p>
+        
         <div className="movie-grid">
           {filteredMovies.map((movie, index) => (
             <div 
               key={movie.id || index} 
               className="movie-card"
               data-movie-title={movie.title}
+              onClick={() => handleMovieClick(movie, index)}
             >
               <div className="movie-poster">
                 {movie.posterUrl ? (
@@ -193,7 +230,7 @@ function Movies() {
             color: '#666',
             fontSize: '16px'
           }}>
-            {isSearching ? 'No movies found matching your search.' : 'No movies found.'}
+            {isSearching ? 'No movies found matching your search and filters.' : 'No movies found with the selected filters.'}
           </div>
         )}
 
@@ -217,46 +254,37 @@ function Movies() {
           </div>
         )}
 
-        {/* Manual Load More Button (as fallback, only when not searching) */}
+        {/* Manual Load More Button (as fallback) */}
         {!isSearching && moviesPagination?.hasNextPage && !loadingMoreMovies && (
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            marginTop: '20px' 
-          }}>
+          <div style={{ textAlign: 'center', marginTop: '40px' }}>
             <button
               onClick={loadMoreMovies}
               style={{
-                padding: '12px 24px',
-                fontSize: '16px',
-                backgroundColor: '#007acc',
+                background: 'var(--primary-blue)',
                 color: 'white',
                 border: 'none',
-                borderRadius: '6px',
+                padding: '12px 24px',
+                borderRadius: '8px',
                 cursor: 'pointer',
-                transition: 'all 0.2s ease'
+                fontSize: '14px',
+                fontWeight: '500'
               }}
             >
               Load More Movies
             </button>
           </div>
         )}
-
-        {/* Pagination Info (only when not searching) */}
-        {!isSearching && moviesPagination && (
-          <div style={{ 
-            textAlign: 'center', 
-            marginTop: '20px', 
-            color: '#666',
-            fontSize: '14px'
-          }}>
-            Loaded {movies.length} of {moviesPagination.total} total diary entries
-            {moviesPagination.totalPages > 1 && (
-              <span> (Page {moviesPagination.page} of {moviesPagination.totalPages})</span>
-            )}
-          </div>
-        )}
       </div>
+
+      {/* Movie Details Modal */}
+      <MovieDetailsModal
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        movie={selectedMovie}
+        movies={filteredMovies}
+        currentIndex={selectedMovieIndex}
+        onNavigate={handleModalNavigate}
+      />
     </div>
   );
 }

@@ -1,5 +1,6 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback, useState } from 'react';
 import { useTimelineData } from '../hooks/useTimelineData';
+import MovieDetailsModal from '../components/MovieDetailsModal';
 
 function Timeline() {
   const { 
@@ -20,7 +21,22 @@ function Timeline() {
     searchLoading
   } = useTimelineData();
 
+  const [selectedMovie, setSelectedMovie] = useState(null);
+  const [selectedMovieIndex, setSelectedMovieIndex] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [flatMoviesList, setFlatMoviesList] = useState([]);
   const loadMoreTriggerRef = useRef(null);
+
+  // Create a flat list of all movies for navigation
+  useEffect(() => {
+    const allMovies = [];
+    timelineEntries.forEach(([date, dayMovies]) => {
+      dayMovies.forEach(movie => {
+        allMovies.push(movie);
+      });
+    });
+    setFlatMoviesList(allMovies);
+  }, [timelineEntries]);
 
   // Infinite scroll intersection observer (disabled during search)
   const handleIntersection = useCallback((entries) => {
@@ -42,6 +58,30 @@ function Timeline() {
 
     return () => observer.disconnect();
   }, [handleIntersection]);
+
+  // Handle movie click
+  const handleMovieClick = (movie) => {
+    const movieIndex = flatMoviesList.findIndex(m => 
+      m.id === movie.id || (m.title === movie.title && m.date === movie.date)
+    );
+    setSelectedMovie(movie);
+    setSelectedMovieIndex(movieIndex >= 0 ? movieIndex : 0);
+    setIsModalOpen(true);
+  };
+
+  // Handle modal close
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedMovie(null);
+  };
+
+  // Handle navigation in modal
+  const handleModalNavigate = (newIndex) => {
+    if (newIndex >= 0 && newIndex < flatMoviesList.length) {
+      setSelectedMovie(flatMoviesList[newIndex]);
+      setSelectedMovieIndex(newIndex);
+    }
+  };
 
   if (error) {
     return (
@@ -98,7 +138,24 @@ function Timeline() {
               <div className="timeline-movies">
                 {dayMovies.map((movie, idx) => (
                   <div key={movie.id || idx} className="timeline-movie">
-                    <strong>{movie.title}</strong> - {movie.rating}★
+                    <strong 
+                      style={{ 
+                        cursor: 'pointer', 
+                        color: 'var(--primary-blue)',
+                        textDecoration: 'underline',
+                        textDecorationColor: 'transparent',
+                        transition: 'text-decoration-color 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.textDecorationColor = 'var(--primary-blue)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.textDecorationColor = 'transparent';
+                      }}
+                      onClick={() => handleMovieClick(movie)}
+                    >
+                      {movie.title}
+                    </strong> - {movie.rating}★
                     {movie.detailedRating && (
                       <span style={{ marginLeft: '8px', color: '#666', fontSize: '14px' }}>
                         ({movie.detailedRating}/100)
@@ -200,6 +257,16 @@ function Timeline() {
           </div>
         )}
       </div>
+
+      {/* Movie Details Modal */}
+      <MovieDetailsModal
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        movie={selectedMovie}
+        movies={flatMoviesList}
+        currentIndex={selectedMovieIndex}
+        onNavigate={handleModalNavigate}
+      />
     </div>
   );
 }

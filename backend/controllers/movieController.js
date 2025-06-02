@@ -133,7 +133,8 @@ class MovieController {
         ratings100: updateData.detailed_rating || updateData.ratings100,
         watched_date: updateData.watch_date || updateData.watched_date,
         rewatch: updateData.is_rewatch ? 'Yes' : 'No',
-        tags: updateData.notes || updateData.tags,
+        reviews: updateData.notes,
+        tags: updateData.tags,
         release_date: updateData.release_date,
         release_year: updateData.release_year,
         runtime: updateData.runtime,
@@ -175,7 +176,7 @@ class MovieController {
   async updateUserRating(req, res) {
     try {
       const { id } = req.params;
-      const { user_rating, detailed_rating, watch_date, is_rewatch, notes } = req.body;
+      const { user_rating, detailed_rating, watch_date, is_rewatch, notes, tags } = req.body;
 
       const result = await movieService.upsertUserRating({
         movie_id: parseInt(id),
@@ -183,7 +184,8 @@ class MovieController {
         detailed_rating,
         watch_date,
         is_rewatch,
-        notes
+        notes,
+        tags
       });
 
       res.json({

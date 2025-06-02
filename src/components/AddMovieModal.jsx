@@ -2,8 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X, Search, Star, Tag, RotateCcw, Loader2, Calendar } from 'lucide-react';
 import apiService from '../services/apiService';
 import RatingComparisonModal from './RatingComparisonModal';
+import { useAuth } from '../contexts/AuthContext';
 
 const AddMovieModal = ({ isOpen, onClose }) => {
+  const { isAuthenticated } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
@@ -302,25 +304,48 @@ const AddMovieModal = ({ isOpen, onClose }) => {
 
   const renderStars = () => {
     const stars = [];
-    for (let i = 0.5; i <= 5; i += 0.5) {
-      const isHalf = i % 1 !== 0;
-      const isActive = (hoveredStar || starRating) >= i;
+    for (let i = 1; i <= 5; i++) {
+      const currentRating = hoveredStar || starRating;
+      const isFullStar = currentRating >= i;
+      const isHalfStar = currentRating >= i - 0.5 && currentRating < i;
       
       stars.push(
-        <button
-          key={i}
-          type="button"
-          className={`star-rating-btn ${isActive ? 'active' : ''} ${isHalf ? 'half' : 'full'}`}
-          onClick={() => handleStarClick(i)}
-          onMouseEnter={() => handleStarHover(i)}
-          onMouseLeave={handleStarLeave}
-        >
+        <div key={i} className="star-container">
+          {/* Background star (always gray) */}
           <Star 
             size={20} 
-            fill={isActive ? '#FFD700' : 'none'} 
-            color={isActive ? '#FFD700' : '#86868B'}
+            fill="none" 
+            color="#86868B"
+            className="star-background"
           />
-        </button>
+          
+          {/* Foreground star (golden, clipped for half stars) */}
+          <div className={`star-foreground ${isHalfStar ? 'half-star' : isFullStar ? 'full-star' : 'no-star'}`}>
+            <Star 
+              size={20} 
+              fill="#FFD700" 
+              color="#FFD700"
+            />
+          </div>
+          
+          {/* Invisible click areas */}
+          <button
+            type="button"
+            className="star-click-area star-left-click"
+            onClick={() => handleStarClick(i - 0.5)}
+            onMouseEnter={() => handleStarHover(i - 0.5)}
+            onMouseLeave={handleStarLeave}
+            aria-label={`Rate ${i - 0.5} stars`}
+          />
+          <button
+            type="button"
+            className="star-click-area star-right-click"
+            onClick={() => handleStarClick(i)}
+            onMouseEnter={() => handleStarHover(i)}
+            onMouseLeave={handleStarLeave}
+            aria-label={`Rate ${i} stars`}
+          />
+        </div>
       );
     }
     return stars;
@@ -328,6 +353,12 @@ const AddMovieModal = ({ isOpen, onClose }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!isAuthenticated) {
+      setSubmitError('You must be logged in to add movies.');
+      return;
+    }
+    
     setSubmitError('');
     setSubmitSuccess(false);
     setIsSubmitting(true);
@@ -378,7 +409,11 @@ const AddMovieModal = ({ isOpen, onClose }) => {
 
   const formatDisplayDate = (dateString) => {
     if (!dateString) return '';
-    const date = new Date(dateString);
+    
+    // Parse the date string directly to avoid timezone issues
+    const [year, month, day] = dateString.split('-');
+    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    
     return date.toLocaleDateString('en-US', { 
       weekday: 'short', 
       year: 'numeric', 
@@ -661,13 +696,15 @@ const AddMovieModal = ({ isOpen, onClose }) => {
           <button 
             type="submit" 
             className="add-movie-submit-btn"
-            disabled={isSubmitting || !searchQuery.trim()}
+            disabled={isSubmitting || !searchQuery.trim() || !isAuthenticated}
           >
             {isSubmitting ? (
               <>
                 <Loader2 size={18} className="add-movie-loading-spinner" />
                 Adding Movie...
               </>
+            ) : !isAuthenticated ? (
+              'You must be logged in to add movies'
             ) : (
               'Add Movie'
             )}

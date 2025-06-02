@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback, useState } from 'react';
 import { Star, Film } from 'lucide-react';
 import { useSupabaseMovieData } from '../hooks/useSupabaseMovieData';
+import MovieDetailsModal from '../components/MovieDetailsModal';
 
 function TopRated() {
   const { 
@@ -13,6 +14,9 @@ function TopRated() {
     error
   } = useSupabaseMovieData();
 
+  const [selectedMovie, setSelectedMovie] = useState(null);
+  const [selectedMovieIndex, setSelectedMovieIndex] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const loadMoreTriggerRef = useRef(null);
 
   // Set up intersection observer for movie cards
@@ -41,6 +45,27 @@ function TopRated() {
 
     return () => observer.disconnect();
   }, [handleIntersection]);
+
+  // Handle movie card click
+  const handleMovieClick = (movie, index) => {
+    setSelectedMovie(movie);
+    setSelectedMovieIndex(index);
+    setIsModalOpen(true);
+  };
+
+  // Handle modal close
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedMovie(null);
+  };
+
+  // Handle navigation in modal
+  const handleModalNavigate = (newIndex) => {
+    if (newIndex >= 0 && newIndex < topRatedMovies.length) {
+      setSelectedMovie(topRatedMovies[newIndex]);
+      setSelectedMovieIndex(newIndex);
+    }
+  };
 
   if (loading) {
     return (
@@ -78,6 +103,7 @@ function TopRated() {
               key={movie.id || index} 
               className="movie-card"
               data-movie-title={movie.title}
+              onClick={() => handleMovieClick(movie, index)}
             >
               <div className="movie-poster">
                 {movie.posterUrl ? (
@@ -150,22 +176,18 @@ function TopRated() {
 
         {/* Manual Load More Button (as fallback) */}
         {topRatedPagination?.hasNextPage && !loadingMoreTopRated && (
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            marginTop: '20px' 
-          }}>
+          <div style={{ textAlign: 'center', marginTop: '40px' }}>
             <button
               onClick={loadMoreTopRated}
               style={{
-                padding: '12px 24px',
-                fontSize: '16px',
-                backgroundColor: '#007acc',
+                background: 'var(--primary-blue)',
                 color: 'white',
                 border: 'none',
-                borderRadius: '6px',
+                padding: '12px 24px',
+                borderRadius: '8px',
                 cursor: 'pointer',
-                transition: 'all 0.2s ease'
+                fontSize: '14px',
+                fontWeight: '500'
               }}
             >
               Load More Movies
@@ -173,21 +195,28 @@ function TopRated() {
           </div>
         )}
 
-        {/* Pagination Info */}
-        {topRatedPagination && (
+        {/* Show message when no movies */}
+        {topRatedMovies.length === 0 && !loading && (
           <div style={{ 
             textAlign: 'center', 
-            marginTop: '20px', 
+            marginTop: '40px', 
             color: '#666',
-            fontSize: '14px'
+            fontSize: '16px'
           }}>
-            Showing {topRatedMovies.length} of {topRatedPagination.total} total movies
-            {topRatedPagination.totalPages > 1 && (
-              <span> (Page {topRatedPagination.page} of {topRatedPagination.totalPages})</span>
-            )}
+            No top-rated movies found.
           </div>
         )}
       </div>
+
+      {/* Movie Details Modal */}
+      <MovieDetailsModal
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        movie={selectedMovie}
+        movies={topRatedMovies}
+        currentIndex={selectedMovieIndex}
+        onNavigate={handleModalNavigate}
+      />
     </div>
   );
 }

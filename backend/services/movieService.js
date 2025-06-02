@@ -172,7 +172,8 @@ class MovieService {
           ratings100: ratingData.detailed_rating,
           watched_date: ratingData.watch_date,
           rewatch: ratingData.is_rewatch ? 'Yes' : 'No',
-          tags: ratingData.notes,
+          reviews: ratingData.notes,
+          tags: ratingData.tags,
           updated_at: new Date().toISOString()
         })
         .eq('id', ratingData.movie_id)
@@ -543,7 +544,8 @@ class MovieService {
       detailed_rating: diaryEntry.ratings100,
       watch_date: diaryEntry.watched_date,
       is_rewatch: diaryEntry.rewatch === 'Yes',
-      notes: diaryEntry.tags,
+      notes: diaryEntry.reviews,
+      tags: diaryEntry.tags,
       release_date: diaryEntry.release_date,
       release_year: diaryEntry.release_year,
       runtime: diaryEntry.runtime,
@@ -589,7 +591,7 @@ class MovieService {
   }
 
   /**
-   * Search movies by title, director, or tags
+   * Search movies by title, director, tags, or reviews
    */
   async searchMovies(query) {
     this._checkDatabase();
@@ -598,7 +600,7 @@ class MovieService {
       const { data, error } = await supabaseAdmin
         .from('diary')
         .select('*')
-        .or(`title.ilike.%${query}%,director.ilike.%${query}%,tags.ilike.%${query}%,overview.ilike.%${query}%`)
+        .or(`title.ilike.%${query}%,director.ilike.%${query}%,tags.ilike.%${query}%,reviews.ilike.%${query}%,overview.ilike.%${query}%`)
         .order('watched_date', { ascending: false });
 
       if (error) throw error;

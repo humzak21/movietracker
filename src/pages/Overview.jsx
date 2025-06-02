@@ -3,6 +3,7 @@ import { Star, Film } from 'lucide-react';
 import Slider from 'react-slick';
 import { useSupabaseMovieData } from '../hooks/useSupabaseMovieData';
 import { importSlideshowImages } from '../utils/slideshowImages';
+import MovieDetailsModal from '../components/MovieDetailsModal';
 
 function Overview() {
   const { 
@@ -15,6 +16,9 @@ function Overview() {
   } = useSupabaseMovieData();
   
   const [isTabVisible, setIsTabVisible] = useState(true);
+  const [selectedMovie, setSelectedMovie] = useState(null);
+  const [selectedMovieIndex, setSelectedMovieIndex] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const sliderRef = useRef(null);
 
   // Load slideshow images on component mount
@@ -54,6 +58,28 @@ function Overview() {
     return cleanup;
   }, [observeMovieCards]);
 
+  // Handle movie card click
+  const handleMovieClick = (movie, index) => {
+    setSelectedMovie(movie);
+    setSelectedMovieIndex(index);
+    setIsModalOpen(true);
+  };
+
+  // Handle modal close
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedMovie(null);
+  };
+
+  // Handle navigation in modal
+  const handleModalNavigate = (newIndex) => {
+    const displayedMovies = recentMovies.slice(0, 12);
+    if (newIndex >= 0 && newIndex < displayedMovies.length) {
+      setSelectedMovie(displayedMovies[newIndex]);
+      setSelectedMovieIndex(newIndex);
+    }
+  };
+
   // Slideshow settings
   const sliderSettings = {
     dots: false,
@@ -88,6 +114,8 @@ function Overview() {
       </div>
     );
   }
+
+  const displayedMovies = recentMovies.slice(0, 12);
 
   return (
     <>
@@ -168,11 +196,12 @@ function Overview() {
           <div className="recent-movies">
             <h2>Recent Movies</h2>
             <div className="movie-grid">
-              {recentMovies.slice(0, 12).map((movie, index) => (
+              {displayedMovies.map((movie, index) => (
                 <div 
                   key={movie.id || `${movie.title}-${movie.date}-${index}`}
                   className="movie-card"
                   data-movie-title={movie.title}
+                  onClick={() => handleMovieClick(movie, index)}
                 >
                   <div className="movie-poster">
                     {movie.posterUrl ? (
@@ -212,6 +241,16 @@ function Overview() {
           </div>
         </div>
       </div>
+
+      {/* Movie Details Modal */}
+      <MovieDetailsModal
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        movie={selectedMovie}
+        movies={displayedMovies}
+        currentIndex={selectedMovieIndex}
+        onNavigate={handleModalNavigate}
+      />
     </>
   );
 }
