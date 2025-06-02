@@ -1,36 +1,5 @@
 /* Fonts are loaded dynamically via fontLoader.js */
 
-/* FORCE DARK MODE GLOBALLY - DISABLE ALL LIGHT MODE */
-* {
-  color-scheme: dark !important;
-}
-
-html {
-  color-scheme: dark !important;
-}
-
-body {
-  color-scheme: dark !important;
-}
-
-/* Override all theme-based selectors to prevent flickering */
-[data-theme="light"],
-[data-theme="dark"],
-:root:not([data-theme="light"]),
-:root:not([data-theme="dark"]) {
-  --primary-blue: #0A84FF !important;
-  --primary-blue-hover: #409CFF !important;
-  --text-primary: #FFFFFF !important;
-  --text-secondary: #98989D !important;
-  --background: linear-gradient(135deg, #000000 0%, #0a0a0a 100%) !important;
-  --surface: #1C1C1E !important;
-  --border: #38383A !important;
-  --border-light: #2C2C2E !important;
-  --shadow: rgba(0, 0, 0, 0.3) !important;
-  --shadow-hover: rgba(0, 0, 0, 0.4) !important;
-  --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-}
-
 * {
   margin: 0;
   padding: 0;
@@ -38,17 +7,16 @@ body {
 }
 
 :root {
-  /* Force dark mode variables */
-  --primary-blue: #0A84FF;
-  --primary-blue-hover: #409CFF;
-  --text-primary: #FFFFFF;
-  --text-secondary: #98989D;
-  --background: linear-gradient(135deg, #000000 0%, #0a0a0a 100%);
-  --surface: #1C1C1E;
-  --border: #38383A;
-  --border-light: #2C2C2E;
-  --shadow: rgba(0, 0, 0, 0.3);
-  --shadow-hover: rgba(0, 0, 0, 0.4);
+  --primary-blue: #007AFF;
+  --primary-blue-hover: #0056CC;
+  --text-primary: #1D1D1F;
+  --text-secondary: #86868B;
+  --background: linear-gradient(135deg, #FBFBFD 0%, #f8f9fa 100%);
+  --surface: #FFFFFF;
+  --border: #D2D2D7;
+  --border-light: #F5F5F7;
+  --shadow: rgba(0, 0, 0, 0.1);
+  --shadow-hover: rgba(0, 0, 0, 0.15);
   --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   
   /* Font weight variables for Space Grotesk */
@@ -108,7 +76,7 @@ body {
   overflow-x: hidden;
 }
 
-/* Add the beautiful gradient overlay effect - Force dark mode */
+/* Add the beautiful gradient overlay effect */
 body::before {
   content: '';
   position: fixed;
@@ -116,25 +84,22 @@ body::before {
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(circle at 30% 20%, rgba(10, 132, 255, 0.06) 0%, transparent 50%),
-              radial-gradient(circle at 70% 80%, rgba(88, 86, 214, 0.06) 0%, transparent 50%),
-              radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.02) 0%, transparent 70%);
+  background: radial-gradient(circle at 30% 20%, rgba(0, 122, 255, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 70% 80%, rgba(88, 86, 214, 0.1) 0%, transparent 50%);
   pointer-events: none;
   z-index: -1;
 }
 
 /* Dark mode gradient overlay */
 [data-theme="dark"] body::before {
-  background: radial-gradient(circle at 30% 20%, rgba(10, 132, 255, 0.06) 0%, transparent 50%),
-              radial-gradient(circle at 70% 80%, rgba(88, 86, 214, 0.06) 0%, transparent 50%),
-              radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.02) 0%, transparent 70%);
+  background: radial-gradient(circle at 30% 20%, rgba(10, 132, 255, 0.08) 0%, transparent 50%),
+              radial-gradient(circle at 70% 80%, rgba(88, 86, 214, 0.08) 0%, transparent 50%);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) body::before {
-    background: radial-gradient(circle at 30% 20%, rgba(10, 132, 255, 0.06) 0%, transparent 50%),
-                radial-gradient(circle at 70% 80%, rgba(88, 86, 214, 0.06) 0%, transparent 50%),
-                radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.02) 0%, transparent 70%);
+    background: radial-gradient(circle at 30% 20%, rgba(10, 132, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 70% 80%, rgba(88, 86, 214, 0.08) 0%, transparent 50%);
   }
 }
 
@@ -457,12 +422,9 @@ body::before {
   transform: translateY(-4px);
   box-shadow: 
     0 8px 32px var(--shadow-hover),
-    0 0 15px rgba(0, 113, 227, 0.6),
-    0 0 30px rgba(0, 113, 227, 0.4),
-    0 0 45px rgba(59, 130, 246, 0.3),
-    0 0 60px rgba(99, 102, 241, 0.2),
-    0 0 80px rgba(139, 92, 246, 0.15),
-    0 0 100px rgba(168, 85, 247, 0.1);
+    0 0 20px rgba(0, 113, 227, 0.5),
+    0 0 40px rgba(59, 130, 246, 0.3),
+    0 0 60px rgba(139, 92, 246, 0.2);
   border-color: rgba(0, 113, 227, 0.5);
 }
 
