@@ -5,6 +5,8 @@ import { motion, useScroll, useMotionValueEvent } from 'motion/react';
 import DarkModeToggle from './DarkModeToggle';
 import LoginModal from './LoginModal';
 import UserDropdown from './UserDropdown';
+import FloatingAddButton from './FloatingAddButton';
+import AddMovieModal from './AddMovieModal';
 import { useAuth } from '../contexts/AuthContext';
 
 function Layout({ children }) {
@@ -12,6 +14,7 @@ function Layout({ children }) {
   const [scrollDirection, setScrollDirection] = useState('up');
   const [lastScrollY, setLastScrollY] = useState(0);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
+  const [addMovieModalOpen, setAddMovieModalOpen] = useState(false);
   const [loginPillVisible, setLoginPillVisible] = useState(false);
   const scrollTimeoutRef = useRef(null);
   const location = useLocation();
@@ -83,6 +86,14 @@ function Layout({ children }) {
 
   const closeLoginModal = () => {
     setLoginModalOpen(false);
+  };
+
+  const openAddMovieModal = () => {
+    setAddMovieModalOpen(true);
+  };
+
+  const closeAddMovieModal = () => {
+    setAddMovieModalOpen(false);
   };
 
   const handleTopRightHover = () => {
@@ -244,9 +255,11 @@ function Layout({ children }) {
           {children}
         </div>
         {pageReady && <DarkModeToggle />}
+        {pageReady && isAuthenticated && <FloatingAddButton onClick={openAddMovieModal} />}
       </main>
 
       <LoginModal isOpen={loginModalOpen} onClose={closeLoginModal} />
+      <AddMovieModal isOpen={addMovieModalOpen} onClose={closeAddMovieModal} />
     </div>
   );
 }
