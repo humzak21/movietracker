@@ -88,8 +88,17 @@ export const importSlideshowImages = () => {
       const imageModules = import.meta.glob('/src/assets/*.{jpg,jpeg,png,webp,gif,bmp}', { eager: true });
       console.log('Development mode: Found image modules:', Object.keys(imageModules));
       
-      const imageUrls = Object.values(imageModules)
-        .map(module => module.default)
+      // Filter out logo files and font files from slideshow
+      const filteredModules = Object.entries(imageModules).filter(([path, module]) => {
+        const fileName = path.toLowerCase();
+        return !fileName.includes('logo') && 
+               !fileName.includes('razed') && 
+               !fileName.includes('.ttf') &&
+               !fileName.includes('.svg');
+      });
+      
+      const imageUrls = filteredModules
+        .map(([path, module]) => module.default)
         .filter(url => url);
       
       console.log('Development mode: Loaded slideshow images:', imageUrls);

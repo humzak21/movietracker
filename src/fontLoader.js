@@ -10,21 +10,21 @@ export function loadFonts() {
     @font-face {
       font-family: 'Razed';
       src: url('${razedBoldUrl}') format('truetype');
-      font-weight: bold;
+      font-weight: 700;
       font-style: normal;
     }
 
     @font-face {
       font-family: 'Razed';
       src: url('${razedLightUrl}') format('truetype');
-      font-weight: normal;
+      font-weight: 300;
       font-style: normal;
     }
 
     @font-face {
       font-family: 'Razed';
       src: url('${razedTrendUrl}') format('truetype');
-      font-weight: normal;
+      font-weight: 500;
       font-style: normal;
     }
   `;

@@ -11,13 +11,20 @@
   --primary-blue-hover: #0056CC;
   --text-primary: #1D1D1F;
   --text-secondary: #86868B;
-  --background: #FBFBFD;
+  --background: linear-gradient(135deg, #FBFBFD 0%, #f8f9fa 100%);
   --surface: #FFFFFF;
   --border: #D2D2D7;
   --border-light: #F5F5F7;
   --shadow: rgba(0, 0, 0, 0.1);
   --shadow-hover: rgba(0, 0, 0, 0.15);
   --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  
+  /* Font weight variables for Space Grotesk */
+  --font-weight-light: 300;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
 }
 
 /* Dark mode variables */
@@ -26,7 +33,7 @@
   --primary-blue-hover: #409CFF;
   --text-primary: #FFFFFF;
   --text-secondary: #98989D;
-  --background: #000000;
+  --background: linear-gradient(135deg, #000000 0%, #0a0a0a 100%);
   --surface: #1C1C1E;
   --border: #38383A;
   --border-light: #2C2C2E;
@@ -42,7 +49,7 @@
     --primary-blue-hover: #409CFF;
     --text-primary: #FFFFFF;
     --text-secondary: #98989D;
-    --background: #000000;
+    --background: linear-gradient(135deg, #000000 0%, #0a0a0a 100%);
     --surface: #1C1C1E;
     --border: #38383A;
     --border-light: #2C2C2E;
@@ -54,15 +61,46 @@
 
 body {
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
+  font-weight: var(--font-weight-regular);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: var(--background);
   color: var(--text-primary);
   line-height: 1.6;
   padding-top: 0; /* Remove top padding since header is floating */
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Add the beautiful gradient overlay effect */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 30% 20%, rgba(0, 122, 255, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 70% 80%, rgba(88, 86, 214, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Dark mode gradient overlay */
+[data-theme="dark"] body::before {
+  background: radial-gradient(circle at 30% 20%, rgba(10, 132, 255, 0.08) 0%, transparent 50%),
+              radial-gradient(circle at 70% 80%, rgba(88, 86, 214, 0.08) 0%, transparent 50%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) body::before {
+    background: radial-gradient(circle at 30% 20%, rgba(10, 132, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 70% 80%, rgba(88, 86, 214, 0.08) 0%, transparent 50%);
+  }
 }
 
 .container {
@@ -92,7 +130,7 @@ body {
   border-radius: 50px;
   border: 1px solid var(--border-light);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  padding: 0px 16px;
+  padding: 0px 12px; /* Reduced from 16px to 12px */
   transition: none; /* Remove CSS transitions since we're using motion */
 }
 
@@ -120,7 +158,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 0;
+  padding: 6px 0; /* Reduced from 8px to 6px */
   gap: 12px;
   min-width: 300px; /* Ensure minimum width for proper spacing */
 }
@@ -149,9 +187,9 @@ body {
 }
 
 .logo {
-  font-family: 'Razed', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-family: 'Razed', 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   font-size: 48px;
-  font-weight: trend;
+  font-weight: 500;
   color: var(--text-primary) !important;
   text-decoration: none;
   padding: 0px 0px;
@@ -161,7 +199,9 @@ body {
   border-radius: 8px;
   z-index: 10;
   position: relative;
-  display: block;
+  display: flex; /* Changed to flex for better centering */
+  align-items: center; /* Center vertically */
+  justify-content: center; /* Center horizontally */
   letter-spacing: 0.5px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -170,6 +210,46 @@ body {
 .logo:hover {
   color: var(--primary-blue) !important;
   transform: scale(1.05);
+}
+
+.logo-image {
+  height: 84px; /* Increased from 32px (1.5x) */
+  width: auto;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+  filter: brightness(0) saturate(100%); /* Makes SVG black in light mode */
+  display: block; /* Ensure proper display */
+}
+
+/* Dark mode - make logo white */
+[data-theme="dark"] .logo-image {
+  filter: brightness(0) saturate(100%) invert(1); /* Makes SVG white in dark mode */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .logo-image {
+    filter: brightness(0) saturate(100%) invert(1); /* Makes SVG white in dark mode */
+  }
+}
+
+.logo:hover .logo-image {
+  filter: brightness(0) saturate(100%) invert(27%) sepia(51%) saturate(2878%) hue-rotate(200deg) brightness(104%) contrast(97%) drop-shadow(0 0 8px rgba(59, 130, 246, 0.8)) drop-shadow(0 0 16px rgba(147, 51, 234, 0.6));
+  transform: scale(1.05);
+  transition: all 0.3s ease;
+}
+
+[data-theme="dark"] .logo:hover .logo-image {
+  filter: brightness(0) saturate(100%) invert(27%) sepia(51%) saturate(2878%) hue-rotate(200deg) brightness(104%) contrast(97%) drop-shadow(0 0 8px rgba(59, 130, 246, 1)) drop-shadow(0 0 16px rgba(147, 51, 234, 0.8));
+  transform: scale(1.05);
+  transition: all 0.3s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .logo:hover .logo-image {
+    filter: brightness(0) saturate(100%) invert(27%) sepia(51%) saturate(2878%) hue-rotate(200deg) brightness(104%) contrast(97%) drop-shadow(0 0 8px rgba(59, 130, 246, 1)) drop-shadow(0 0 16px rgba(147, 51, 234, 0.8));
+    transform: scale(1.05);
+    transition: all 0.3s ease;
+  }
 }
 
 .nav-links {
@@ -183,7 +263,7 @@ body {
 .nav-link {
   color: var(--text-secondary);
   text-decoration: none;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   transition: all 0.2s ease;
   cursor: pointer;
   display: flex;
@@ -213,7 +293,7 @@ body {
 
 .hero h1 {
   font-size: 48px;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   margin-bottom: 16px;
   background: var(--gradient);
   -webkit-background-clip: text;
@@ -255,7 +335,7 @@ body {
 
 .stat-number {
   font-size: 32px;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   color: var(--primary-blue);
   display: block;
   margin-bottom: 8px;
@@ -263,16 +343,42 @@ body {
 
 .stat-label {
   color: var(--text-secondary);
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .section {
   padding: 155px 0 10px 0;
+  position: relative;
+}
+
+/* Add subtle backdrop effect for main content sections */
+.section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+[data-theme="dark"] .section::before {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .section::before {
+    background: rgba(0, 0, 0, 0.02);
+  }
 }
 
 .section-title {
   font-size: 36px;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   text-align: center;
   margin-bottom: 48px;
   color: var(--text-primary);
@@ -289,7 +395,7 @@ body {
 
 .chart-title {
   font-size: 20px;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   margin-bottom: 24px;
   color: var(--text-primary);
 }
@@ -326,7 +432,7 @@ body {
   justify-content: center;
   color: white;
   font-size: 18px;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   position: relative;
   overflow: hidden;
 }
@@ -353,8 +459,8 @@ body {
 }
 
 .movie-title {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: var(--font-weight-semibold);
   margin-bottom: 8px;
   color: var(--text-primary);
 }
@@ -367,11 +473,9 @@ body {
 }
 
 .movie-rating {
-  display: flex;
-  align-items: center;
-  gap: 4px;
   color: var(--primary-blue);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
+  font-size: 14px;
 }
 
 .movie-date {
@@ -381,6 +485,7 @@ body {
 
 .movie-year {
   color: var(--text-secondary);
+  font-weight: var(--font-weight-semibold);
   font-size: 14px;
 }
 
@@ -394,11 +499,11 @@ body {
 .filter-select {
   padding: 12px 16px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 12px;
   background: var(--surface);
   color: var(--text-primary);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -468,7 +573,7 @@ body {
   font-size: 14px;
   color: var(--text-secondary);
   margin-bottom: 8px;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .timeline-movies {
@@ -486,11 +591,15 @@ body {
 }
 
 .timeline-info {
-  text-align: center;
-  color: var(--text-secondary);
-  font-size: 14px;
-  margin-bottom: 24px;
-  font-weight: 500;
+  flex: 1;
+  min-width: 0;
+}
+
+.timeline-info h3 {
+  font-size: 16px;
+  font-weight: var(--font-weight-medium);
+  margin-bottom: 4px;
+  color: var(--text-primary);
 }
 
 .load-more-container {
@@ -501,8 +610,15 @@ body {
 }
 
 .load-more-btn {
-  min-width: 200px;
-  justify-content: center;
+  background: var(--primary-blue);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .load-more-btn:disabled {
@@ -529,7 +645,7 @@ body {
 .timeline-end p {
   color: var(--text-secondary);
   font-size: 16px;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   margin: 0;
 }
 
@@ -538,15 +654,15 @@ body {
   align-items: center;
   gap: 8px;
   padding: 12px 24px;
-  background: var(--primary-blue);
-  color: white;
   border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
   transition: all 0.2s ease;
   text-decoration: none;
+  background: var(--primary-blue);
+  color: white;
 }
 
 .btn:hover {
@@ -558,6 +674,7 @@ body {
   background: var(--surface);
   color: var(--text-primary);
   border: 1px solid var(--border);
+  font-weight: var(--font-weight-semibold);
 }
 
 .btn-secondary:hover {
@@ -586,7 +703,7 @@ body {
   .header {
     top: 10px;
     max-width: 95vw;
-    padding: 6px 12px;
+    padding: 4px 10px; /* Reduced from 6px 12px */
   }
   
   .nav {
@@ -616,6 +733,10 @@ body {
   .logo {
     font-size: 16px;
     padding: 6px 12px;
+  }
+  
+  .logo-image {
+    height: 36px; /* Increased from 24px (1.5x) - Smaller on mobile */
   }
   
   .stats-grid {
@@ -739,11 +860,23 @@ main {
 }
 
 .hero-content h1 {
-  font-size: 48px;
-  font-weight: 700;
-  margin-bottom: 16px;
-  color: white;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+  font-size: 64px;
+  font-weight: var(--font-weight-bold);
+  margin-bottom: 24px;
+  background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Special styling for the overview title to match header logo */
+.hero-content h1.overview-title {
+  font-family: 'Razed', 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  font-size: 128px;
+  margin-bottom: -18px; /* Reduced from 16px to bring title closer to subtitle */
 }
 
 .hero-content p {
@@ -828,9 +961,35 @@ main {
   align-items: center;
   justify-content: center;
   padding: 40px 10px;
-  background: var(--background);
+  background: transparent;
   opacity: 0;
   animation: fadeInToggle 0.5s ease-in-out 0.3s forwards;
+  position: relative;
+}
+
+/* Add subtle backdrop for dark mode toggle */
+.dark-mode-toggle-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+[data-theme="dark"] .dark-mode-toggle-container::before {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .dark-mode-toggle-container::before {
+    background: rgba(0, 0, 0, 0.03);
+  }
 }
 
 @keyframes fadeInToggle {
@@ -961,10 +1120,10 @@ main {
 
 .login-modal-header h2 {
   font-size: 28px;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   color: var(--text-primary);
   margin-bottom: 8px;
-  letter-spacing: -0.01em;
+  text-align: center;
 }
 
 .login-modal-header p {
@@ -983,10 +1142,10 @@ main {
 
 .login-form-group label {
   display: block;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
   margin-bottom: 8px;
+  color: var(--text-primary);
+  font-weight: var(--font-weight-semibold);
+  font-size: 14px;
 }
 
 .login-input-wrapper {
@@ -1047,14 +1206,14 @@ main {
   padding: 16px;
   border-radius: 12px;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin-bottom: 16px;
+  margin-top: 8px;
 }
 
 .login-submit-btn:hover:not(:disabled) {
@@ -1083,13 +1242,13 @@ main {
 }
 
 .login-forgot-link {
-  display: block;
-  text-align: center;
   color: var(--primary-blue);
   text-decoration: none;
   font-size: 14px;
-  font-weight: 500;
-  transition: color 0.2s ease;
+  font-weight: var(--font-weight-medium);
+  text-align: center;
+  display: block;
+  margin-top: 16px;
 }
 
 .login-forgot-link:hover {
@@ -1112,9 +1271,10 @@ main {
   background: none;
   border: none;
   color: var(--primary-blue);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
-  transition: color 0.2s ease;
+  text-decoration: underline;
+  font-size: 14px;
 }
 
 .login-toggle-btn:hover {
@@ -1234,21 +1394,20 @@ main {
 
 /* Login pill button */
 .login-pill-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--surface);
-  color: var(--text-primary);
-  border: 1px solid var(--border-light);
-  padding: 12px 20px;
-  border-radius: 50px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-light);
+  color: var(--text-primary);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   white-space: nowrap;
 }
 
@@ -1339,21 +1498,20 @@ main {
 }
 
 .user-dropdown-btn {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-light);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   gap: 8px;
-  background: var(--surface);
-  color: var(--text-primary);
-  border: 1px solid var(--border-light);
-  padding: 12px 20px;
-  border-radius: 50px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   white-space: nowrap;
 }
 
@@ -1406,7 +1564,7 @@ main {
 
 .user-email {
   font-size: 14px;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   color: var(--text-primary);
   word-break: break-all;
 }
@@ -1420,21 +1578,25 @@ main {
 .user-dropdown-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  width: 100%;
-  padding: 12px 20px;
-  background: none;
-  border: none;
+  gap: 8px;
+  padding: 12px 16px;
   color: var(--text-primary);
+  text-decoration: none;
   font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
+  font-weight: var(--font-weight-medium);
   transition: all 0.2s ease;
+  border-radius: 8px;
+  margin: 2px 0;
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
   text-align: left;
 }
 
 .user-dropdown-item:hover {
   background: var(--border-light);
+  font-weight: var(--font-weight-medium);
 }
 
 .user-dropdown-item:last-child {
@@ -1703,10 +1865,10 @@ main {
 
 .add-movie-modal-header h2 {
   font-size: 28px;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   color: var(--text-primary);
   margin-bottom: 8px;
-  letter-spacing: -0.01em;
+  text-align: center;
 }
 
 .add-movie-modal-header p {
@@ -1725,10 +1887,10 @@ main {
 
 .add-movie-form-group label {
   display: block;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
   margin-bottom: 8px;
+  color: var(--text-primary);
+  font-weight: var(--font-weight-semibold);
+  font-size: 14px;
 }
 
 .add-movie-input-wrapper {
@@ -1892,9 +2054,9 @@ main {
 
 .star-rating-value {
   font-size: 14px;
-  font-weight: 500;
   color: var(--text-secondary);
-  min-width: 60px;
+  margin-left: 8px;
+  font-weight: var(--font-weight-medium);
 }
 
 /* Movie Search Styles */
@@ -1984,12 +2146,11 @@ main {
 }
 
 .search-result-title {
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
-  margin-bottom: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  margin-bottom: 4px;
+  line-height: 1.3;
 }
 
 .search-result-year {
@@ -2053,16 +2214,15 @@ main {
 
 .selected-movie-info h3 {
   font-size: 18px;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
-  margin: 0 0 4px 0;
-  line-height: 1.3;
+  margin-bottom: 4px;
 }
 
 .selected-movie-year {
   font-size: 14px;
   color: var(--text-secondary);
-  margin: 0 0 8px 0;
+  font-weight: var(--font-weight-semibold);
 }
 
 .selected-movie-overview {
@@ -2109,7 +2269,7 @@ main {
   right: 16px;
   color: var(--text-secondary);
   font-size: 16px;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   pointer-events: none;
 }
 
@@ -2126,7 +2286,7 @@ main {
   padding: 4px 8px;
   background: var(--border-light);
   border-radius: 6px;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 [data-theme="dark"] .percentage-range-hint {
@@ -2147,14 +2307,14 @@ main {
   padding: 16px;
   border-radius: 12px;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin-top: 8px;
+  margin-top: 24px;
 }
 
 .add-movie-submit-btn:hover {
@@ -2226,11 +2386,9 @@ main {
 .watched-date-display {
   font-size: 14px;
   color: var(--text-secondary);
-  font-weight: 500;
-  padding: 8px 12px;
-  background: var(--border-light);
-  border-radius: 8px;
+  margin-top: 8px;
   text-align: center;
+  font-weight: var(--font-weight-medium);
 }
 
 .watched-date-quick-buttons {
@@ -2240,17 +2398,15 @@ main {
 }
 
 .watched-date-quick-btn {
-  padding: 8px 16px;
   background: var(--surface);
   border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 6px 12px;
   border-radius: 8px;
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
   transition: all 0.2s ease;
-  flex: 1;
-  max-width: 100px;
 }
 
 .watched-date-quick-btn:hover {
@@ -2373,13 +2529,13 @@ main {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 10px;
-  background: var(--primary-blue);
-  color: white;
+  background: var(--border-light);
+  color: var(--text-primary);
+  padding: 6px 12px;
   border-radius: 16px;
   font-size: 12px;
-  font-weight: 500;
-  text-transform: lowercase;
+  font-weight: var(--font-weight-medium);
+  margin: 2px;
 }
 
 .tag-remove {
@@ -2404,15 +2560,15 @@ main {
 
 /* Add Movie Modal Success/Error Messages */
 .add-movie-success {
-  background: rgba(52, 199, 89, 0.1);
-  border: 1px solid rgba(52, 199, 89, 0.2);
-  color: #1d8348;
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
   padding: 12px 16px;
   border-radius: 8px;
+  margin-bottom: 16px;
   font-size: 14px;
-  margin-bottom: 20px;
+  font-weight: var(--font-weight-medium);
   text-align: center;
-  font-weight: 500;
 }
 
 [data-theme="dark"] .add-movie-success {
@@ -2430,15 +2586,15 @@ main {
 }
 
 .add-movie-error {
-  background: rgba(255, 59, 48, 0.1);
-  border: 1px solid rgba(255, 59, 48, 0.2);
-  color: #d70015;
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
   padding: 12px 16px;
   border-radius: 8px;
+  margin-bottom: 16px;
   font-size: 14px;
-  margin-bottom: 20px;
+  font-weight: var(--font-weight-medium);
   text-align: center;
-  font-weight: 500;
 }
 
 [data-theme="dark"] .add-movie-error {
@@ -2678,11 +2834,10 @@ main {
 }
 
 .rating-comparison-header h3 {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 24px;
+  font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
-  margin-bottom: 4px;
-  letter-spacing: -0.01em;
+  margin-bottom: 8px;
 }
 
 .rating-comparison-header p {
@@ -2774,14 +2929,12 @@ main {
 }
 
 .rating-comparison-title {
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: var(--font-weight-medium);
   color: var(--text-primary);
+  margin-bottom: 4px;
   line-height: 1.3;
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  flex: 1;
 }
 
 .rating-comparison-year {
@@ -2791,10 +2944,10 @@ main {
 }
 
 .rating-comparison-rating {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: var(--font-weight-semibold);
   color: var(--primary-blue);
-  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 /* Mobile Responsive */
@@ -2907,20 +3060,22 @@ main {
 .movie-details-counter {
   font-size: 14px;
   color: var(--text-secondary);
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .movie-details-nav-btn {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  padding: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 8px 12px;
   border-radius: 8px;
+  font-size: 14px;
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 6px;
 }
 
 .movie-details-nav-btn:hover:not(:disabled) {
@@ -2953,14 +3108,15 @@ main {
 }
 
 .movie-details-success {
-  background: rgba(34, 197, 94, 0.1);
-  color: #22c55e;
-  padding: 12px 24px;
-  margin: 0;
-  text-align: center;
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
   font-size: 14px;
-  font-weight: 500;
-  border-bottom: 1px solid var(--border-light);
+  font-weight: var(--font-weight-medium);
+  text-align: center;
 }
 
 [data-theme="dark"] .movie-details-success {
@@ -2976,14 +3132,15 @@ main {
 }
 
 .movie-details-error {
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
-  padding: 12px 24px;
-  margin: 0;
-  text-align: center;
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
   font-size: 14px;
-  font-weight: 500;
-  border-bottom: 1px solid var(--border-light);
+  font-weight: var(--font-weight-medium);
+  text-align: center;
 }
 
 [data-theme="dark"] .movie-details-error {
@@ -3041,7 +3198,7 @@ main {
 
 .movie-details-poster-fallback span {
   font-size: 14px;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .movie-details-info {
@@ -3050,17 +3207,18 @@ main {
 }
 
 .movie-details-title {
-  font-size: 28px;
-  font-weight: 700;
+  font-size: 24px;
+  font-weight: var(--font-weight-medium);
   color: var(--text-primary);
-  margin: 0 0 8px 0;
-  line-height: 1.2;
+  margin-bottom: 8px;
+  line-height: 1.3;
 }
 
 .movie-details-year {
-  font-size: 16px;
+  font-size: 18px;
   color: var(--text-secondary);
-  margin: 0 0 16px 0;
+  font-weight: var(--font-weight-bold);
+  margin-bottom: 16px;
 }
 
 .movie-details-overview {
@@ -3113,30 +3271,30 @@ main {
 }
 
 .movie-details-section-header h3 {
-  font-size: 20px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
   margin: 0;
 }
 
 .movie-details-edit-btn {
-  background: var(--primary-blue);
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 .movie-details-edit-btn:hover {
-  background: var(--primary-blue-hover);
-  transform: translateY(-1px);
+  background: var(--border-light);
+  color: var(--text-primary);
 }
 
 .movie-details-edit-actions {
@@ -3145,13 +3303,13 @@ main {
 }
 
 .movie-details-save-btn {
-  background: #22c55e;
+  background: var(--primary-blue);
   color: white;
   border: none;
   padding: 8px 16px;
-  border-radius: 8px;
+  border-radius: 6px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
@@ -3171,13 +3329,13 @@ main {
 }
 
 .movie-details-cancel-btn {
-  background: var(--border);
-  color: var(--text-secondary);
-  border: none;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-primary);
   padding: 8px 16px;
-  border-radius: 8px;
+  border-radius: 6px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
@@ -3201,10 +3359,10 @@ main {
 
 .movie-details-field label {
   display: block;
-  font-size: 14px;
-  font-weight: 600;
+  margin-bottom: 6px;
   color: var(--text-primary);
-  margin-bottom: 8px;
+  font-weight: var(--font-weight-semibold);
+  font-size: 14px;
 }
 
 .movie-details-value {
@@ -3295,7 +3453,7 @@ main {
   padding: 4px 12px;
   border-radius: 16px;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .movie-details-review p {

@@ -8,6 +8,7 @@ import UserDropdown from './UserDropdown';
 import FloatingAddButton from './FloatingAddButton';
 import AddMovieModal from './AddMovieModal';
 import { useAuth } from '../contexts/AuthContext';
+import logoImage from '../assets/logo6_black.png';
 
 function Layout({ children }) {
   const [headerVisible, setHeaderVisible] = useState(true);
@@ -211,7 +212,11 @@ function Layout({ children }) {
                 margin: 0
               }}
             >
-              Hk
+              <img 
+                src={logoImage} 
+                alt="Logo" 
+                className="logo-image"
+              />
             </button>
           </motion.div>
           
