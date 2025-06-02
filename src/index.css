@@ -1,5 +1,36 @@
 /* Fonts are loaded dynamically via fontLoader.js */
 
+/* FORCE DARK MODE GLOBALLY - DISABLE ALL LIGHT MODE */
+* {
+  color-scheme: dark !important;
+}
+
+html {
+  color-scheme: dark !important;
+}
+
+body {
+  color-scheme: dark !important;
+}
+
+/* Override all theme-based selectors to prevent flickering */
+[data-theme="light"],
+[data-theme="dark"],
+:root:not([data-theme="light"]),
+:root:not([data-theme="dark"]) {
+  --primary-blue: #0A84FF !important;
+  --primary-blue-hover: #409CFF !important;
+  --text-primary: #FFFFFF !important;
+  --text-secondary: #98989D !important;
+  --background: linear-gradient(135deg, #000000 0%, #0a0a0a 100%) !important;
+  --surface: #1C1C1E !important;
+  --border: #38383A !important;
+  --border-light: #2C2C2E !important;
+  --shadow: rgba(0, 0, 0, 0.3) !important;
+  --shadow-hover: rgba(0, 0, 0, 0.4) !important;
+  --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
 * {
   margin: 0;
   padding: 0;
