@@ -7,16 +7,17 @@
 }
 
 :root {
-  --primary-blue: #007AFF;
-  --primary-blue-hover: #0056CC;
-  --text-primary: #1D1D1F;
-  --text-secondary: #86868B;
-  --background: linear-gradient(135deg, #FBFBFD 0%, #f8f9fa 100%);
-  --surface: #FFFFFF;
-  --border: #D2D2D7;
-  --border-light: #F5F5F7;
-  --shadow: rgba(0, 0, 0, 0.1);
-  --shadow-hover: rgba(0, 0, 0, 0.15);
+  /* Force dark mode variables */
+  --primary-blue: #0A84FF;
+  --primary-blue-hover: #409CFF;
+  --text-primary: #FFFFFF;
+  --text-secondary: #98989D;
+  --background: linear-gradient(135deg, #000000 0%, #0a0a0a 100%);
+  --surface: #1C1C1E;
+  --border: #38383A;
+  --border-light: #2C2C2E;
+  --shadow: rgba(0, 0, 0, 0.3);
+  --shadow-hover: rgba(0, 0, 0, 0.4);
   --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   
   /* Font weight variables for Space Grotesk */
@@ -76,7 +77,7 @@ body {
   overflow-x: hidden;
 }
 
-/* Add the beautiful gradient overlay effect */
+/* Add the beautiful gradient overlay effect - Force dark mode */
 body::before {
   content: '';
   position: fixed;
@@ -84,9 +85,9 @@ body::before {
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(circle at 30% 20%, rgba(0, 113, 227, 0.04) 0%, transparent 50%),
-              radial-gradient(circle at 70% 80%, rgba(59, 130, 246, 0.04) 0%, transparent 50%),
-              radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.02) 0%, transparent 70%);
+  background: radial-gradient(circle at 30% 20%, rgba(10, 132, 255, 0.06) 0%, transparent 50%),
+              radial-gradient(circle at 70% 80%, rgba(88, 86, 214, 0.06) 0%, transparent 50%),
+              radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.02) 0%, transparent 70%);
   pointer-events: none;
   z-index: -1;
 }
