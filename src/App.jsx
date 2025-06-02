@@ -23,7 +23,7 @@ function App() {
             <Route path="/*" element={
               <Layout>
                 <Routes>
-                  <Route path="/" element={<Navigate to="/statistics" replace />} />
+                  <Route path="/" element={<Navigate to="/overview" replace />} />
                   <Route path="/overview" element={<Overview />} />
                   <Route path="/timeline" element={<Timeline />} />
                   <Route path="/movies" element={<Movies />} />
