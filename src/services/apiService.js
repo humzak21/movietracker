@@ -90,6 +90,10 @@ class ApiService {
     return this.request('/stats');
   }
 
+  async getMoviesByRatingRange(rating) {
+    return this.request(`/rating-range?rating=${rating}`);
+  }
+
   async enhanceMovieWithTMDB(id) {
     return this.request(`/${id}/enhance`, {
       method: 'POST',

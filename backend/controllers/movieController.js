@@ -373,6 +373,43 @@ class MovieController {
   }
 
   /**
+   * Get movies by rating range for comparison
+   */
+  async getMoviesByRatingRange(req, res) {
+    try {
+      const { rating } = req.query;
+      const targetRating = parseInt(rating);
+      
+      if (!rating || isNaN(targetRating) || targetRating < 0 || targetRating > 100) {
+        return res.status(400).json({
+          success: false,
+          error: 'Valid rating (0-100) is required'
+        });
+      }
+
+      // Define range based on 10-point brackets (40-49, 50-59, etc.)
+      const minRating = Math.floor(targetRating / 10) * 10;
+      const maxRating = minRating + 9;
+
+      const movies = await movieService.getMoviesByRatingRange(minRating, maxRating, targetRating);
+      
+      res.json({
+        success: true,
+        data: movies,
+        range: { min: minRating, max: maxRating, target: targetRating }
+      });
+
+    } catch (error) {
+      console.error('Error getting movies by rating range:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to fetch movies by rating range',
+        details: error.message
+      });
+    }
+  }
+
+  /**
    * Get top rated movies (unique titles only) with pagination
    */
   async getTopRatedMovies(req, res) {

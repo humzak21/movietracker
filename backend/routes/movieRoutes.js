@@ -8,6 +8,7 @@ const router = express.Router();
 router.get('/', movieController.getAllMovies);
 router.get('/unique', movieController.getUniqueMovies);
 router.get('/top-rated', movieController.getTopRatedMovies);
+router.get('/rating-range', movieController.getMoviesByRatingRange);
 router.get('/search', movieController.searchMovies);
 router.get('/stats', movieController.getMovieStats);
 router.post('/add', movieController.addMovie);

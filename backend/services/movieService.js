@@ -506,6 +506,33 @@ class MovieService {
   }
 
   /**
+   * Get movies by rating range for comparison
+   */
+  async getMoviesByRatingRange(minRating, maxRating, targetRating) {
+    this._checkDatabase();
+    
+    try {
+      const { data, error } = await supabaseAdmin
+        .from('diary')
+        .select('*')
+        .gte('ratings100', minRating)
+        .lte('ratings100', maxRating)
+        .not('ratings100', 'is', null)
+        .order('ratings100', { ascending: false }); // Order by rating descending in the database
+
+      if (error) throw error;
+
+      // The data is already sorted by rating descending from the database
+      // No need for additional JavaScript sorting
+      return data.map(movie => this.transformDiaryEntry(movie));
+
+    } catch (error) {
+      console.error('Error fetching movies by rating range:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Transform diary entry to match expected movie format
    */
   transformDiaryEntry(diaryEntry) {
