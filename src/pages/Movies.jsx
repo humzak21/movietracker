@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useCallback, useMemo, useState } from 'react';
-import { Star, Film, RotateCcw } from 'lucide-react';
+import { Star, Film, RotateCcw, ChevronDown, Search, X, TrendingUp, TrendingDown, Percent } from 'lucide-react';
+import { motion, useAnimation, useInView } from 'framer-motion';
 import { useSupabaseMovieData } from '../hooks/useSupabaseMovieData';
 import MovieDetailsModal from '../components/MovieDetailsModal';
 
@@ -26,7 +27,181 @@ function Movies() {
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [selectedMovieIndex, setSelectedMovieIndex] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // Enhanced filter states
+  const [ratingFilterType, setRatingFilterType] = useState('minimum'); // 'minimum', 'exact', 'range'
+  const [exactRating, setExactRating] = useState(0);
+  const [ratingRangeMin, setRatingRangeMin] = useState(0);
+  const [ratingRangeMax, setRatingRangeMax] = useState(5);
+  const [detailedRatingMin, setDetailedRatingMin] = useState(0);
+  const [detailedRatingMax, setDetailedRatingMax] = useState(100);
+  const [useDetailedRating, setUseDetailedRating] = useState(false);
+
+  // Animation controls and refs
+  const movieGridControls = useAnimation();
+  const movieGridRef = useRef(null);
+  const movieGridInView = useInView(movieGridRef, { once: true, threshold: 0.1 });
+  
+  // Track animated cards to prevent re-animation during pagination
+  const animatedCardsRef = useRef(new Set());
+  const [initialAnimationComplete, setInitialAnimationComplete] = useState(false);
+
   const loadMoreTriggerRef = useRef(null);
+
+  // Animation variants
+  const fadeInUp = {
+    hidden: { 
+      opacity: 0, 
+      y: 60,
+      scale: 0.95
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.8,
+        ease: [0.25, 0.1, 0.25, 1]
+      }
+    }
+  };
+
+  const staggerContainer = {
+    hidden: { opacity: 1 }, // Keep container visible
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.08,
+        delayChildren: 0.1
+      }
+    }
+  };
+
+  const movieCardVariant = {
+    hidden: { 
+      opacity: 0, 
+      y: 30,
+      scale: 0.95
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.5,
+        ease: [0.25, 0.1, 0.25, 1]
+      }
+    }
+  };
+
+  // Function to determine if a card should animate
+  const shouldAnimateCard = (movieId) => {
+    if (!initialAnimationComplete) return true; // Initial load - animate all
+    if (isSearching) return true; // Search results - animate all
+    return !animatedCardsRef.current.has(movieId); // Pagination - only new cards
+  };
+
+  // Apply enhanced filters to movies
+  const filteredMovies = useMemo(() => {
+    let filtered = movies;
+
+    // Apply star rating filters
+    if (useDetailedRating) {
+      // Filter by detailed rating (percentage)
+      filtered = filtered.filter(movie => {
+        const detailedRating = movie.detailedRating || 0;
+        return detailedRating >= detailedRatingMin && detailedRating <= detailedRatingMax;
+      });
+    } else {
+      // Filter by star rating
+      if (ratingFilterType === 'minimum' && ratingFilter > 0) {
+        filtered = filtered.filter(movie => (movie.rating || 0) >= ratingFilter);
+      } else if (ratingFilterType === 'exact' && exactRating > 0) {
+        filtered = filtered.filter(movie => (movie.rating || 0) === exactRating);
+      } else if (ratingFilterType === 'range') {
+        filtered = filtered.filter(movie => {
+          const rating = movie.rating || 0;
+          return rating >= ratingRangeMin && rating <= ratingRangeMax;
+        });
+      }
+    }
+
+    // Apply year filter
+    if (yearFilter !== 'all') {
+      const year = parseInt(yearFilter);
+      filtered = filtered.filter(movie => movie.year === year);
+    }
+
+    // Don't apply additional sorting - preserve backend order (latest watched first)
+    return filtered;
+  }, [movies, ratingFilter, ratingFilterType, exactRating, ratingRangeMin, ratingRangeMax, detailedRatingMin, detailedRatingMax, useDetailedRating, yearFilter]);
+
+  // Get unique movies count for display
+  const uniqueMoviesCount = useMemo(() => {
+    const uniqueTitles = new Set();
+    filteredMovies.forEach(movie => {
+      uniqueTitles.add(movie.title.toLowerCase());
+    });
+    return uniqueTitles.size;
+  }, [filteredMovies]);
+
+  // Trigger initial animations when movie grid comes into view
+  useEffect(() => {
+    if (movieGridInView && !initialAnimationComplete) {
+      movieGridControls.start('visible').then(() => {
+        setInitialAnimationComplete(true);
+        // Mark all current movies as animated
+        filteredMovies.forEach(movie => {
+          animatedCardsRef.current.add(movie.id || `${movie.title}-${movie.date}`);
+        });
+      });
+    }
+  }, [movieGridInView, movieGridControls, initialAnimationComplete, filteredMovies]);
+
+  // Also trigger animations immediately when movies first load (don't wait for intersection)
+  useEffect(() => {
+    if (!initialAnimationComplete && filteredMovies.length > 0 && !loading) {
+      movieGridControls.start('visible').then(() => {
+        setInitialAnimationComplete(true);
+        // Mark all current movies as animated
+        filteredMovies.forEach(movie => {
+          animatedCardsRef.current.add(movie.id || `${movie.title}-${movie.date}`);
+        });
+      });
+    }
+  }, [filteredMovies.length, loading, initialAnimationComplete, movieGridControls, filteredMovies]);
+
+  // Handle search - reset and animate all cards
+  useEffect(() => {
+    if (isSearching) {
+      animatedCardsRef.current.clear();
+      setInitialAnimationComplete(false);
+      movieGridControls.set('hidden');
+      movieGridControls.start('visible').then(() => {
+        setInitialAnimationComplete(true);
+        filteredMovies.forEach(movie => {
+          animatedCardsRef.current.add(movie.id || `${movie.title}-${movie.date}`);
+        });
+      });
+    }
+  }, [isSearching, movieGridControls, filteredMovies]);
+
+  // Handle new movies from pagination - only animate new ones
+  useEffect(() => {
+    if (initialAnimationComplete && !isSearching && filteredMovies.length > 0) {
+      // Find new movies that haven't been animated
+      const newMovies = filteredMovies.filter(movie => 
+        !animatedCardsRef.current.has(movie.id || `${movie.title}-${movie.date}`)
+      );
+      
+      if (newMovies.length > 0) {
+        // Mark new movies as animated
+        newMovies.forEach(movie => {
+          animatedCardsRef.current.add(movie.id || `${movie.title}-${movie.date}`);
+        });
+      }
+    }
+  }, [filteredMovies.length, initialAnimationComplete, isSearching, filteredMovies]);
 
   // Set up intersection observer for movie cards
   useEffect(() => {
@@ -55,34 +230,6 @@ function Movies() {
     return () => observer.disconnect();
   }, [handleIntersection]);
 
-  // Apply filters to movies (search is handled by the hook)
-  const filteredMovies = useMemo(() => {
-    let filtered = movies;
-
-    // Apply rating filter
-    if (ratingFilter > 0) {
-      filtered = filtered.filter(movie => (movie.rating || 0) >= ratingFilter);
-    }
-
-    // Apply year filter
-    if (yearFilter !== 'all') {
-      const year = parseInt(yearFilter);
-      filtered = filtered.filter(movie => movie.year === year);
-    }
-
-    // Don't apply additional sorting - preserve backend order (latest watched first)
-    return filtered;
-  }, [movies, ratingFilter, yearFilter]);
-
-  // Get unique movies count for display
-  const uniqueMoviesCount = useMemo(() => {
-    const uniqueTitles = new Set();
-    filteredMovies.forEach(movie => {
-      uniqueTitles.add(movie.title.toLowerCase());
-    });
-    return uniqueTitles.size;
-  }, [filteredMovies]);
-
   // Handle movie card click
   const handleMovieClick = (movie, index) => {
     setSelectedMovie(movie);
@@ -104,15 +251,20 @@ function Movies() {
     }
   };
 
-  // if (loading && !searchLoading) {
-  //   return (
-  //     <div className="section">
-  //       <div className="container">
-  //         <h2 className="section-title">Loading Movies...</h2>
-  //       </div>
-  //     </div>
-  //   );
-  // }
+  // Reset enhanced filters when switching rating types
+  const handleRatingTypeChange = (newType) => {
+    setRatingFilterType(newType);
+    // Reset the original rating filter when switching to enhanced filters
+    if (newType !== 'minimum') {
+      setRatingFilter(0);
+    }
+    // Reset enhanced filters when switching back to minimum
+    if (newType === 'minimum') {
+      setExactRating(0);
+      setRatingRangeMin(0);
+      setRatingRangeMax(5);
+    }
+  };
 
   if (error) {
     return (
@@ -130,39 +282,172 @@ function Movies() {
       <div className="container">
         <h2 className="section-title">All Movies</h2>
         
-        {/* Filters */}
-        <div className="filters">
-          <input
-            type="text"
-            placeholder="Search movies..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="search-input"
-          />
+        {/* Enhanced Filters */}
+        <div className="filters-container">
+          <div className="search-filter-wrapper">
+            <div className="search-input-wrapper">
+              <Search size={18} className="search-icon" />
+              <input
+                type="text"
+                placeholder="Search movies..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="search-input-modern"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="search-clear-btn"
+                >
+                  <X size={16} />
+                </button>
+              )}
+            </div>
+          </div>
           
-          <select
-            value={ratingFilter}
-            onChange={(e) => setRatingFilter(Number(e.target.value))}
-            className="filter-select"
-          >
-            <option value={0}>All Ratings</option>
-            <option value={1}>1+ Stars</option>
-            <option value={2}>2+ Stars</option>
-            <option value={3}>3+ Stars</option>
-            <option value={4}>4+ Stars</option>
-            <option value={5}>5 Stars</option>
-          </select>
-          
-          <select
-            value={yearFilter}
-            onChange={(e) => setYearFilter(e.target.value)}
-            className="filter-select"
-          >
-            <option value="all">All Years</option>
-            {availableYears.map(year => (
-              <option key={year} value={year}>{year}</option>
-            ))}
-          </select>
+          <div className="filter-pills-container">
+            {/* Year Filter Pill */}
+            <div className="filter-pill">
+              <ChevronDown size={14} className="filter-pill-icon" />
+              <select
+                value={yearFilter}
+                onChange={(e) => setYearFilter(e.target.value)}
+                className="filter-pill-select"
+              >
+                <option value="all">All Years</option>
+                {availableYears.map(year => (
+                  <option key={year} value={year}>{year}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Rating Type Filter Pill */}
+            <div className="filter-pill">
+              <Star size={14} className="filter-pill-icon" />
+              <select
+                value={useDetailedRating ? 'detailed' : ratingFilterType}
+                onChange={(e) => {
+                  if (e.target.value === 'detailed') {
+                    setUseDetailedRating(true);
+                    setRatingFilterType('minimum');
+                    setRatingFilter(0);
+                  } else {
+                    setUseDetailedRating(false);
+                    handleRatingTypeChange(e.target.value);
+                  }
+                }}
+                className="filter-pill-select"
+              >
+                <option value="minimum">Min Rating</option>
+                <option value="exact">Exact Rating</option>
+                <option value="range">Rating Range</option>
+                <option value="detailed">Score (%)</option>
+              </select>
+            </div>
+
+            {/* Rating Value Filters */}
+            {!useDetailedRating && ratingFilterType === 'minimum' && (
+              <div className="filter-pill">
+                <Star size={14} className="filter-pill-icon" />
+                <select
+                  value={ratingFilter}
+                  onChange={(e) => setRatingFilter(Number(e.target.value))}
+                  className="filter-pill-select"
+                >
+                  <option value={0}>Any Rating</option>
+                  <option value={1}>1+ ⭐</option>
+                  <option value={2}>2+ ⭐</option>
+                  <option value={3}>3+ ⭐</option>
+                  <option value={4}>4+ ⭐</option>
+                  <option value={5}>5 ⭐</option>
+                </select>
+              </div>
+            )}
+
+            {!useDetailedRating && ratingFilterType === 'exact' && (
+              <div className="filter-pill">
+                <Star size={14} className="filter-pill-icon" />
+                <select
+                  value={exactRating}
+                  onChange={(e) => setExactRating(Number(e.target.value))}
+                  className="filter-pill-select"
+                >
+                  <option value={0}>Any Rating</option>
+                  <option value={1}>Exactly 1 ⭐</option>
+                  <option value={2}>Exactly 2 ⭐</option>
+                  <option value={3}>Exactly 3 ⭐</option>
+                  <option value={4}>Exactly 4 ⭐</option>
+                  <option value={5}>Exactly 5 ⭐</option>
+                </select>
+              </div>
+            )}
+
+            {!useDetailedRating && ratingFilterType === 'range' && (
+              <>
+                <div className="filter-pill">
+                  <TrendingUp size={14} className="filter-pill-icon" />
+                  <select
+                    value={ratingRangeMin}
+                    onChange={(e) => setRatingRangeMin(Number(e.target.value))}
+                    className="filter-pill-select"
+                  >
+                    <option value={0}>Min: Any</option>
+                    <option value={1}>Min: 1⭐</option>
+                    <option value={2}>Min: 2⭐</option>
+                    <option value={3}>Min: 3⭐</option>
+                    <option value={4}>Min: 4⭐</option>
+                    <option value={5}>Min: 5⭐</option>
+                  </select>
+                </div>
+                <div className="filter-pill">
+                  <TrendingDown size={14} className="filter-pill-icon" />
+                  <select
+                    value={ratingRangeMax}
+                    onChange={(e) => setRatingRangeMax(Number(e.target.value))}
+                    className="filter-pill-select"
+                  >
+                    <option value={1}>Max: 1⭐</option>
+                    <option value={2}>Max: 2⭐</option>
+                    <option value={3}>Max: 3⭐</option>
+                    <option value={4}>Max: 4⭐</option>
+                    <option value={5}>Max: 5⭐</option>
+                  </select>
+                </div>
+              </>
+            )}
+
+            {/* Detailed Rating Filters */}
+            {useDetailedRating && (
+              <>
+                <div className="filter-pill-input">
+                  <Percent size={14} className="filter-pill-icon" />
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={detailedRatingMin}
+                    onChange={(e) => setDetailedRatingMin(Number(e.target.value))}
+                    className="filter-pill-number-input"
+                    placeholder="Min"
+                  />
+                  <span className="filter-pill-unit">%</span>
+                </div>
+                <div className="filter-pill-input">
+                  <Percent size={14} className="filter-pill-icon" />
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={detailedRatingMax}
+                    onChange={(e) => setDetailedRatingMax(Number(e.target.value))}
+                    className="filter-pill-number-input"
+                    placeholder="Max"
+                  />
+                  <span className="filter-pill-unit">%</span>
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Results count */}
@@ -173,65 +458,88 @@ function Movies() {
           {searchLoading && ' (searching...)'}
         </p>
         
-        <div className="movie-grid">
-          {filteredMovies.map((movie, index) => (
-            <div 
-              key={movie.id || index} 
-              className="movie-card"
-              data-movie-title={movie.title}
-              onClick={() => handleMovieClick(movie, index)}
-            >
-              <div className="movie-poster">
-                {movie.posterUrl ? (
-                  <img
-                    src={movie.posterUrl}
-                    alt={`${movie.title} poster`}
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                      e.target.nextSibling.style.display = 'flex';
-                    }}
-                  />
-                ) : null}
-                <div className="poster-fallback" style={{ display: movie.posterUrl ? 'none' : 'flex' }}>
-                  <Film size={48} />
-                </div>
-                
-                {/* Rewatch indicator overlay */}
-                {(movie.rewatch || movie.isRewatch) && (
-                  <div className="rewatch-indicator">
-                    <RotateCcw size={16} />
+        <motion.div 
+          ref={movieGridRef}
+          className="movie-grid"
+          variants={staggerContainer}
+          initial="visible"
+          animate="visible"
+        >
+          {filteredMovies.map((movie, index) => {
+            const movieKey = movie.id || `${movie.title}-${movie.date}`;
+            const isNewCard = !animatedCardsRef.current.has(movieKey);
+            
+            return (
+              <motion.div 
+                key={movieKey} 
+                className="movie-card"
+                data-movie-title={movie.title}
+                onClick={() => handleMovieClick(movie, index)}
+                variants={movieCardVariant}
+                initial={initialAnimationComplete && isNewCard ? "hidden" : "visible"}
+                animate="visible"
+                whileHover={{ 
+                  scale: 1.05,
+                  y: -8,
+                  transition: { duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }
+                }}
+                whileTap={{ 
+                  scale: 0.98,
+                  transition: { duration: 0.1 }
+                }}
+              >
+                <div className="movie-poster">
+                  {movie.posterUrl ? (
+                    <img
+                      src={movie.posterUrl}
+                      alt={`${movie.title} poster`}
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <div className="poster-fallback" style={{ display: movie.posterUrl ? 'none' : 'flex' }}>
+                    <Film size={48} />
                   </div>
-                )}
-              </div>
-              <div className="movie-info">
-                <div className="movie-header">
-                  <h4 className="movie-title">{movie.title}</h4>
-                  <div className="movie-year">{movie.year}</div>
+                  
+                  {/* Rewatch indicator overlay */}
+                  {(movie.rewatch || movie.isRewatch) && (
+                    <div className="rewatch-indicator">
+                      <RotateCcw size={16} />
+                    </div>
+                  )}
                 </div>
-                
-                <div className="movie-ratings">
-                  <div className={`star-rating ${movie.rating === 5 ? 'five-star' : ''}`}>
-                    {[...Array(5)].map((_, i) => (
-                      <Star 
-                        key={i} 
-                        size={14} 
-                        fill={i < movie.rating ? "currentColor" : "none"}
-                        className={i < movie.rating ? "filled" : "empty"}
-                      />
-                    ))}
+                <div className="movie-info">
+                  <div className="movie-header">
+                    <h4 className="movie-title">{movie.title}</h4>
+                    <div className="movie-year">{movie.year}</div>
                   </div>
-                  <div className="detailed-rating">
-                    {movie.detailedRating || '—'}
+                  
+                  <div className="movie-ratings">
+                    <div className={`star-rating ${movie.rating === 5 ? 'five-star' : ''}`}>
+                      {[...Array(5)].map((_, i) => (
+                        <Star 
+                          key={i} 
+                          size={14} 
+                          fill={i < movie.rating ? "currentColor" : "none"}
+                          className={i < movie.rating ? "filled" : "empty"}
+                        />
+                      ))}
+                    </div>
+                    <div className="detailed-rating">
+                      {movie.detailedRating || '—'}
+                    </div>
+                  </div>
+                  
+                  <div className="movie-date">
+                    {movie.month}/{movie.day}/{movie.year}
                   </div>
                 </div>
-                
-                <div className="movie-date">
-                  {movie.month}/{movie.day}/{movie.year}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+              </motion.div>
+            );
+          })}
+        </motion.div>
 
         {/* Show message when no results found */}
         {filteredMovies.length === 0 && !loading && !searchLoading && (

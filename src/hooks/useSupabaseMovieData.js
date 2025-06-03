@@ -40,7 +40,8 @@ export const useSupabaseMovieData = () => {
       date: movie.watch_date,
       month: watchDate.getMonth() + 1,
       day: watchDate.getDate(),
-      year: watchDate.getFullYear(),
+      year: movie.release_year || new Date(movie.release_date).getFullYear(),
+      watchYear: watchDate.getFullYear(),
       posterUrl: movie.poster_url,
       backdropUrl: movie.backdrop_url,
       isRewatch: movie.is_rewatch || false,
@@ -257,9 +258,9 @@ export const useSupabaseMovieData = () => {
       .slice(0, 50);
   }, [transformedMovies]);
 
-  // Available years for filtering
+  // Available years for filtering - now based on release years
   const availableYears = useMemo(() => {
-    const years = [...new Set(transformedMovies.map(movie => movie.year))].sort((a, b) => b - a);
+    const years = [...new Set(transformedMovies.map(movie => movie.year).filter(year => year))].sort((a, b) => b - a);
     return years;
   }, [transformedMovies]);
 
