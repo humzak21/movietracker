@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useCallback, useState } from 'react';
+import { Film, RotateCcw, Star, ChevronDown, MessageCircle } from 'lucide-react';
 import { useTimelineData } from '../hooks/useTimelineData';
 import MovieDetailsModal from '../components/MovieDetailsModal';
 
@@ -25,7 +26,9 @@ function Timeline() {
   const [selectedMovieIndex, setSelectedMovieIndex] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [flatMoviesList, setFlatMoviesList] = useState([]);
+  const [visibleCards, setVisibleCards] = useState(new Set());
   const loadMoreTriggerRef = useRef(null);
+  const cardRefs = useRef(new Map());
 
   // Create a flat list of all movies for navigation
   useEffect(() => {
@@ -37,6 +40,65 @@ function Timeline() {
     });
     setFlatMoviesList(allMovies);
   }, [timelineEntries]);
+
+  // Group timeline entries by month
+  const groupedByMonth = React.useMemo(() => {
+    const monthGroups = new Map();
+
+    timelineEntries.forEach(([date, dayMovies]) => {
+      const monthKey = new Date(date).toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long' 
+      });
+
+      if (!monthGroups.has(monthKey)) {
+        monthGroups.set(monthKey, []);
+      }
+
+      dayMovies.forEach(movie => {
+        monthGroups.get(monthKey).push({
+          ...movie,
+          watchedDate: date
+        });
+      });
+    });
+
+    // Convert to array and sort by date (newest first)
+    return Array.from(monthGroups.entries())
+      .map(([monthKey, movies]) => [monthKey, movies])
+      .sort((a, b) => new Date(b[1][0].watchedDate) - new Date(a[1][0].watchedDate));
+  }, [timelineEntries]);
+
+  // Animation intersection observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const cardId = entry.target.dataset.cardId;
+            if (cardId) {
+              setVisibleCards(prev => new Set([...prev, cardId]));
+            }
+          }
+        });
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '0px 0px -10% 0px'
+      }
+    );
+
+    // Observe all card elements
+    cardRefs.current.forEach((element) => {
+      if (element) {
+        observer.observe(element);
+      }
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [groupedByMonth]);
 
   // Infinite scroll intersection observer (disabled during search)
   const handleIntersection = useCallback((entries) => {
@@ -62,7 +124,7 @@ function Timeline() {
   // Handle movie click
   const handleMovieClick = (movie) => {
     const movieIndex = flatMoviesList.findIndex(m => 
-      m.id === movie.id || (m.title === movie.title && m.date === movie.date)
+      m.id === movie.id || (m.title === movie.title && m.watchedDate === movie.watchedDate)
     );
     setSelectedMovie(movie);
     setSelectedMovieIndex(movieIndex >= 0 ? movieIndex : 0);
@@ -83,6 +145,26 @@ function Timeline() {
     }
   };
 
+  // Format date parts for column display
+  const getDateParts = (dateString) => {
+    const date = new Date(dateString);
+    return {
+      month: date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase(),
+      day: date.getDate()
+    };
+  };
+
+  // Generate unique card ID for animation tracking
+  const getCardId = (monthIndex, movieIndex) => {
+    return `${monthIndex}-${movieIndex}`;
+  };
+
+  // Calculate animation delay for cascade effect
+  const getAnimationDelay = (monthIndex, movieIndex) => {
+    const totalIndex = monthIndex * 10 + movieIndex; // Approximate global index
+    return Math.min(totalIndex * 50, 1000); // Max 1 second delay, 50ms between cards
+  };
+
   if (error) {
     return (
       <div className="section">
@@ -97,91 +179,195 @@ function Timeline() {
   return (
     <div className="section">
       <div className="container">
-        <h2 className="section-title">
-          {isSearching ? 'Timeline Search Results' : 'Movie Timeline'}
-        </h2>
-        
-        <div className="filters">
-          <input
-            type="text"
-            placeholder="Search movies..."
-            className="search-input"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <select
-            className="filter-select"
-            value={ratingFilter}
-            onChange={(e) => setRatingFilter(parseFloat(e.target.value))}
-          >
-            <option value={0}>All Ratings</option>
-            <option value={4}>4+ Stars</option>
-            <option value={4.5}>4.5+ Stars</option>
-            <option value={5}>5 Stars Only</option>
-          </select>
-          <select
-            className="filter-select"
-            value={yearFilter}
-            onChange={(e) => setYearFilter(e.target.value)}
-          >
-            <option value="all">All Years</option>
-            {availableYears.map(year => (
-              <option key={year} value={year}>{year}</option>
-            ))}
-          </select>
+        <div className="timeline-header">
+          <h2 className="section-title">
+            {isSearching ? 'Timeline Search Results' : 'Movie Timeline'}
+          </h2>
+          
+          <div className="timeline-filters">
+            <div className="timeline-search-wrapper">
+              <input
+                type="text"
+                placeholder="Search your diary..."
+                className="timeline-search-input"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            
+            <div className="timeline-filter-group">
+              <div className="timeline-filter-wrapper">
+                <select
+                  className="timeline-filter-select"
+                  value={ratingFilter}
+                  onChange={(e) => setRatingFilter(parseFloat(e.target.value))}
+                >
+                  <option value={0}>All Ratings</option>
+                  <option value={4}>4+ Stars</option>
+                  <option value={4.5}>4.5+ Stars</option>
+                  <option value={5}>5 Stars Only</option>
+                </select>
+                <ChevronDown size={16} className="timeline-filter-chevron" />
+              </div>
+              
+              <div className="timeline-filter-wrapper">
+                <select
+                  className="timeline-filter-select"
+                  value={yearFilter}
+                  onChange={(e) => setYearFilter(e.target.value)}
+                >
+                  <option value="all">All Years</option>
+                  {availableYears.map(year => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+                <ChevronDown size={16} className="timeline-filter-chevron" />
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="timeline">
-          {timelineEntries.map(([date, dayMovies]) => (
-            <div key={date} className="timeline-item">
-              <div className="timeline-date">{date}</div>
-              <div className="timeline-movies">
-                {dayMovies.map((movie, idx) => (
-                  <div key={movie.id || idx} className="timeline-movie">
-                    <strong 
-                      style={{ 
-                        cursor: 'pointer', 
-                        color: 'var(--primary-blue)',
-                        textDecoration: 'underline',
-                        textDecorationColor: 'transparent',
-                        transition: 'text-decoration-color 0.2s ease'
+        <div className="timeline-content">
+          {groupedByMonth.map(([monthYear, monthMovies], monthIndex) => (
+            <div key={monthYear} className="timeline-day">
+              <div className="timeline-day-header">
+                <h3 className="timeline-day-date">{monthYear}</h3>
+                <div className="timeline-day-count">
+                  {monthMovies.length} {monthMovies.length === 1 ? 'film' : 'films'}
+                </div>
+              </div>
+              
+              {/* Column Headers - Desktop Only */}
+              <div className="timeline-headers">
+                <div className="timeline-header-day">Day</div>
+                <div className="timeline-header-film">Film</div>
+                <div className="timeline-header-released">Released</div>
+                <div className="timeline-header-rating">Rating</div>
+                <div className="timeline-header-stars">Stars</div>
+                <div className="timeline-header-rewatch">Rewatch</div>
+                <div className="timeline-header-review">Review</div>
+              </div>
+              
+              <div className="timeline-day-movies">
+                {monthMovies.map((movie, idx) => {
+                  const dateParts = getDateParts(movie.watchedDate);
+                  const cardId = getCardId(monthIndex, idx);
+                  const animationDelay = getAnimationDelay(monthIndex, idx);
+                  const isVisible = visibleCards.has(cardId);
+                  
+                  return (
+                    <div 
+                      key={movie.id || idx} 
+                      ref={(el) => {
+                        if (el) {
+                          cardRefs.current.set(cardId, el);
+                        } else {
+                          cardRefs.current.delete(cardId);
+                        }
                       }}
-                      onMouseEnter={(e) => {
-                        e.target.style.textDecorationColor = 'var(--primary-blue)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.textDecorationColor = 'transparent';
+                      data-card-id={cardId}
+                      className={`timeline-movie-card ${isVisible ? 'timeline-card-visible' : 'timeline-card-hidden'}`}
+                      style={{
+                        animationDelay: `${animationDelay}ms`
                       }}
                       onClick={() => handleMovieClick(movie)}
                     >
-                      {movie.title}
-                    </strong> - {movie.rating}★
-                    {movie.detailedRating && (
-                      <span style={{ marginLeft: '8px', color: '#666', fontSize: '14px' }}>
-                        ({movie.detailedRating}/100)
-                      </span>
-                    )}
-                    {movie.isRewatch && (
-                      <span style={{ marginLeft: '8px', fontSize: '12px', color: '#888' }}>
-                        (Rewatch)
-                      </span>
-                    )}
-                  </div>
-                ))}
+                      {/* Day Column */}
+                      <div className="timeline-movie-day">
+                        {dateParts.day}
+                      </div>
+                      
+                      {/* Film Column */}
+                      <div className="timeline-movie-film">
+                        <div className="timeline-movie-poster">
+                          {movie.posterUrl ? (
+                            <img
+                              src={movie.posterUrl}
+                              alt={`${movie.title} poster`}
+                              onError={(e) => {
+                                e.target.style.display = 'none';
+                                e.target.nextSibling.style.display = 'flex';
+                              }}
+                            />
+                          ) : null}
+                          <div className="timeline-poster-fallback" style={{ display: movie.posterUrl ? 'none' : 'flex' }}>
+                            <Film size={14} />
+                          </div>
+                          
+                          {/* Rewatch indicator on poster */}
+                          {movie.isRewatch && (
+                            <div className="timeline-rewatch-indicator">
+                              <RotateCcw size={8} />
+                            </div>
+                          )}
+                        </div>
+                        
+                        <div className="timeline-movie-info">
+                          <h4 className="timeline-movie-title">{movie.title}</h4>
+                          <div className="timeline-movie-year">{movie.releaseYear || movie.year}</div>
+                        </div>
+                      </div>
+                      
+                      {/* Released Column */}
+                      <div className="timeline-movie-released">
+                        {movie.releaseYear || movie.year}
+                      </div>
+                      
+                      {/* Rating Column (Percentage) */}
+                      <div className="timeline-movie-rating">
+                        {movie.detailedRating && (
+                          <div className="timeline-detailed-rating">
+                            {movie.detailedRating}
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Stars Column */}
+                      <div className="timeline-movie-stars">
+                        <div className={`timeline-star-rating ${movie.rating === 5 ? 'five-star' : ''}`}>
+                          {[...Array(5)].map((_, i) => (
+                            <Star 
+                              key={i} 
+                              size={12} 
+                              fill={i < movie.rating ? "currentColor" : "none"}
+                              className={i < movie.rating ? "filled" : "empty"}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      
+                      {/* Rewatch Column */}
+                      <div className="timeline-movie-rewatch">
+                        {movie.isRewatch && (
+                          <RotateCcw size={16} className="timeline-rewatch-icon" />
+                        )}
+                      </div>
+                      
+                      {/* Review Column */}
+                      <div className="timeline-movie-review-indicator">
+                        {movie.review && movie.review.trim() && (
+                          <MessageCircle 
+                            size={16} 
+                            className="timeline-review-icon has-review" 
+                          />
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           ))}
         </div>
 
         {/* Show message when no results found */}
-        {timelineEntries.length === 0 && !loading && !searchLoading && (
-          <div style={{ 
-            textAlign: 'center', 
-            marginTop: '40px', 
-            color: '#666',
-            fontSize: '16px'
-          }}>
-            {isSearching ? 'No movies found matching your search.' : 'No timeline entries found.'}
+        {groupedByMonth.length === 0 && !loading && !searchLoading && (
+          <div className="timeline-empty-state">
+            <Film size={48} style={{ opacity: 0.3 }} />
+            <h3>No entries found</h3>
+            <p>
+              {isSearching ? 'No movies found matching your search.' : 'Start watching movies to build your timeline!'}
+            </p>
           </div>
         )}
 
@@ -189,17 +375,11 @@ function Timeline() {
         {!isSearching && timelinePagination?.hasNextPage && (
           <div
             ref={loadMoreTriggerRef}
-            style={{
-              height: '20px',
-              margin: '40px 0',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center'
-            }}
+            className="timeline-load-trigger"
           >
             {loadingMore && (
-              <div style={{ color: '#666', fontSize: '14px' }}>
-                Loading more timeline entries...
+              <div className="timeline-loading">
+                Loading more entries...
               </div>
             )}
           </div>
@@ -207,53 +387,21 @@ function Timeline() {
 
         {/* Manual Load More Button (as fallback, only when not searching) */}
         {!isSearching && timelinePagination?.hasNextPage && !loadingMore && (
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            marginTop: '20px' 
-          }}>
+          <div className="timeline-load-more">
             <button
               onClick={loadMoreMovies}
-              style={{
-                padding: '12px 24px',
-                fontSize: '16px',
-                backgroundColor: '#007acc',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease'
-              }}
+              className="timeline-load-more-btn"
             >
-              Load More Timeline Entries
+              Load More Entries
             </button>
           </div>
         )}
 
-        {/* Pagination Info (only when not searching) */}
-        {!isSearching && timelinePagination && (
-          <div style={{ 
-            textAlign: 'center', 
-            marginTop: '20px', 
-            color: '#666',
-            fontSize: '14px'
-          }}>
-            {timelinePagination.totalPages > 1 && (
-              <span>Page {timelinePagination.page} of {timelinePagination.totalPages}</span>
-            )}
-          </div>
-        )}
-
         {/* End of timeline message */}
-        {!isSearching && !timelinePagination?.hasNextPage && timelineEntries.length > 0 && (
-          <div className="timeline-end" style={{ 
-            textAlign: 'center', 
-            marginTop: '40px', 
-            padding: '20px',
-            color: '#666',
-            fontSize: '16px'
-          }}>
-            <p>🎬 You've reached the beginning of your movie journey!</p>
+        {!isSearching && !timelinePagination?.hasNextPage && groupedByMonth.length > 0 && (
+          <div className="timeline-end-message">
+            <div className="timeline-end-icon">🎬</div>
+            <p>You've reached the beginning of your movie journey!</p>
           </div>
         )}
       </div>

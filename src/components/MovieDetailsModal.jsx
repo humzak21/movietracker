@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Edit3, Save, X as Cancel, Star, Calendar, Tag, RotateCcw, ChevronLeft, ChevronRight, Film, Clock, Users, Play } from 'lucide-react';
+import ReactDOM from 'react-dom';
+import { X, Edit3, Save, X as Cancel, Star, Calendar, Tag, RotateCcw, ChevronLeft, ChevronRight, Film, Clock, Users, Play, Percent } from 'lucide-react';
 import apiService from '../services/apiService';
 import { useAuth } from '../contexts/AuthContext';
 
 const MovieDetailsModal = ({ isOpen, onClose, movie, movies, currentIndex, onNavigate }) => {
   const { isAuthenticated } = useAuth();
+  const modalRef = useRef(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
     watchedDate: '',
@@ -19,6 +21,7 @@ const MovieDetailsModal = ({ isOpen, onClose, movie, movies, currentIndex, onNav
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
 
   // Initialize edit data when movie changes
   useEffect(() => {
@@ -42,25 +45,72 @@ const MovieDetailsModal = ({ isOpen, onClose, movie, movies, currentIndex, onNav
       setSubmitSuccess(false);
       setCurrentTag('');
       setHoveredStar(0);
+      setIsClosing(false);
     }
   }, [isOpen]);
 
   // Disable body scrolling when modal is open
   useEffect(() => {
     if (isOpen) {
+      // Store original overflow and scroll position
+      const originalOverflow = document.body.style.overflow;
+      const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+      const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+      
+      // Prevent background scrolling
       document.body.style.overflow = 'hidden';
+      
+      // Force modal to center in current viewport
+      const positionModal = () => {
+        if (modalRef.current) {
+          const modal = modalRef.current;
+          modal.style.position = 'fixed';
+          modal.style.top = '0';
+          modal.style.left = '0';
+          modal.style.width = '100vw';
+          modal.style.height = '100vh';
+          modal.style.display = 'flex';
+          modal.style.alignItems = 'center';
+          modal.style.justifyContent = 'center';
+          modal.style.zIndex = '10000';
+          modal.style.transform = 'translateZ(0)';
+        }
+      };
+      
+      // Position modal immediately
+      positionModal();
+      
+      // Also position on any resize or orientation change
+      window.addEventListener('resize', positionModal);
+      window.addEventListener('orientationchange', positionModal);
+      
       return () => {
-        document.body.style.overflow = 'unset';
+        // Restore original overflow
+        document.body.style.overflow = originalOverflow;
+        
+        // Remove event listeners
+        window.removeEventListener('resize', positionModal);
+        window.removeEventListener('orientationchange', positionModal);
       };
     }
   }, [isOpen]);
 
   if (!isOpen || !movie) return null;
 
-  const handleOverlayClick = (e) => {
-    if (e.target === e.currentTarget) {
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
       onClose();
+    }, 300); // Match the animation duration
+  };
+
+  const handleOverlayClick = (e) => {
+    // Prevent closing if already in closing state or if clicking on the modal itself
+    if (isClosing || e.target !== e.currentTarget) {
+      return;
     }
+    handleClose();
   };
 
   const handleEdit = () => {
@@ -289,15 +339,38 @@ const MovieDetailsModal = ({ isOpen, onClose, movie, movies, currentIndex, onNav
     return stars;
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return 'Unknown';
+  const renderDisplayStars = (rating) => {
+    const displayStars = [];
+    const numRating = parseFloat(rating) || 0;
+    const isFiveStar = numRating === 5;
+
+    for (let i = 1; i <= 5; i++) {
+      let starState = 'empty';
+      if (numRating >= i) {
+        starState = 'filled';
+      } else if (numRating >= i - 0.5) {
+        starState = 'half';
+      }
+
+      displayStars.push(
+        <Star
+          key={i}
+          size={18}
+          className={`star-glyph ${starState === 'filled' ? (isFiveStar ? 'gold' : 'blue') : 'empty'}`}
+        />
+      );
+    }
+    return displayStars;
+  };
+
+  const getFormattedDateParts = (dateString) => {
+    if (!dateString) return { day: 'N/A', monthYear: 'Unknown Date', fullDate: 'Unknown Date' };
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
+    return {
+      day: date.toLocaleDateString('en-US', { day: 'numeric' }),
+      monthYear: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+      fullDate: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    };
   };
 
   const formatRuntime = (minutes) => {
@@ -327,9 +400,11 @@ const MovieDetailsModal = ({ isOpen, onClose, movie, movies, currentIndex, onNav
     }
   };
 
-  return (
-    <div className="movie-details-modal-overlay" onClick={handleOverlayClick}>
-      <div className="movie-details-modal">
+  const dateParts = getFormattedDateParts(movie.watch_date || movie.date);
+
+  const modalContent = (
+    <div className={`movie-details-modal-overlay ${isClosing ? 'closing' : ''}`} onClick={handleOverlayClick} ref={modalRef}>
+      <div className={`movie-details-modal ${isClosing ? 'closing' : ''}`}>
         {/* Header with close and navigation */}
         <div className="movie-details-header">
           <button 
@@ -358,7 +433,7 @@ const MovieDetailsModal = ({ isOpen, onClose, movie, movies, currentIndex, onNav
           
           <button 
             className="movie-details-close"
-            onClick={onClose}
+            onClick={handleClose}
             aria-label="Close modal"
           >
             <X size={20} />
@@ -445,8 +520,13 @@ const MovieDetailsModal = ({ isOpen, onClose, movie, movies, currentIndex, onNav
           {/* User Data Section */}
           <div className="movie-details-user-data">
             <div className="movie-details-section-header">
-              <h3>Your Review</h3>
-              {isAuthenticated ? (
+              <div className="section-header-content">
+                <h3>Your Review</h3>
+                {!isAuthenticated && !isEditing && (
+                  <p className="section-subtitle">Log in to add or edit your review.</p>
+                )}
+              </div>
+              {isAuthenticated && (
                 !isEditing ? (
                   <button 
                     className="movie-details-edit-btn"
@@ -478,178 +558,223 @@ const MovieDetailsModal = ({ isOpen, onClose, movie, movies, currentIndex, onNav
                     </button>
                   </div>
                 )
-              ) : (
-                <span className="movie-details-value">
-                  You need to be logged in to edit this review.
-                </span>
               )}
             </div>
 
-            {/* Watched Date */}
-            <div className="movie-details-field">
-              <label>Watched Date</label>
-              {isEditing ? (
-                <input
-                  type="date"
-                  value={editData.watchedDate}
-                  onChange={(e) => setEditData(prev => ({ ...prev, watchedDate: e.target.value }))}
-                  className="movie-details-input"
-                  disabled={isSubmitting}
-                />
-              ) : (
-                <span className="movie-details-value">
-                  {formatDate(movie.watch_date || movie.date)}
-                </span>
-              )}
-            </div>
-
-            {/* Star Rating */}
-            <div className="movie-details-field">
-              <label>Star Rating</label>
-              <div className="movie-details-rating">
-                <div className="star-rating-stars">
-                  {renderStars()}
-                </div>
-                <span className="star-rating-value">
-                  {(isEditing ? editData.starRating : (movie.rating || 0)) > 0 
-                    ? `${isEditing ? editData.starRating : movie.rating}/5` 
-                    : 'No rating'}
-                </span>
+            {(!isAuthenticated && !isEditing) ? (
+              <div className="auth-required-note">
+                You need to be logged in to view or edit this review.
               </div>
-            </div>
-
-            {/* Percentage Rating */}
-            <div className="movie-details-field">
-              <label>Percentage Rating</label>
-              {isEditing ? (
-                <div className="percentage-rating-container">
-                  <div className="movie-details-input-wrapper">
-                    <input
-                      type="number"
-                      min={editData.starRating > 0 ? getPercentageRange(editData.starRating).min : 0}
-                      max={editData.starRating > 0 ? getPercentageRange(editData.starRating).max : 100}
-                      value={editData.percentageRating}
-                      onChange={handlePercentageChange}
-                      onBlur={handlePercentageBlur}
-                      className="movie-details-input percentage-input"
-                      disabled={isSubmitting}
-                      placeholder="85"
-                    />
-                    <span className="percentage-symbol">%</span>
-                  </div>
-                  {editData.starRating > 0 && (
-                    <div className="percentage-range-hint">
-                      Range: {getPercentageRange(editData.starRating).min}-{getPercentageRange(editData.starRating).max}%
+            ) : (
+              <>
+                <div className="review-cards-grid">
+                  {/* Watched Date Card */}
+                  <div className="review-card square">
+                    <div className="review-card-content">
+                      <div className="card-icon-wrapper"><Calendar /></div>
+                      <div className="card-value-section">
+                        {isEditing ? (
+                          <>
+                            <input
+                              type="date"
+                              value={editData.watchedDate}
+                              onChange={(e) => setEditData(prev => ({ ...prev, watchedDate: e.target.value }))}
+                              className="apple-input"
+                              disabled={isSubmitting}
+                            />
+                            <span className="card-secondary-value">Watched Date</span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="card-primary-value">
+                              {dateParts.fullDate}
+                            </span>
+                            <span className="card-secondary-value">Watched Date</span>
+                          </>
+                        )}
+                      </div>
                     </div>
-                  )}
-                </div>
-              ) : (
-                <span className="movie-details-value">
-                  {movie.detailed_rating || movie.detailedRating ? `${movie.detailed_rating || movie.detailedRating}%` : 'No rating'}
-                </span>
-              )}
-            </div>
-
-            {/* Rewatch Status */}
-            <div className="movie-details-field">
-              <label>Rewatch</label>
-              {isEditing ? (
-                <button
-                  type="button"
-                  className={`rewatch-toggle-btn ${editData.isRewatch ? 'active' : ''}`}
-                  onClick={() => setEditData(prev => ({ ...prev, isRewatch: !prev.isRewatch }))}
-                  disabled={isSubmitting}
-                >
-                  <RotateCcw size={16} />
-                  <span>{editData.isRewatch ? 'Yes, this is a rewatch' : 'No, first time watching'}</span>
-                </button>
-              ) : (
-                <span className="movie-details-value">
-                  {movie.is_rewatch || movie.isRewatch ? 'Yes' : 'No'}
-                </span>
-              )}
-            </div>
-
-            {/* Tags */}
-            <div className="movie-details-field">
-              <label>Tags</label>
-              {isEditing ? (
-                <div className="tags-container">
-                  <div className="movie-details-input-wrapper">
-                    <Tag className="movie-details-input-icon" size={16} />
-                    <input
-                      type="text"
-                      placeholder="Add a tag (one word only)..."
-                      value={currentTag}
-                      onChange={handleTagInputChange}
-                      onKeyPress={handleTagKeyPress}
-                      className="movie-details-input"
-                      disabled={isSubmitting}
-                    />
                   </div>
-                  {editData.tags.length > 0 && (
-                    <div className="tags-list">
-                      {editData.tags.map((tag, index) => (
-                        <span key={index} className="tag-item">
-                          {tag}
-                          <button
-                            type="button"
-                            className="tag-remove"
-                            onClick={() => removeTag(tag)}
-                            aria-label={`Remove ${tag} tag`}
-                            disabled={isSubmitting}
-                          >
-                            <X size={12} />
-                          </button>
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="movie-details-tags-display">
-                  {movie.tags ? (
-                    typeof movie.tags === 'string' 
-                      ? movie.tags.split(', ').filter(Boolean).map((tag, index) => (
-                          <span key={index} className="tag-item-display">{tag}</span>
-                        ))
-                      : movie.tags.map((tag, index) => (
-                          <span key={index} className="tag-item-display">{tag}</span>
-                        ))
-                  ) : (
-                    <span className="movie-details-value">No tags</span>
-                  )}
-                </div>
-              )}
-            </div>
 
-            {/* Review */}
-            <div className="movie-details-field">
-              <label>Review</label>
-              {isEditing ? (
-                <textarea
-                  value={editData.review}
-                  onChange={(e) => setEditData(prev => ({ ...prev, review: e.target.value }))}
-                  placeholder="Write your review..."
-                  rows={4}
-                  className="movie-details-textarea"
-                  disabled={isSubmitting}
-                />
-              ) : (
-                <div className="movie-details-review">
-                  {movie.notes ? (
-                    <p>{movie.notes}</p>
-                  ) : (
-                    <span className="movie-details-value">No review</span>
-                  )}
+                  {/* Star Rating Card */}
+                  <div className="review-card square">
+                    <div className="review-card-content">
+                      <div className="card-icon-wrapper"><Star/></div>
+                      <div className="card-value-section">
+                        {isEditing ? (
+                          <>
+                            <div className="star-rating-display">
+                              {renderStars()}
+                            </div>
+                            <span className="card-secondary-value">{editData.starRating > 0 ? editData.starRating + '/5' : 'Rate It'}</span>
+                          </>
+                        ) : (
+                          <>
+                            {(movie.rating || 0) > 0 ? (
+                              <div className="star-rating-display-static">
+                                {renderDisplayStars(movie.rating)}
+                              </div>
+                            ) : (
+                              <span className="card-empty-state">No Rating</span>
+                            )}
+                            <span className="card-secondary-value">Star Rating</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Percentage Rating Card */}
+                  <div className="review-card square">
+                    <div className="review-card-content">
+                      <div className="card-icon-wrapper"><Percent/></div>
+                      <div className="card-value-section">
+                        {isEditing ? (
+                          <>
+                            <div className="percentage-rating-container-edit">
+                               <input
+                                  type="number"
+                                  min={0}
+                                  max={100}
+                                  value={editData.percentageRating}
+                                  onChange={handlePercentageChange}
+                                  onBlur={handlePercentageBlur}
+                                  className="apple-input percentage-input-card"
+                                  disabled={isSubmitting}
+                                  placeholder="0-100"
+                                />
+                                <span className="percentage-symbol-card">%</span>
+                            </div>
+                            <span className="card-secondary-value">Score</span>
+                          </>
+                        ) : (
+                          <>
+                            {(movie.detailed_rating || movie.detailedRating) ? (
+                              <span className="card-primary-value score-value">{movie.detailed_rating || movie.detailedRating}%</span>
+                            ) : (
+                              <span className="card-empty-state">N/A</span>
+                            )}
+                            <span className="card-secondary-value">Score</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Rewatch Card */}
+                  <div className="review-card square">
+                    <div className="review-card-content">
+                      <div className="card-icon-wrapper"><RotateCcw /></div>
+                      <div className="card-value-section">
+                        {isEditing ? (
+                          <>
+                            <button
+                              type="button"
+                              className={`rewatch-button ${editData.isRewatch ? 'active' : ''}`}
+                              onClick={() => setEditData(prev => ({ ...prev, isRewatch: !prev.isRewatch }))}
+                              disabled={isSubmitting}
+                            >
+                              <RotateCcw size={22} />
+                            </button>
+                            <span className="card-secondary-value">
+                              {editData.isRewatch ? 'Rewatch' : 'First Time'}
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="card-primary-value">{(movie.is_rewatch || movie.isRewatch) ? 'Yes' : 'No'}</span>
+                            <span className="card-secondary-value">Rewatch</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Tags Card */}
+                  <div className="review-card square">
+                    <div className="review-card-content">
+                      <div className="card-icon-wrapper"><Tag /></div>
+                      <div className="card-value-section">
+                        {isEditing ? (
+                          <>
+                            <div className="tags-edit-section">
+                              <input
+                                type="text"
+                                placeholder="Add tag..."
+                                value={currentTag}
+                                onChange={handleTagInputChange}
+                                onKeyPress={handleTagKeyPress}
+                                className="apple-input tag-input"
+                                disabled={isSubmitting}
+                              />
+                              {editData.tags.length > 0 && (
+                                <div className="tags-mini-list">
+                                  {editData.tags.slice(0, 2).map((tag, index) => (
+                                    <span key={index} className="tag-mini">
+                                      {tag}
+                                      <button type="button" className="tag-remove-mini" onClick={() => removeTag(tag)} disabled={isSubmitting}><X size={10}/></button>
+                                    </span>
+                                  ))}
+                                  {editData.tags.length > 2 && <span className="tags-more-mini">+{editData.tags.length - 2}</span>}
+                                </div>
+                              )}
+                            </div>
+                            <span className="card-secondary-value">Tags</span>
+                          </>
+                        ) : (
+                          <>
+                            {(movie.tags && (typeof movie.tags === 'string' ? movie.tags.split(', ').filter(Boolean) : movie.tags).length > 0) ? (
+                              <div className="tags-display-section">
+                                {(typeof movie.tags === 'string' ? movie.tags.split(', ').filter(Boolean) : movie.tags).slice(0,3).map((tag, index) => (
+                                  <span key={index} className="card-tag-item">{tag}</span>
+                                ))}
+                                {(typeof movie.tags === 'string' ? movie.tags.split(', ').filter(Boolean) : movie.tags).length > 3 && <span className="tags-more-mini">+{ (typeof movie.tags === 'string' ? movie.tags.split(', ').filter(Boolean) : movie.tags).length - 3}</span>}
+                              </div>
+                            ) : (
+                              <span className="card-empty-state">No Tags</span>
+                            )}
+                            <span className="card-secondary-value">Tags</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              )}
-            </div>
+
+                {/* Review Notes Section (Full Width Card) */}
+                <div className="review-card full-width">
+                  <div className="review-card-content">
+                     <div className="card-icon-wrapper" style={{ alignSelf: 'flex-start', marginTop: '4px' }}><Film/></div>
+                    <div className="card-value-section">
+                      <span className="card-secondary-value" style={{ marginBottom: '8px', fontWeight: '600', alignSelf: 'flex-start' }}>Review Notes</span>
+                      {isEditing ? (
+                        <textarea
+                          value={editData.review}
+                          onChange={(e) => setEditData(prev => ({ ...prev, review: e.target.value }))}
+                          placeholder="What did you think?"
+                          className="review-card-textarea"
+                          disabled={isSubmitting}
+                          rows={4}
+                        />
+                      ) : (
+                        movie.notes ? (
+                          <div className="review-notes"><p>{movie.notes}</p></div>
+                        ) : (
+                          <span className="card-empty-state">No review notes yet.</span>
+                        )
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
     </div>
   );
+
+  return ReactDOM.createPortal(modalContent, document.body);
 };
 
 export default MovieDetailsModal; 

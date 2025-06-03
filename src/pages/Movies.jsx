@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useCallback, useMemo, useState } from 'react';
-import { Star, Film } from 'lucide-react';
+import { Star, Film, RotateCcw } from 'lucide-react';
 import { useSupabaseMovieData } from '../hooks/useSupabaseMovieData';
 import MovieDetailsModal from '../components/MovieDetailsModal';
 
@@ -195,28 +195,39 @@ function Movies() {
                 <div className="poster-fallback" style={{ display: movie.posterUrl ? 'none' : 'flex' }}>
                   <Film size={48} />
                 </div>
-              </div>
-              <div className="movie-info">
-                <h3 className="movie-title">{movie.title}</h3>
-                <div className="movie-meta">
-                  <div className="movie-rating">
-                    <Star size={16} fill="currentColor" />
-                    {movie.rating}
-                  </div>
-                  {movie.detailedRating && (
-                    <div className="detailed-rating" style={{ marginLeft: '10px', fontSize: '14px', color: '#666' }}>
-                      ({movie.detailedRating}/100)
-                    </div>
-                  )}
-                </div>
-                <div className="movie-date">
-                  Watched: {movie.month}/{movie.day}/{movie.year}
-                </div>
-                {movie.isRewatch && (
-                  <div style={{ fontSize: '12px', color: '#888', marginTop: '4px' }}>
-                    (Rewatch)
+                
+                {/* Rewatch indicator overlay */}
+                {(movie.rewatch || movie.isRewatch) && (
+                  <div className="rewatch-indicator">
+                    <RotateCcw size={16} />
                   </div>
                 )}
+              </div>
+              <div className="movie-info">
+                <div className="movie-header">
+                  <h4 className="movie-title">{movie.title}</h4>
+                  <div className="movie-year">{movie.year}</div>
+                </div>
+                
+                <div className="movie-ratings">
+                  <div className={`star-rating ${movie.rating === 5 ? 'five-star' : ''}`}>
+                    {[...Array(5)].map((_, i) => (
+                      <Star 
+                        key={i} 
+                        size={14} 
+                        fill={i < movie.rating ? "currentColor" : "none"}
+                        className={i < movie.rating ? "filled" : "empty"}
+                      />
+                    ))}
+                  </div>
+                  <div className="detailed-rating">
+                    {movie.detailedRating || '—'}
+                  </div>
+                </div>
+                
+                <div className="movie-date">
+                  {movie.month}/{movie.day}/{movie.year}
+                </div>
               </div>
             </div>
           ))}
