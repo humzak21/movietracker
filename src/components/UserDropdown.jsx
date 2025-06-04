@@ -26,15 +26,27 @@ const UserDropdown = () => {
   useEffect(() => {
     const fetchLatestCommit = async () => {
       try {
-        const response = await fetch('https://api.github.com/repos/humzak21/movietracker/commits?per_page=1');
+        console.log('Fetching latest commit from GitHub API...');
+        const response = await fetch('https://api.github.com/repos/humzak21/movietracker/commits?per_page=1', {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/vnd.github.v3+json',
+            'User-Agent': 'MovieTracker-App'
+          }
+        });
+        
+        console.log('GitHub API response status:', response.status);
+        
         if (response.ok) {
           const commits = await response.json();
+          console.log('GitHub API response data:', commits);
           if (commits.length > 0) {
             setCommitMessage(commits[0].commit.message);
           } else {
             setCommitMessage('No commits found');
           }
         } else {
+          console.error('GitHub API response not ok:', response.status, response.statusText);
           setCommitMessage('Unable to fetch latest commit');
         }
       } catch (error) {
