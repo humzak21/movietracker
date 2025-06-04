@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { User, Settings, LogOut, ChevronDown } from 'lucide-react';
+import { User, Settings, LogOut, ChevronDown, GitCommit } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const UserDropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [commitMessage, setCommitMessage] = useState('Loading...');
   const dropdownRef = useRef(null);
   const { user, signOut } = useAuth();
 
@@ -21,6 +22,30 @@ const UserDropdown = () => {
     };
   }, []);
 
+  // Fetch latest GitHub commit message
+  useEffect(() => {
+    const fetchLatestCommit = async () => {
+      try {
+        const response = await fetch('https://api.github.com/repos/humzak21/movietracker/commits?per_page=1');
+        if (response.ok) {
+          const commits = await response.json();
+          if (commits.length > 0) {
+            setCommitMessage(commits[0].commit.message);
+          } else {
+            setCommitMessage('No commits found');
+          }
+        } else {
+          setCommitMessage('Unable to fetch latest commit');
+        }
+      } catch (error) {
+        console.error('Error fetching commit:', error);
+        setCommitMessage('Failed to load commit message');
+      }
+    };
+
+    fetchLatestCommit();
+  }, []);
+
   const handleSignOut = async () => {
     try {
       await signOut();
@@ -34,6 +59,15 @@ const UserDropdown = () => {
     setIsOpen(!isOpen);
   };
 
+  // Truncate email for display in button
+  const truncateEmail = (email) => {
+    if (!email) return 'User';
+    if (email.length > 20) {
+      return email.substring(0, 17) + '...';
+    }
+    return email;
+  };
+
   return (
     <div className="user-dropdown" ref={dropdownRef}>
       <button 
@@ -43,7 +77,7 @@ const UserDropdown = () => {
         aria-haspopup="true"
       >
         <User size={16} />
-        <span>User</span>
+        <span>{truncateEmail(user?.email)}</span>
         <ChevronDown 
           size={14} 
           className={`user-dropdown-chevron ${isOpen ? 'rotated' : ''}`}
@@ -53,7 +87,16 @@ const UserDropdown = () => {
       {isOpen && (
         <div className="user-dropdown-menu">
           <div className="user-dropdown-header">
-            <div className="user-email">{user?.email}</div>
+            <button 
+              className="user-dropdown-item commit-message-item"
+              onClick={() => {
+                window.open('https://github.com/humzak21/movietracker', '_blank');
+                setIsOpen(false);
+              }}
+            >
+              <GitCommit size={16} />
+              <span>{commitMessage}</span>
+            </button>
           </div>
           
           <div className="user-dropdown-divider"></div>
