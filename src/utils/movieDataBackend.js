@@ -1,5 +1,6 @@
 // Movie data utilities using the backend API
 import apiService from '../services/apiService.js';
+import { parseESTDate } from './dateUtils';
 
 /**
  * Parse movie data from the backend API
@@ -89,21 +90,26 @@ export const getTrendingMovies = async (timeWindow = 'week') => {
 };
 
 /**
- * Get top movies (highest rated)
+ * Get top rated movies (5 stars or 90+ detailed rating)
  */
-export const getTopMovies = (movies, limit = 10) => {
+export const getTopRatedMovies = (movies) => {
   return movies
     .filter(m => {
-      // Get the highest rating for this movie
-      const bestRating = Math.max(...(m.ratings?.map(r => r.user_rating) || [0]));
-      return bestRating >= 4.5;
+      return m.ratings?.some(r => r.user_rating === 5 || (r.detailed_rating && r.detailed_rating >= 90));
     })
     .sort((a, b) => {
-      const aRating = Math.max(...(a.ratings?.map(r => r.user_rating) || [0]));
-      const bRating = Math.max(...(b.ratings?.map(r => r.user_rating) || [0]));
-      return bRating - aRating;
-    })
-    .slice(0, limit);
+      // Sort by highest rating first, then by most recent watch date
+      const aMaxRating = Math.max(...(a.ratings?.map(r => r.user_rating || 0) || [0]));
+      const bMaxRating = Math.max(...(b.ratings?.map(r => r.user_rating || 0) || [0]));
+      
+      if (aMaxRating !== bMaxRating) {
+        return bMaxRating - aMaxRating;
+      }
+      
+      const aDate = Math.max(...(a.ratings?.map(r => parseESTDate(r.watch_date).getTime()) || [0]));
+      const bDate = Math.max(...(b.ratings?.map(r => parseESTDate(r.watch_date).getTime()) || [0]));
+      return bDate - aDate;
+    });
 };
 
 /**
@@ -116,8 +122,8 @@ export const getPerfectRatedMovies = (movies) => {
     })
     .sort((a, b) => {
       // Sort by most recent watch date
-      const aDate = Math.max(...(a.ratings?.map(r => new Date(r.watch_date).getTime()) || [0]));
-      const bDate = Math.max(...(b.ratings?.map(r => new Date(r.watch_date).getTime()) || [0]));
+      const aDate = Math.max(...(a.ratings?.map(r => parseESTDate(r.watch_date).getTime()) || [0]));
+      const bDate = Math.max(...(b.ratings?.map(r => parseESTDate(r.watch_date).getTime()) || [0]));
       return bDate - aDate;
     });
 };
@@ -128,8 +134,8 @@ export const getPerfectRatedMovies = (movies) => {
 export const getRecentMovies = (movies, limit = 20) => {
   return movies
     .sort((a, b) => {
-      const aDate = Math.max(...(a.ratings?.map(r => new Date(r.watch_date).getTime()) || [0]));
-      const bDate = Math.max(...(b.ratings?.map(r => new Date(r.watch_date).getTime()) || [0]));
+      const aDate = Math.max(...(a.ratings?.map(r => parseESTDate(r.watch_date).getTime()) || [0]));
+      const bDate = Math.max(...(b.ratings?.map(r => parseESTDate(r.watch_date).getTime()) || [0]));
       return bDate - aDate;
     })
     .slice(0, limit);
@@ -210,8 +216,10 @@ export const transformMovieData = (movies) => {
   return movies.map(movie => {
     // Get the most recent rating for this movie
     const latestRating = movie.ratings?.sort((a, b) => 
-      new Date(b.watch_date) - new Date(a.watch_date)
+      parseESTDate(b.watch_date) - parseESTDate(a.watch_date)
     )[0];
+
+    const watchDate = parseESTDate(latestRating?.watch_date || movie.release_date);
 
     return {
       // Keep original movie data
@@ -222,9 +230,9 @@ export const transformMovieData = (movies) => {
       rating: latestRating?.user_rating || 0,
       detailedRating: latestRating?.detailed_rating || null,
       date: latestRating?.watch_date || movie.release_date,
-      year: new Date(latestRating?.watch_date || movie.release_date).getFullYear(),
-      month: new Date(latestRating?.watch_date || movie.release_date).getMonth() + 1,
-      day: new Date(latestRating?.watch_date || movie.release_date).getDate(),
+      year: watchDate.getFullYear(),
+      month: watchDate.getMonth() + 1,
+      day: watchDate.getDate(),
       
       // Enhanced data from backend
       posterUrl: movie.poster_url,

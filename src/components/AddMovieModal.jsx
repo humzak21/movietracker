@@ -3,6 +3,7 @@ import { X, Search, Star, Tag, RotateCcw, Loader2, Calendar } from 'lucide-react
 import apiService from '../services/apiService';
 import RatingComparisonModal from './RatingComparisonModal';
 import { useAuth } from '../contexts/AuthContext';
+import { getCurrentDateEST, getYesterdayDateEST, formatDateForDisplay } from '../utils/dateUtils';
 
 const AddMovieModal = ({ isOpen, onClose }) => {
   const { isAuthenticated } = useAuth();
@@ -18,7 +19,7 @@ const AddMovieModal = ({ isOpen, onClose }) => {
   const [isRewatch, setIsRewatch] = useState(false);
   const [tags, setTags] = useState([]);
   const [currentTag, setCurrentTag] = useState('');
-  const [watchedDate, setWatchedDate] = useState(new Date().toISOString().split('T')[0]); // Default to today
+  const [watchedDate, setWatchedDate] = useState(getCurrentDateEST()); // Default to today in EST
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [submitSuccess, setSubmitSuccess] = useState(false);
@@ -92,7 +93,7 @@ const AddMovieModal = ({ isOpen, onClose }) => {
       setIsRewatch(false);
       setTags([]);
       setCurrentTag('');
-      setWatchedDate(new Date().toISOString().split('T')[0]); // Reset to today
+      setWatchedDate(getCurrentDateEST()); // Reset to today in EST
       setIsSubmitting(false);
       setSubmitError('');
       setSubmitSuccess(false);
@@ -199,13 +200,11 @@ const AddMovieModal = ({ isOpen, onClose }) => {
   };
 
   const setDateToToday = () => {
-    setWatchedDate(new Date().toISOString().split('T')[0]);
+    setWatchedDate(getCurrentDateEST());
   };
 
   const setDateToYesterday = () => {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    setWatchedDate(yesterday.toISOString().split('T')[0]);
+    setWatchedDate(getYesterdayDateEST());
   };
 
   // Get percentage range based on star rating
@@ -408,18 +407,7 @@ const AddMovieModal = ({ isOpen, onClose }) => {
   };
 
   const formatDisplayDate = (dateString) => {
-    if (!dateString) return '';
-    
-    // Parse the date string directly to avoid timezone issues
-    const [year, month, day] = dateString.split('-');
-    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-    
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'short', 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    });
+    return formatDateForDisplay(dateString);
   };
 
   return (

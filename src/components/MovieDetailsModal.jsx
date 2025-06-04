@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import { X, Edit3, Save, X as Cancel, Star, Calendar, Tag, RotateCcw, ChevronLeft, ChevronRight, Film, Clock, Users, Play, Percent } from 'lucide-react';
 import apiService from '../services/apiService';
 import { useAuth } from '../contexts/AuthContext';
+import { getFormattedDateParts as getESTFormattedDateParts } from '../utils/dateUtils';
 
 const MovieDetailsModal = ({ isOpen, onClose, movie, movies, currentIndex, onNavigate }) => {
   const { isAuthenticated } = useAuth();
@@ -364,13 +365,7 @@ const MovieDetailsModal = ({ isOpen, onClose, movie, movies, currentIndex, onNav
   };
 
   const getFormattedDateParts = (dateString) => {
-    if (!dateString) return { day: 'N/A', monthYear: 'Unknown Date', fullDate: 'Unknown Date' };
-    const date = new Date(dateString);
-    return {
-      day: date.toLocaleDateString('en-US', { day: 'numeric' }),
-      monthYear: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
-      fullDate: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-    };
+    return getESTFormattedDateParts(dateString);
   };
 
   const formatRuntime = (minutes) => {

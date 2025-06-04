@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import apiService from '../services/apiService';
+import { parseESTDate } from '../utils/dateUtils';
 
 export const useSupabaseMovieData = () => {
   const [movies, setMovies] = useState([]);
@@ -29,8 +30,7 @@ export const useSupabaseMovieData = () => {
 
   // Transform Supabase data to match frontend expectations
   const transformMovie = useCallback((movie) => {
-    // Parse watch date to get month, day, year
-    const watchDate = new Date(movie.watch_date);
+    const watchDate = parseESTDate(movie.watch_date);
     
     return {
       ...movie,
@@ -40,7 +40,7 @@ export const useSupabaseMovieData = () => {
       date: movie.watch_date,
       month: watchDate.getMonth() + 1,
       day: watchDate.getDate(),
-      year: movie.release_year || new Date(movie.release_date).getFullYear(),
+      year: watchDate.getFullYear(),
       watchYear: watchDate.getFullYear(),
       posterUrl: movie.poster_url,
       backdropUrl: movie.backdrop_url,

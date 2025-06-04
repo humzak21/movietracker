@@ -21,16 +21,19 @@ export const useTimelineData = () => {
 
   // Transform Supabase data to match frontend expectations
   const transformMovie = useCallback((movie) => {
-    const watchDate = new Date(movie.watch_date);
+    // Simple date parsing - just use the YYYY-MM-DD string as-is
+    const watchDateString = movie.watch_date; // e.g., "2025-02-01"
+    const [year, month, day] = watchDateString.split('-').map(Number);
     
     return {
       ...movie,
       rating: movie.rating || 0,
       detailedRating: movie.detailed_rating || null,
-      date: movie.watch_date,
-      month: watchDate.getMonth() + 1,
-      day: watchDate.getDate(),
-      year: watchDate.getFullYear(),
+      date: movie.watch_date, // Keep the original YYYY-MM-DD format
+      watchedDate: movie.watch_date, // Also store as watchedDate for timeline
+      month: month,
+      day: day,
+      year: year,
       posterUrl: movie.poster_url,
       backdropUrl: movie.backdrop_url,
       isRewatch: movie.is_rewatch || false,
@@ -158,7 +161,7 @@ export const useTimelineData = () => {
   // Group movies by date for timeline display
   const timelineEntries = useMemo(() => {
     const grouped = filteredMovies.reduce((acc, movie) => {
-      const date = `${movie.month}/${movie.day}/${movie.year}`;
+      const date = movie.date;
       if (!acc[date]) acc[date] = [];
       acc[date].push(movie);
       return acc;

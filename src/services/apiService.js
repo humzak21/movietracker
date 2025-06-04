@@ -114,6 +114,15 @@ class ApiService {
     return this.request('/tmdb/genres');
   }
 
+  // Quotes operations
+  async getRandomQuote() {
+    return this.request('/quotes/random');
+  }
+
+  async getAllQuotes() {
+    return this.request('/quotes');
+  }
+
   // Health check
   async healthCheck() {
     // Use the backend base URL for health check

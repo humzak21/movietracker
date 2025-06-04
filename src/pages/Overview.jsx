@@ -3,6 +3,7 @@ import { Star, Film, RotateCcw } from 'lucide-react';
 import Slider from 'react-slick';
 import { motion, useAnimation, useInView } from 'framer-motion';
 import { useSupabaseMovieData } from '../hooks/useSupabaseMovieData';
+import { useQuotes } from '../hooks/useQuotes';
 import { importSlideshowImages } from '../utils/slideshowImages';
 import MovieDetailsModal from '../components/MovieDetailsModal';
 
@@ -15,6 +16,16 @@ function Overview() {
     loading,
     error
   } = useSupabaseMovieData();
+  
+  const { quote, loading: quoteLoading } = useQuotes();
+  
+  // Memoize the display text to prevent changes during animations
+  const displayQuote = useMemo(() => {
+    if (quoteLoading || !quote) {
+      return "Humza's personal movie tracker";
+    }
+    return quote;
+  }, [quote, quoteLoading]);
   
   const [isTabVisible, setIsTabVisible] = useState(true);
   const [selectedMovie, setSelectedMovie] = useState(null);
@@ -273,7 +284,7 @@ function Overview() {
               <motion.p
                 variants={fadeInUp}
               >
-                Humza's Personal Movie Tracker
+                {displayQuote}
               </motion.p>
               
               <motion.div 

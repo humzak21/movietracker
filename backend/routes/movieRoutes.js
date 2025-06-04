@@ -1,6 +1,7 @@
 import express from 'express';
 import movieController from '../controllers/movieController.js';
 import tmdbController from '../controllers/tmdbController.js';
+import quotesController from '../controllers/quotesController.js';
 
 const router = express.Router();
 
@@ -12,6 +13,10 @@ router.get('/rating-range', movieController.getMoviesByRatingRange);
 router.get('/search', movieController.searchMovies);
 router.get('/stats', movieController.getMovieStats);
 router.post('/add', movieController.addMovie);
+
+// Quotes routes
+router.get('/quotes/random', quotesController.getRandomQuote);
+router.get('/quotes', quotesController.getAllQuotes);
 
 // TMDB routes (also specific routes)
 router.get('/tmdb/search', tmdbController.searchMovies);

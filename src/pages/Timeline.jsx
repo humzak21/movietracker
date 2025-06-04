@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useCallback, useState } from 'react';
 import { Film, RotateCcw, Star, ChevronDown, MessageCircle } from 'lucide-react';
 import { useTimelineData } from '../hooks/useTimelineData';
 import MovieDetailsModal from '../components/MovieDetailsModal';
+import { getFormattedDateParts } from '../utils/dateUtils';
 
 function Timeline() {
   const { 
@@ -46,7 +47,11 @@ function Timeline() {
     const monthGroups = new Map();
 
     timelineEntries.forEach(([date, dayMovies]) => {
-      const monthKey = new Date(date).toLocaleDateString('en-US', { 
+      // Parse date string directly to avoid timezone issues
+      const [year, month, day] = date.split('-').map(Number);
+      const dateObj = new Date(year, month - 1, day); // month is 0-indexed in Date constructor
+      
+      const monthKey = dateObj.toLocaleDateString('en-US', { 
         year: 'numeric', 
         month: 'long' 
       });
@@ -147,10 +152,10 @@ function Timeline() {
 
   // Format date parts for column display
   const getDateParts = (dateString) => {
-    const date = new Date(dateString);
+    const dateParts = getFormattedDateParts(dateString);
     return {
-      month: date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase(),
-      day: date.getDate()
+      month: dateParts.monthYear.split(' ')[0].toUpperCase(),
+      day: dateParts.day
     };
   };
 
