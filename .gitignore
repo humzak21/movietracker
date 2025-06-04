@@ -29,8 +29,6 @@ dist/
 certs/
 
 # Scripts
-backend/scripts/
-scripts/
 
 # Logs
 npm-debug.log*
