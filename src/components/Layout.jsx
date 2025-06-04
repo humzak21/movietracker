@@ -263,6 +263,16 @@ function Layout({ children }) {
         {pageReady && isAuthenticated && <FloatingAddButton onClick={openAddMovieModal} />}
       </main>
 
+      <footer style={{ 
+        textAlign: 'center', 
+        padding: '40px 20px 60px', 
+        color: 'var(--text-secondary)',
+        fontSize: '14px',
+        fontWeight: 'var(--font-weight-medium)'
+      }}>
+        © Squared Studios 2025.
+      </footer>
+
       <LoginModal isOpen={loginModalOpen} onClose={closeLoginModal} />
       <AddMovieModal isOpen={addMovieModalOpen} onClose={closeAddMovieModal} />
     </div>

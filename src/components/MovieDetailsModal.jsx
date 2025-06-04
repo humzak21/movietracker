@@ -741,7 +741,7 @@ const MovieDetailsModal = ({ isOpen, onClose, movie, movies, currentIndex, onNav
                   <div className="review-card-content">
                      <div className="card-icon-wrapper" style={{ alignSelf: 'flex-start', marginTop: '4px' }}><Film/></div>
                     <div className="card-value-section">
-                      <span className="card-secondary-value" style={{ marginBottom: '8px', fontWeight: '600', alignSelf: 'flex-start' }}>Review Notes</span>
+                      <span className="card-secondary-value" style={{ marginBottom: '8px', marginTop: '6px', fontWeight: '600', alignSelf: 'flex-start', color: 'white', fontSize: '18px' }}>Review</span>
                       {isEditing ? (
                         <textarea
                           value={editData.review}
