@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import { existsSync } from 'fs';
 
 import movieRoutes from './routes/movieRoutes.js';
+import statsRoutes from './routes/statsRoutes.js';
 
 // Get current file directory for ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -92,6 +93,7 @@ app.get('/health', (req, res) => {
 
 // API routes
 app.use('/api', movieRoutes);
+app.use('/api/stats', statsRoutes);
 
 // Serve static files from the frontend build in production
 if (process.env.NODE_ENV === 'production') {

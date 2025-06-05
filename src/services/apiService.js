@@ -155,6 +155,39 @@ class ApiService {
     // For now, just return a placeholder
     return { success: true, message: 'Run "npm run enhance" in the backend to enhance all movies' };
   }
+
+  // Statistics operations
+  async getBasicStats() {
+    return this.request('/stats/basic');
+  }
+
+  async getRatingStats() {
+    return this.request('/stats/ratings');
+  }
+
+  async getTimeStats() {
+    return this.request('/stats/temporal');
+  }
+
+  async getGenreStats() {
+    return this.request('/stats/genres');
+  }
+
+  async getDirectorStats() {
+    return this.request('/stats/directors');
+  }
+
+  async getReleaseYearStats() {
+    return this.request('/stats/release-years');
+  }
+
+  async getRewatchStats() {
+    return this.request('/stats/rewatches');
+  }
+
+  async getDayOfWeekStats() {
+    return this.request('/stats/day-of-week');
+  }
 }
 
 export default new ApiService(); 
