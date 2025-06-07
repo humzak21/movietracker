@@ -170,15 +170,23 @@ BEGIN
       jsonb_agg(
         jsonb_build_object(
           'title', title,
-          'watch_count', watch_count
+          'watch_count', watch_count,
+          'poster_url', poster_url
         )
         ORDER BY watch_count DESC
       ) as top_films
     FROM (
       SELECT 
         title,
-        COUNT(*) as watch_count
-      FROM diary
+        COUNT(*) as watch_count,
+        -- Get the most recent poster_url for this title (in case multiple entries exist)
+        (SELECT poster_url 
+         FROM diary d2 
+         WHERE LOWER(d2.title) = LOWER(d1.title) 
+         AND d2.poster_url IS NOT NULL 
+         ORDER BY d2.watched_date DESC 
+         LIMIT 1) as poster_url
+      FROM diary d1
       GROUP BY title
       HAVING COUNT(*) > 1
       ORDER BY watch_count DESC

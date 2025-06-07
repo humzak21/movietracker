@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useCallback, useState } from 'react';
-import { Film, RotateCcw, Star, ChevronDown, MessageCircle } from 'lucide-react';
+import { Film, RotateCcw, Star, ChevronDown, MessageCircle, ArrowUp, ArrowDown } from 'lucide-react';
 import { useTimelineData } from '../hooks/useTimelineData';
 import MovieDetailsModal from '../components/MovieDetailsModal';
 import { getFormattedDateParts } from '../utils/dateUtils';
+import StarDisplay from '../components/StarDisplay';
 
 function Timeline() {
   const { 
@@ -329,16 +330,7 @@ function Timeline() {
                       
                       {/* Stars Column */}
                       <div className="timeline-movie-stars">
-                        <div className={`timeline-star-rating ${movie.rating === 5 ? 'five-star' : ''}`}>
-                          {[...Array(5)].map((_, i) => (
-                            <Star 
-                              key={i} 
-                              size={12} 
-                              fill={i < movie.rating ? "currentColor" : "none"}
-                              className={i < movie.rating ? "filled" : "empty"}
-                            />
-                          ))}
-                        </div>
+                        <StarDisplay rating={movie.rating} />
                       </div>
                       
                       {/* Rewatch Column */}

@@ -907,22 +907,57 @@
 }
 
 .star-glyph.gold {
-  color: #FFD700;
+  color: #FFD700; /* Gold color */
   fill: #FFD700;
 }
 
 .star-glyph.blue {
-  color: var(--primary-blue);
+  color: var(--primary-blue); /* Blue color */
   fill: var(--primary-blue);
 }
 
 .star-glyph.empty {
-  color: var(--text-secondary);
-  opacity: 0.3;
+  color: var(--border); /* Neutral/empty color */
+  fill: var(--border); 
+  opacity: 0.5;
+}
+
+.star-glyph.half-filled {
+  position: relative;
+  overflow: hidden;
+}
+
+.star-glyph.half-filled::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  background: currentColor;
+  z-index: 1;
+}
+
+/* Alternative approach using clip-path for better browser support */
+.star-glyph.half-filled {
+  background: linear-gradient(90deg, currentColor 50%, var(--border) 50%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 [data-theme="dark"] .star-glyph.empty {
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--border-light); /* Lighter empty for dark mode */
+  fill: var(--border-light);
+  opacity: 0.4;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .star-glyph.empty {
+    color: var(--border-light);
+    fill: var(--border-light);
+    opacity: 0.4;
+  }
 }
 
 /* Star rating display */
@@ -1365,6 +1400,30 @@
   color: var(--border); /* Neutral/empty color */
   fill: var(--border); 
   opacity: 0.5;
+}
+
+.star-glyph.half-filled {
+  position: relative;
+  overflow: hidden;
+}
+
+.star-glyph.half-filled::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  background: currentColor;
+  z-index: 1;
+}
+
+/* Alternative approach using clip-path for better browser support */
+.star-glyph.half-filled {
+  background: linear-gradient(90deg, currentColor 50%, var(--border) 50%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 [data-theme="dark"] .star-glyph.empty {

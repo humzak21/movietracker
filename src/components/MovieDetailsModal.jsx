@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
-import { X, Edit3, Save, X as Cancel, Star, Calendar, Tag, RotateCcw, ChevronLeft, ChevronRight, Film, Clock, Users, Play, Percent } from 'lucide-react';
+import { X, Edit3, Save, X as Cancel, Star, Calendar, Tag, RotateCcw, ChevronLeft, ChevronRight, Film, Clock, Users, Play, Percent, MessageCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { format } from 'date-fns';
 import apiService from '../services/apiService';
 import { useAuth } from '../contexts/AuthContext';
 import { getFormattedDateParts as getESTFormattedDateParts } from '../utils/dateUtils';
+import StarDisplay from './StarDisplay';
 
 const MovieDetailsModal = ({ isOpen, onClose, movie, movies, currentIndex, onNavigate }) => {
   const { isAuthenticated } = useAuth();
@@ -340,30 +343,6 @@ const MovieDetailsModal = ({ isOpen, onClose, movie, movies, currentIndex, onNav
     return stars;
   };
 
-  const renderDisplayStars = (rating) => {
-    const displayStars = [];
-    const numRating = parseFloat(rating) || 0;
-    const isFiveStar = numRating === 5;
-
-    for (let i = 1; i <= 5; i++) {
-      let starState = 'empty';
-      if (numRating >= i) {
-        starState = 'filled';
-      } else if (numRating >= i - 0.5) {
-        starState = 'half';
-      }
-
-      displayStars.push(
-        <Star
-          key={i}
-          size={18}
-          className={`star-glyph ${starState === 'filled' ? (isFiveStar ? 'gold' : 'blue') : 'empty'}`}
-        />
-      );
-    }
-    return displayStars;
-  };
-
   const getFormattedDateParts = (dateString) => {
     return getESTFormattedDateParts(dateString);
   };
@@ -607,7 +586,7 @@ const MovieDetailsModal = ({ isOpen, onClose, movie, movies, currentIndex, onNav
                           <>
                             {(movie.rating || 0) > 0 ? (
                               <div className="star-rating-display-static">
-                                {renderDisplayStars(movie.rating)}
+                                <StarDisplay rating={movie.rating} />
                               </div>
                             ) : (
                               <span className="card-empty-state">No Rating</span>

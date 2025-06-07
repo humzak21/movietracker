@@ -1,11 +1,12 @@
 import React, { useMemo, useRef, useState, useEffect } from 'react';
-import { Star, Film, RotateCcw } from 'lucide-react';
+import { Star, Film, RotateCcw, Calendar, Trophy, TrendingUp, Eye, Clock } from 'lucide-react';
 import Slider from 'react-slick';
 import { motion, useAnimation, useInView } from 'framer-motion';
 import { useSupabaseMovieData } from '../hooks/useSupabaseMovieData';
 import { useQuotes } from '../hooks/useQuotes';
 import { importSlideshowImages } from '../utils/slideshowImages';
 import MovieDetailsModal from '../components/MovieDetailsModal';
+import StarDisplay from '../components/StarDisplay';
 
 function Overview() {
   const { 
@@ -387,16 +388,7 @@ function Overview() {
                     </div>
                     
                     <div className="movie-ratings">
-                      <div className={`star-rating ${movie.rating === 5 ? 'five-star' : ''}`}>
-                        {[...Array(5)].map((_, i) => (
-                          <Star 
-                            key={i} 
-                            size={14} 
-                            fill={i < movie.rating ? "currentColor" : "none"}
-                            className={i < movie.rating ? "filled" : "empty"}
-                          />
-                        ))}
-                      </div>
+                      <StarDisplay rating={movie.rating} />
                       <div className="detailed-rating">
                         {movie.detailedRating || '—'}
                       </div>

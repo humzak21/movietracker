@@ -3,6 +3,7 @@ import { Star, Film, RotateCcw, ChevronDown, Search, X, TrendingUp, TrendingDown
 import { motion, useAnimation, useInView } from 'framer-motion';
 import { useSupabaseMovieData } from '../hooks/useSupabaseMovieData';
 import MovieDetailsModal from '../components/MovieDetailsModal';
+import StarDisplay from '../components/StarDisplay';
 
 function Movies() {
   const { 
@@ -517,16 +518,7 @@ function Movies() {
                   </div>
                   
                   <div className="movie-ratings">
-                    <div className={`star-rating ${movie.rating === 5 ? 'five-star' : ''}`}>
-                      {[...Array(5)].map((_, i) => (
-                        <Star 
-                          key={i} 
-                          size={14} 
-                          fill={i < movie.rating ? "currentColor" : "none"}
-                          className={i < movie.rating ? "filled" : "empty"}
-                        />
-                      ))}
-                    </div>
+                    <StarDisplay rating={movie.rating} />
                     <div className="detailed-rating">
                       {movie.detailedRating || '—'}
                     </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Film, Star, Clock, Trophy, TrendingUp, Calendar, Users, RotateCcw, BarChart3, Eye } from 'lucide-react';
 import apiService from '../services/apiService';
+import MovieDetailsModal from '../components/MovieDetailsModal';
 
 function Statistics() {
   const [stats, setStats] = useState({
@@ -16,6 +17,11 @@ function Statistics() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Modal state for movie details
+  const [selectedMovie, setSelectedMovie] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [movieDetails, setMovieDetails] = useState(null);
 
   useEffect(() => {
     const fetchAllStats = async () => {
@@ -312,7 +318,9 @@ function Statistics() {
   };
 
   // Animated horizontal mini chart component 
-  const AnimatedMiniChart = ({ data, color = 'blue', showValues = false }) => {
+  const AnimatedMiniChart = ({ data, color = 'blue', showValues = false, showTooltips = false }) => {
+    const [hoveredItem, setHoveredItem] = useState(null);
+    
     if (!data || data.length === 0) return null;
 
     const colors = colorSchemes[color] || colorSchemes.blue;
@@ -327,8 +335,13 @@ function Statistics() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: index * 0.1 }}
+            onMouseEnter={() => showTooltips && setHoveredItem(index)}
+            onMouseLeave={() => showTooltips && setHoveredItem(null)}
+            style={{ position: 'relative' }}
           >
-            <div className="stats-mini-label">{item.label}</div>
+            <div className="stats-mini-label" title={showTooltips ? item.label : undefined}>
+              {item.label}
+            </div>
             <div className="stats-mini-bar-container">
               <motion.div
                 className={`stats-mini-bar stats-bar-${color}`}
@@ -349,6 +362,40 @@ function Statistics() {
                 transition={{ delay: 1.5 + (index * 0.1) }}
               >
                 {item.value} {item.unit || ''}
+              </motion.div>
+            )}
+            
+            {/* Tooltip */}
+            {showTooltips && hoveredItem === index && (
+              <motion.div
+                className="stats-mini-tooltip"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.2 }}
+                style={{
+                  position: 'absolute',
+                  top: '-40px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  backgroundColor: 'var(--bg-card)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '8px',
+                  padding: '8px 12px',
+                  fontSize: '13px',
+                  fontWeight: '500',
+                  color: 'var(--text-primary)',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                  zIndex: 10,
+                  whiteSpace: 'nowrap',
+                  maxWidth: '300px',
+                  textAlign: 'center'
+                }}
+              >
+                {item.label}
+                <div style={{ fontSize: '11px', opacity: 0.7, marginTop: '2px' }}>
+                  {item.value} {item.unit || ''}
+                </div>
               </motion.div>
             )}
           </motion.div>
@@ -377,6 +424,34 @@ function Statistics() {
     
     // Return all ratings from 5★ down to 0.5★ (reversed to show highest first)
     return fullRange.reverse();
+  };
+
+  // Handle clicking on rewatched movie posters
+  const handleMovieClick = async (movieTitle) => {
+    try {
+      setSelectedMovie(movieTitle);
+      
+      // Fetch detailed movie information
+      const response = await apiService.searchMovies(movieTitle);
+      
+      if (response.success && response.data && response.data.length > 0) {
+        // Find the most recent entry for this movie title
+        const movieEntry = response.data.find(movie => 
+          movie.title.toLowerCase() === movieTitle.toLowerCase()
+        ) || response.data[0];
+        
+        setMovieDetails(movieEntry);
+        setIsModalOpen(true);
+      }
+    } catch (error) {
+      console.error('Error fetching movie details:', error);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedMovie(null);
+    setMovieDetails(null);
   };
 
   if (error) {
@@ -416,26 +491,26 @@ function Statistics() {
             <div className="stats-hero-row">
               <CompactStatCard
                 icon={Film}
-              title="Movies Watched"
-              value={formatNumber(stats.basic?.uniqueFilms)}
+                title="Movies Watched"
+                value={formatNumber(stats.basic?.uniqueFilms)}
                 subtitle={`${stats.basic?.totalEntries || 0} total entries`}
-              color="blue"
+                color="blue"
                 size="large"
-            />
+              />
               <CompactStatCard
                 icon={Star}
-              title="Average Rating"
-              value={getRatingValue(stats.basic?.ratingStats, 'average_rating')}
-              subtitle="Your overall score"
-              color="purple"
+                title="Average Rating"
+                value={getRatingValue(stats.basic?.ratingStats, 'average_rating')}
+                subtitle="Your overall score"
+                color="purple"
                 size="large"
-            />
+              />
               <CompactStatCard
                 icon={Clock}
-              title="Total Runtime"
-              value={stats.time?.runtimeStats?.total_runtime ? formatDuration(stats.time.runtimeStats.total_runtime) : '—'}
-              subtitle="Time well spent"
-              color="green"
+                title="Total Runtime"
+                value={stats.time?.runtimeStats?.total_runtime ? formatDuration(stats.time.runtimeStats.total_runtime) : '—'}
+                subtitle="Time well spent"
+                color="green"
                 size="large"
               />
             </div>
@@ -512,7 +587,7 @@ function Statistics() {
                 </div>
               </div>
               <AnimatedMiniChart
-                data={stats.time?.filmsPerYear?.slice(-5).map(item => ({
+                data={stats.time?.filmsPerYear?.map(item => ({
                   label: item.year.toString(),
                   value: item.film_count,
                   unit: 'films'
@@ -562,7 +637,7 @@ function Statistics() {
               title="Era Preference"
               value={stats.releaseYears?.releaseYearAnalysis?.average_release_year ? Math.round(stats.releaseYears.releaseYearAnalysis.average_release_year) : '—'}
               subtitle="Average year"
-                  color="blue"
+              color="blue"
             />
 
             {/* Genre Preferences Chart */}
@@ -587,7 +662,7 @@ function Statistics() {
                   value: item.film_count,
                   unit: 'films'
                 }))}
-                  color="orange"
+                color="orange"
                 showValues={true}
               />
             </motion.div>
@@ -596,15 +671,15 @@ function Statistics() {
             {stats.directors?.directorStats && (
               <motion.div 
                 className="stats-chart-card"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.55 }}
-            >
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.55 }}
+              >
                 <div className="stats-card-header-with-icon">
                   <div className="stats-card-icon-header">
                     <Users size={20} />
                   </div>
-                <div>
+                  <div>
                     <h3>Top Directors</h3>
                     <p>Most watched filmmakers</p>
                   </div>
@@ -639,11 +714,11 @@ function Statistics() {
               </div>
               <AnimatedMiniChart
                 data={stats.releaseYears?.filmsByDecade?.slice(-5).map(item => ({
-                    label: `${item.decade}s`,
+                  label: `${item.decade}s`,
                   value: item.film_count,
                   unit: 'films'
-                  }))}
-                  color="indigo"
+                }))}
+                color="indigo"
                 showValues={true}
               />
             </motion.div>
@@ -651,7 +726,7 @@ function Statistics() {
             {/* Most Rewatched */}
             {stats.rewatches?.top_rewatched && (
               <motion.div 
-                className="stats-chart-card stats-card-wide"
+                className="stats-chart-card stats-card-wide stats-rewatched-grid"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.75 }}
@@ -665,20 +740,58 @@ function Statistics() {
                     <p>Movies you love to see again</p>
                   </div>
                 </div>
-                <AnimatedMiniChart
-                  data={stats.rewatches.top_rewatched.slice(0, 5).map(item => ({
-                      label: item.title,
-                    value: item.watch_count,
-                    unit: 'times'
-                    }))}
-                    color="red"
-                  showValues={true}
-                  />
+                
+                <div className="stats-rewatched-posters">
+                  {stats.rewatches.top_rewatched.slice(0, 5).map((item, index) => (
+                    <motion.div
+                      key={index}
+                      className="stats-rewatched-item"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.8 + (index * 0.1), duration: 0.4 }}
+                      whileHover={{ y: -4, scale: 1.02 }}
+                      onClick={() => handleMovieClick(item.title)}
+                    >
+                      <div className="stats-rewatched-poster">
+                        {item.poster_url ? (
+                          <img 
+                            src={item.poster_url} 
+                            alt={item.title}
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                              e.target.nextSibling.style.display = 'flex';
+                            }}
+                          />
+                        ) : null}
+                        <div className="stats-rewatched-fallback" style={{ display: item.poster_url ? 'none' : 'flex' }}>
+                          <Film size={32} />
+                        </div>
+                      </div>
+                      <div className="stats-rewatched-count">
+                        <span className="stats-rewatched-number">{item.watch_count}</span>
+                        <span className="stats-rewatched-label">times</span>
+                      </div>
+                      <div className="stats-rewatched-title">{item.title}</div>
+                    </motion.div>
+                  ))}
+                </div>
               </motion.div>
             )}
           </div>
         </motion.div>
       </div>
+      
+      {/* Movie Details Modal */}
+      {movieDetails && (
+        <MovieDetailsModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          movie={movieDetails}
+          movies={[movieDetails]}
+          currentIndex={0}
+          onNavigate={() => {}}
+        />
+      )}
     </div>
   );
 }
