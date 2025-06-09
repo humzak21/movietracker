@@ -185,8 +185,20 @@ class ApiService {
     return this.request('/stats/rewatches');
   }
 
+  async getEarliestLatestFilms() {
+    return this.request('/stats/earliest-latest-films');
+  }
+
   async getDayOfWeekStats() {
     return this.request('/stats/day-of-week');
+  }
+
+  async getGapsAndStreaks() {
+    return this.request('/stats/gaps-and-streaks');
+  }
+
+  async getRuntimeStats() {
+    return this.request('/stats/runtime');
   }
 }
 

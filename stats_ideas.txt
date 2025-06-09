@@ -27,7 +27,7 @@
 	•	Films Watched Per Year
 	•	Year-by-year breakdown (and trend line).
 	•	Films Watched Per Month
-	•	Month-by-month counts, shown as a heat map
+	•	Month-by-month counts, shown as a heat map ***********************************************************************
 	•	Daily Watch Counts
 	•	How many films were logged on each date (useful to identify binge days).
 	•	Longest Streak of Daily/Bi-weekly Watching

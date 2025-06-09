@@ -24,11 +24,13 @@ const AddMovieModal = ({ isOpen, onClose }) => {
   const [submitError, setSubmitError] = useState('');
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [showRatingComparison, setShowRatingComparison] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   
   const searchTimeoutRef = useRef(null);
   const searchInputRef = useRef(null);
   const resultsRef = useRef(null);
   const ratingComparisonTimeoutRef = useRef(null);
+  const modalRef = useRef(null);
 
   console.log('AddMovieModal render - isOpen:', isOpen);
 
@@ -98,6 +100,7 @@ const AddMovieModal = ({ isOpen, onClose }) => {
       setSubmitError('');
       setSubmitSuccess(false);
       setShowRatingComparison(false);
+      setIsClosing(false);
       
       // Clear timeouts
       if (ratingComparisonTimeoutRef.current) {
@@ -109,14 +112,45 @@ const AddMovieModal = ({ isOpen, onClose }) => {
   // Disable body scrolling when modal is open
   useEffect(() => {
     if (isOpen) {
-      // Store original overflow style
+      // Store original overflow and scroll position
       const originalOverflow = document.body.style.overflow;
-      // Disable scrolling
+      const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+      const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+      
+      // Prevent background scrolling
       document.body.style.overflow = 'hidden';
       
-      // Cleanup function to restore scrolling when modal closes
+      // Force modal to center in current viewport
+      const positionModal = () => {
+        if (modalRef.current) {
+          const modal = modalRef.current;
+          modal.style.position = 'fixed';
+          modal.style.top = '0';
+          modal.style.left = '0';
+          modal.style.width = '100vw';
+          modal.style.height = '100vh';
+          modal.style.display = 'flex';
+          modal.style.alignItems = 'center';
+          modal.style.justifyContent = 'center';
+          modal.style.zIndex = '10001';
+          modal.style.transform = 'translateZ(0)';
+        }
+      };
+      
+      // Position modal immediately
+      positionModal();
+      
+      // Also position on any resize or orientation change
+      window.addEventListener('resize', positionModal);
+      window.addEventListener('orientationchange', positionModal);
+      
       return () => {
+        // Restore original overflow
         document.body.style.overflow = originalOverflow;
+        
+        // Remove event listeners
+        window.removeEventListener('resize', positionModal);
+        window.removeEventListener('orientationchange', positionModal);
       };
     }
   }, [isOpen]);
@@ -124,10 +158,20 @@ const AddMovieModal = ({ isOpen, onClose }) => {
   // Move the early return AFTER all hooks
   if (!isOpen) return null;
 
-  const handleOverlayClick = (e) => {
-    if (e.target === e.currentTarget) {
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
       onClose();
+    }, 300); // Match the animation duration
+  };
+
+  const handleOverlayClick = (e) => {
+    // Prevent closing if already in closing state or if clicking on the modal itself
+    if (isClosing || e.target !== e.currentTarget) {
+      return;
     }
+    handleClose();
   };
 
   const handleMovieSelect = (movie) => {
@@ -411,11 +455,11 @@ const AddMovieModal = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="add-movie-modal-overlay" onClick={handleOverlayClick}>
-      <div className={`add-movie-modal ${showRatingComparison ? 'with-comparison' : ''}`}>
+    <div className={`add-movie-modal-overlay ${isClosing ? 'closing' : ''}`} onClick={handleOverlayClick} ref={modalRef}>
+      <div className={`add-movie-modal ${showRatingComparison ? 'with-comparison' : ''} ${isClosing ? 'closing' : ''}`}>
         <button 
           className="add-movie-modal-close"
-          onClick={onClose}
+          onClick={handleClose}
           aria-label="Close modal"
         >
           <X size={20} />

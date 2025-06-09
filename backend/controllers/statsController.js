@@ -276,6 +276,28 @@ class StatsController {
   }
 
   /**
+   * Get earliest and latest films watched
+   * GET /api/stats/earliest-latest-films
+   */
+  async getEarliestLatestFilms(req, res) {
+    try {
+      const films = await statsService.getEarliestLatestFilms();
+      
+      res.json({
+        success: true,
+        data: films
+      });
+    } catch (error) {
+      console.error('Error getting earliest/latest films:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to fetch earliest/latest films',
+        details: error.message
+      });
+    }
+  }
+
+  /**
    * Get day of week patterns
    * GET /api/stats/day-of-week
    */

@@ -16,6 +16,11 @@
   animation: modalOverlayFadeIn 0.3s ease-out;
 }
 
+.add-movie-modal-overlay.closing {
+  animation: modalOverlayFadeOut 0.3s ease-out;
+  pointer-events: none; /* Disable interactions during closing */
+}
+
 .add-movie-modal {
   background: var(--surface);
   border-radius: 20px;
@@ -27,6 +32,10 @@
   overflow-y: auto;
   position: relative;
   animation: modalSlideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.add-movie-modal.closing {
+  animation: modalSlideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 [data-theme="dark"] .add-movie-modal {

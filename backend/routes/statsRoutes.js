@@ -64,6 +64,7 @@ router.get('/release-years', statsController.getReleaseYearAnalysis);
 
 // Behavioral Analysis
 router.get('/rewatches', statsController.getRewatchStats);
+router.get('/earliest-latest-films', statsController.getEarliestLatestFilms);
 router.get('/binge-sessions', statsController.getBingeSessions);
 router.get('/viewing-velocity', statsController.getViewingVelocity);
 router.get('/review-length', statsController.getReviewLengthStats);

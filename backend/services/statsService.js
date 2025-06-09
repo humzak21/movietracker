@@ -115,6 +115,71 @@ class StatsService {
   }
 
   /**
+   * Get earliest and latest films watched
+   */
+  async getEarliestLatestFilms() {
+    try {
+      const result = await this._executeFunction('get_earliest_latest_films');
+      const data = Array.isArray(result) ? result[0] : result;
+      
+      if (data) {
+        return {
+          earliest_film: data.earliest_film,
+          latest_film: data.latest_film
+        };
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error getting earliest/latest films:', error);
+      // Fallback: calculate from raw data
+      return await this._calculateEarliestLatestFallback();
+    }
+  }
+
+  /**
+   * Fallback calculation for earliest/latest films if function doesn't exist
+   */
+  async _calculateEarliestLatestFallback() {
+    try {
+      this._checkDatabase();
+      
+      // Get earliest film
+      const { data: earliestData, error: earliestError } = await supabaseAdmin
+        .from('diary')
+        .select('title, watched_date, poster_url, release_year, id')
+        .not('watched_date', 'is', null)
+        .order('watched_date', { ascending: true })
+        .order('id', { ascending: true })
+        .limit(1);
+
+      if (earliestError) throw earliestError;
+
+      // Get latest film
+      const { data: latestData, error: latestError } = await supabaseAdmin
+        .from('diary')
+        .select('title, watched_date, poster_url, release_year, id')
+        .not('watched_date', 'is', null)
+        .order('watched_date', { ascending: false })
+        .order('id', { ascending: false })
+        .limit(1);
+
+      if (latestError) throw latestError;
+
+      return {
+        earliest_film: earliestData?.[0] || null,
+        latest_film: latestData?.[0] || null
+      };
+    } catch (error) {
+      console.error('Error in earliest/latest films fallback:', error);
+      return {
+        earliest_film: null,
+        latest_film: null
+      };
+    }
+  }
+
+  /**
    * Get films watched per year
    */
   async getFilmsPerYear() {
@@ -675,17 +740,27 @@ class StatsService {
     this._checkDatabase();
     
     try {
-      // Get all unique watch dates
-      const { data, error } = await supabaseAdmin
+      // Get all films with their watch dates, titles, and posters
+      const { data: allFilms, error } = await supabaseAdmin
         .from('diary')
-        .select('watched_date')
+        .select('watched_date, title, poster_url, rating, director, release_year')
         .order('watched_date');
 
       if (error) throw error;
 
-      const uniqueDates = [...new Set(data.map(d => d.watched_date))].sort();
+      // Group films by date
+      const filmsByDate = {};
+      allFilms.forEach(film => {
+        const date = film.watched_date;
+        if (!filmsByDate[date]) {
+          filmsByDate[date] = [];
+        }
+        filmsByDate[date].push(film);
+      });
+
+      const uniqueDates = Object.keys(filmsByDate).sort();
       const streaks = [];
-      let currentStreak = [uniqueDates[0]];
+      let currentStreak = { dates: [uniqueDates[0]], films: [filmsByDate[uniqueDates[0]]] };
 
       for (let i = 1; i < uniqueDates.length; i++) {
         const prevDate = new Date(uniqueDates[i - 1]);
@@ -694,26 +769,53 @@ class StatsService {
 
         if (daysDiff === 1) {
           // Consecutive day
-          currentStreak.push(uniqueDates[i]);
+          currentStreak.dates.push(uniqueDates[i]);
+          currentStreak.films.push(filmsByDate[uniqueDates[i]]);
         } else {
           // Streak broken
-          if (currentStreak.length > 1) {
+          if (currentStreak.dates.length > 1) {
+            const allStreakFilms = currentStreak.films.flat();
+            const firstDateFilms = currentStreak.films[0];
+            const lastDateFilms = currentStreak.films[currentStreak.films.length - 1];
+            
             streaks.push({
-              startDate: currentStreak[0],
-              endDate: currentStreak[currentStreak.length - 1],
-              length: currentStreak.length
+              startDate: currentStreak.dates[0],
+              endDate: currentStreak.dates[currentStreak.dates.length - 1],
+              length: currentStreak.dates.length,
+              totalFilms: allStreakFilms.length,
+              firstFilm: firstDateFilms[0], // First film on the first day
+              lastFilm: lastDateFilms[lastDateFilms.length - 1], // Last film on the last day
+              allFilms: allStreakFilms, // All films in the streak
+              filmsByDate: currentStreak.films.map((dayFilms, index) => ({
+                date: currentStreak.dates[index],
+                films: dayFilms
+              })),
+              allDates: currentStreak.dates
             });
           }
-          currentStreak = [uniqueDates[i]];
+          currentStreak = { dates: [uniqueDates[i]], films: [filmsByDate[uniqueDates[i]]] };
         }
       }
 
       // Don't forget the last streak
-      if (currentStreak.length > 1) {
+      if (currentStreak.dates.length > 1) {
+        const allStreakFilms = currentStreak.films.flat();
+        const firstDateFilms = currentStreak.films[0];
+        const lastDateFilms = currentStreak.films[currentStreak.films.length - 1];
+        
         streaks.push({
-          startDate: currentStreak[0],
-          endDate: currentStreak[currentStreak.length - 1],
-          length: currentStreak.length
+          startDate: currentStreak.dates[0],
+          endDate: currentStreak.dates[currentStreak.dates.length - 1],
+          length: currentStreak.dates.length,
+          totalFilms: allStreakFilms.length,
+          firstFilm: firstDateFilms[0], // First film on the first day
+          lastFilm: lastDateFilms[lastDateFilms.length - 1], // Last film on the last day
+          allFilms: allStreakFilms, // All films in the streak
+          filmsByDate: currentStreak.films.map((dayFilms, index) => ({
+            date: currentStreak.dates[index],
+            films: dayFilms
+          })),
+          allDates: currentStreak.dates
         });
       }
 

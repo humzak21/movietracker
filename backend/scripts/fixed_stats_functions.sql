@@ -105,6 +105,66 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Runtime distribution by bins function
+CREATE OR REPLACE FUNCTION get_runtime_distribution()
+RETURNS TABLE(
+  runtime_bin TEXT,
+  film_count BIGINT,
+  percentage DECIMAL(5,2)
+) AS $$
+BEGIN
+  RETURN QUERY
+  WITH unique_films AS (
+    SELECT DISTINCT ON (LOWER(title))
+      LOWER(title) as film_title,
+      runtime
+    FROM diary 
+    WHERE runtime IS NOT NULL AND runtime > 0
+    ORDER BY LOWER(title), watched_date DESC  -- Keep the most recent entry for each unique film
+  ),
+  runtime_bins AS (
+    SELECT 
+      CASE 
+        WHEN runtime < 90 THEN '<90 min'
+        WHEN runtime >= 90 AND runtime < 120 THEN '90-120 min'
+        WHEN runtime >= 120 AND runtime < 150 THEN '120-150 min'
+        WHEN runtime >= 150 THEN '>150 min'
+        ELSE 'Unknown'
+      END as bin_label,
+      COUNT(*) as count_films
+    FROM unique_films
+    GROUP BY CASE 
+      WHEN runtime < 90 THEN '<90 min'
+      WHEN runtime >= 90 AND runtime < 120 THEN '90-120 min'
+      WHEN runtime >= 120 AND runtime < 150 THEN '120-150 min'
+      WHEN runtime >= 150 THEN '>150 min'
+      ELSE 'Unknown'
+    END
+  ),
+  total_films AS (
+    SELECT COUNT(*) as total_count
+    FROM unique_films
+  )
+  SELECT 
+    rb.bin_label,
+    rb.count_films,
+    CASE 
+      WHEN tf.total_count > 0 THEN ((rb.count_films::DECIMAL / tf.total_count * 100))::DECIMAL(5,2)
+      ELSE 0::DECIMAL(5,2)
+    END as percentage
+  FROM runtime_bins rb
+  CROSS JOIN total_films tf
+  ORDER BY 
+    CASE rb.bin_label
+      WHEN '<90 min' THEN 1
+      WHEN '90-120 min' THEN 2
+      WHEN '120-150 min' THEN 3
+      WHEN '>150 min' THEN 4
+      ELSE 5
+    END;
+END;
+$$ LANGUAGE plpgsql;
+
 -- 3. WATCH SPAN STATISTICS
 -- =====================================================
 
@@ -118,7 +178,7 @@ RETURNS TABLE(
 ) AS $$
 BEGIN
   RETURN QUERY
-  WITH date_stats AS (
+  WITH date_stats as (
     SELECT 
       MIN(watched_date) as first_date,
       MAX(watched_date) as last_date
@@ -142,6 +202,54 @@ BEGIN
       ELSE 0
     END as total_days
   FROM date_stats ds;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Get earliest and latest films watched
+CREATE OR REPLACE FUNCTION get_earliest_latest_films()
+RETURNS TABLE(
+  earliest_film JSONB,
+  latest_film JSONB
+) AS $$
+BEGIN
+  RETURN QUERY
+  WITH earliest_watch AS (
+    SELECT 
+      title,
+      watched_date,
+      poster_url,
+      release_year
+    FROM diary
+    WHERE watched_date IS NOT NULL
+    ORDER BY watched_date ASC, id ASC  -- Use id as tiebreaker for same dates
+    LIMIT 1
+  ),
+  latest_watch AS (
+    SELECT 
+      title,
+      watched_date,
+      poster_url,
+      release_year
+    FROM diary
+    WHERE watched_date IS NOT NULL
+    ORDER BY watched_date DESC, id DESC  -- Use id as tiebreaker for same dates
+    LIMIT 1
+  )
+  SELECT 
+    jsonb_build_object(
+      'title', ew.title,
+      'watched_date', ew.watched_date,
+      'poster_url', ew.poster_url,
+      'release_year', ew.release_year
+    ) as earliest_film,
+    jsonb_build_object(
+      'title', lw.title,
+      'watched_date', lw.watched_date,
+      'poster_url', lw.poster_url,
+      'release_year', lw.release_year
+    ) as latest_film
+  FROM earliest_watch ew
+  CROSS JOIN latest_watch lw;
 END;
 $$ LANGUAGE plpgsql;
 
