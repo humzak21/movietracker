@@ -176,7 +176,7 @@ $$ LANGUAGE plpgsql;
 -- 3. GENRE ANALYSIS
 -- =====================================================
 
--- Top genres by count
+-- Top genres by count (UNIQUE FILMS ONLY)
 CREATE OR REPLACE FUNCTION get_genre_stats()
 RETURNS TABLE(
   genre_name TEXT,
@@ -185,27 +185,36 @@ RETURNS TABLE(
 ) AS $$
 BEGIN
   RETURN QUERY
-  WITH genre_expanded AS (
-    SELECT 
-      TRIM(unnest(string_to_array(genres::TEXT, ','))) as genre
+  WITH unique_films AS (
+    SELECT DISTINCT ON (LOWER(title))
+      LOWER(title) as film_title,
+      genres,
+      watched_date
     FROM diary
     WHERE genres IS NOT NULL 
     AND (genres::TEXT != '[]' AND genres::TEXT != '' AND genres::TEXT != 'null')
+    ORDER BY LOWER(title), watched_date DESC  -- Keep the most recent entry for each unique film
+  ),
+  genre_expanded AS (
+    SELECT 
+      film_title,
+      TRIM(unnest(string_to_array(genres::TEXT, ','))) as genre
+    FROM unique_films
   ),
   genre_counts AS (
     SELECT 
       genre,
-      COUNT(*) as count_val
+      COUNT(DISTINCT film_title) as count_val
     FROM genre_expanded
     WHERE genre != '' AND genre IS NOT NULL
     GROUP BY genre
   ),
   total_with_genres AS (
-    SELECT COUNT(*) as total FROM genre_expanded WHERE genre != '' AND genre IS NOT NULL
+    SELECT COUNT(DISTINCT film_title) as total FROM genre_expanded WHERE genre != '' AND genre IS NOT NULL
   )
   SELECT 
-    gc.genre,
-    gc.count_val,
+    gc.genre as genre_name,
+    gc.count_val as film_count,
     ((gc.count_val::DECIMAL / twg.total * 100))::DECIMAL(5,2) as percentage
   FROM genre_counts gc
   CROSS JOIN total_with_genres twg
@@ -216,7 +225,7 @@ $$ LANGUAGE plpgsql;
 -- 4. DIRECTOR ANALYSIS
 -- =====================================================
 
--- Top directors by watch count
+-- Top directors by unique films count
 CREATE OR REPLACE FUNCTION get_director_stats()
 RETURNS TABLE(
   director_name TEXT,
@@ -226,18 +235,27 @@ RETURNS TABLE(
 ) AS $$
 BEGIN
   RETURN QUERY
+  WITH unique_films AS (
+    SELECT DISTINCT ON (LOWER(title))
+      LOWER(title) as film_title,
+      director,
+      rating,
+      watched_date
+    FROM diary
+    WHERE director IS NOT NULL 
+    AND director != '' 
+    AND director != 'null'
+    ORDER BY LOWER(title), watched_date DESC  -- Keep the most recent entry for each unique film
+  )
   SELECT 
-    director,
-    COUNT(*) as film_count,
+    director as director_name,
+    COUNT(DISTINCT film_title) as film_count,
     (AVG(rating))::DECIMAL(5,2) as avg_rating,
-    COUNT(DISTINCT LOWER(title)) as unique_films
-  FROM diary
-  WHERE director IS NOT NULL 
-  AND director != '' 
-  AND director != 'null'
+    COUNT(DISTINCT film_title) as unique_films
+  FROM unique_films
   GROUP BY director
-  HAVING COUNT(*) > 1  -- Only directors with more than 1 film
-  ORDER BY film_count DESC, avg_rating DESC;
+  HAVING COUNT(DISTINCT film_title) > 1  -- Only directors with more than 1 unique film
+  ORDER BY COUNT(DISTINCT film_title) DESC, AVG(rating) DESC;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -281,7 +299,8 @@ CREATE OR REPLACE FUNCTION get_seasonal_patterns()
 RETURNS TABLE(
   season_name TEXT,
   film_count BIGINT,
-  percentage DECIMAL(5,2)
+  percentage DECIMAL(5,2),
+  avg_rating DECIMAL(3,2)
 ) AS $$
 BEGIN
   RETURN QUERY
@@ -293,7 +312,8 @@ BEGIN
         WHEN EXTRACT(MONTH FROM watched_date) IN (6, 7, 8) THEN 'Summer'
         WHEN EXTRACT(MONTH FROM watched_date) IN (9, 10, 11) THEN 'Fall'
       END as season,
-      COUNT(*) as count_val
+      COUNT(*) as count_val,
+      AVG(rating) as avg_rat
     FROM diary
     GROUP BY 
       CASE 
@@ -309,7 +329,8 @@ BEGIN
   SELECT 
     ss.season,
     ss.count_val,
-    ((ss.count_val::DECIMAL / tc.total * 100))::DECIMAL(5,2) as percentage
+    ((ss.count_val::DECIMAL / tc.total * 100))::DECIMAL(5,2) as percentage,
+    (ss.avg_rat)::DECIMAL(3,2) as avg_rating
   FROM seasonal_stats ss
   CROSS JOIN total_count tc
   ORDER BY 
@@ -319,6 +340,48 @@ BEGIN
       WHEN 'Fall' THEN 3
       WHEN 'Winter' THEN 4
     END;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Films by decade (UNIQUE FILMS ONLY)
+CREATE OR REPLACE FUNCTION get_films_by_decade()
+RETURNS TABLE(
+  decade INTEGER,
+  film_count BIGINT,
+  percentage DECIMAL(5,2)
+) AS $$
+BEGIN
+  RETURN QUERY
+  WITH unique_films AS (
+    SELECT DISTINCT ON (LOWER(title))
+      LOWER(title) as film_title,
+      release_year,
+      watched_date
+    FROM diary 
+    WHERE release_year IS NOT NULL AND release_year > 1800
+    ORDER BY LOWER(title), watched_date DESC  -- Keep the most recent entry for each unique film
+  ),
+  decade_stats AS (
+    SELECT 
+      (FLOOR(release_year::NUMERIC / 10) * 10)::INTEGER as decade_val,
+      COUNT(DISTINCT film_title) as count_val
+    FROM unique_films
+    GROUP BY (FLOOR(release_year::NUMERIC / 10) * 10)::INTEGER
+  ),
+  total_with_years AS (
+    SELECT COUNT(DISTINCT film_title) as total 
+    FROM unique_films
+  )
+  SELECT 
+    ds.decade_val,
+    ds.count_val,
+    CASE 
+      WHEN twy.total > 0 THEN ((ds.count_val::DECIMAL / twy.total * 100))::DECIMAL(5,2)
+      ELSE 0::DECIMAL(5,2)
+    END as percentage
+  FROM decade_stats ds
+  CROSS JOIN total_with_years twy
+  ORDER BY ds.decade_val;
 END;
 $$ LANGUAGE plpgsql;
 

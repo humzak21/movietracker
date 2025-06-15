@@ -76,7 +76,9 @@ class MovieController {
         user_rating, 
         detailed_rating, 
         watch_date, 
-        is_rewatch = false 
+        is_rewatch = false,
+        notes,
+        tags
       } = req.body;
 
       if (!title) {
@@ -92,7 +94,9 @@ class MovieController {
         user_rating, 
         detailed_rating, 
         watch_date,
-        is_rewatch
+        is_rewatch,
+        notes,
+        tags
       );
 
       if (!result.success) {

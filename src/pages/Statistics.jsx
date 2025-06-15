@@ -1,8 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Film, Star, Clock, Trophy, TrendingUp, Calendar, Users, RotateCcw, BarChart3, Eye, ArrowUp, ArrowDown } from 'lucide-react';
+import { Film, Star, Clock, Trophy, TrendingUp, Calendar, Users, RotateCcw, BarChart3, Eye, ArrowUp, ArrowDown, Sun, Snowflake, Leaf, Flower2, CloudSnow } from 'lucide-react';
 import apiService from '../services/apiService';
 import MovieDetailsModal from '../components/MovieDetailsModal';
+import MovieTimeline from '../components/MovieTimeline';
+
+// Import FlexMasonry CSS
+import 'flexmasonry/dist/flexmasonry.css';
 
 function Statistics() {
   const [stats, setStats] = useState({
@@ -16,10 +20,13 @@ function Statistics() {
     dayOfWeek: null,
     earliestLatest: null,
     streaks: null,
-    runtime: null
+    runtime: null,
+    decades: null,
+    seasonal: null
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const masonryRef = useRef(null);
 
   // Modal state for movie details
   const [selectedMovie, setSelectedMovie] = useState(null);
@@ -43,7 +50,9 @@ function Statistics() {
           dayOfWeekStats,
           earliestLatestStats,
           gapsAndStreaksStats,
-          runtimeStats
+          runtimeStats,
+          decadeStats,
+          seasonalStats
         ] = await Promise.all([
           apiService.getBasicStats(),
           apiService.getRatingStats(),
@@ -55,21 +64,25 @@ function Statistics() {
           apiService.getDayOfWeekStats(),
           apiService.getEarliestLatestFilms(),
           apiService.getGapsAndStreaks(),
-          apiService.getRuntimeStats()
+          apiService.getRuntimeStats(),
+          apiService.request('/stats/decades'), // Add decade stats separately
+          apiService.getSeasonalStats()
         ]);
 
         setStats({
           basic: basicStats.data,
           ratings: ratingStats.data,
           time: timeStats.data,
-          genres: genreStats.data,
-          directors: directorStats.data,
-          releaseYears: releaseYearStats.data,
+          genres: genreStats.data, // This will be the direct array from get_genre_stats()
+          directors: directorStats.data, // This will be the direct array from get_director_stats()
+          releaseYears: releaseYearStats.data, // This will be the direct object from get_release_year_analysis()
           rewatches: rewatchStats.data,
           dayOfWeek: dayOfWeekStats.data,
           earliestLatest: earliestLatestStats.data,
           streaks: gapsAndStreaksStats.data,
-          runtime: runtimeStats.data
+          runtime: runtimeStats.data,
+          decades: decadeStats.data, // Add decade data separately
+          seasonal: seasonalStats.data
         });
       } catch (err) {
         setError(err.message);
@@ -81,6 +94,69 @@ function Statistics() {
 
     fetchAllStats();
   }, []);
+
+  // Initialize enhanced CSS Grid masonry after stats are loaded
+  useEffect(() => {
+    if (!loading && masonryRef.current) {
+      // Add enhanced masonry class for CSS-based layout
+      masonryRef.current.classList.add('stats-masonry-enhanced');
+      
+      // Try to load FlexMasonry as enhancement
+      const loadFlexMasonry = async () => {
+        try {
+          // Import the FlexMasonry library
+          const FlexMasonry = await import('flexmasonry/dist/flexmasonry.js');
+          
+          // Initialize FlexMasonry if available
+          if (window.FlexMasonry && masonryRef.current) {
+            window.FlexMasonry.init(masonryRef.current, {
+              responsive: true,
+              breakpointCols: {
+                'min-width: 1400px': 4,
+                'min-width: 1000px': 3,
+                'min-width: 700px': 2,
+                'min-width: 500px': 1,
+              },
+              columnClass: 'flexmasonry-column',
+              itemSelector: '.stats-masonry-item'
+            });
+            
+            // Add a class to indicate FlexMasonry is active
+            masonryRef.current.classList.add('flexmasonry-active');
+          }
+        } catch (error) {
+          console.warn('FlexMasonry enhancement failed, using CSS Grid fallback:', error);
+        }
+      };
+
+      // Load FlexMasonry with a slight delay to ensure DOM is ready
+      setTimeout(loadFlexMasonry, 200);
+    }
+
+    // Cleanup
+    return () => {
+      if (window.FlexMasonry) {
+        try {
+          window.FlexMasonry.destroyAll();
+        } catch (error) {
+          console.warn('FlexMasonry cleanup failed:', error);
+        }
+      }
+    };
+  }, [loading]);
+
+  // Re-layout when data changes
+  useEffect(() => {
+    if (!loading && window.FlexMasonry && masonryRef.current?.classList.contains('flexmasonry-active')) {
+      setTimeout(() => {
+        try {
+          window.FlexMasonry.refreshAll();
+        } catch (error) {
+          console.warn('FlexMasonry refresh failed:', error);
+        }
+      }, 100);
+    }
+  }, [stats, loading]);
 
   const formatDuration = (minutes) => {
     if (!minutes || minutes === 0) return '0h';
@@ -237,7 +313,7 @@ function Statistics() {
             
             {/* Center content */}
             <motion.div 
-              className="stats-apple-pie-center"
+              className="stats-apple-pie-center stats-rewatches-pie-center"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 1.4, duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
@@ -389,7 +465,7 @@ function Statistics() {
               
               {/* Center content */}
               <motion.div 
-                className="stats-apple-pie-center"
+                className="stats-apple-pie-center stats-runtime-pie-center"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 1.8, duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
@@ -567,18 +643,20 @@ function Statistics() {
                   top: '-40px',
                   left: '50%',
                   transform: 'translateX(-50%)',
-                  backgroundColor: 'var(--bg-card)',
-                  border: '1px solid var(--border-color)',
+                  backgroundColor: 'var(--surface)',
+                  border: '1px solid var(--border)',
                   borderRadius: '8px',
                   padding: '8px 12px',
                   fontSize: '13px',
                   fontWeight: '500',
                   color: 'var(--text-primary)',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.25)',
                   zIndex: 10,
                   whiteSpace: 'nowrap',
                   maxWidth: '300px',
-                  textAlign: 'center'
+                  textAlign: 'center',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)'
                 }}
               >
                 {item.label}
@@ -591,6 +669,16 @@ function Statistics() {
         ))}
       </div>
     );
+  };
+
+  // Helper function to clean genre names
+  const cleanGenreName = (genreName) => {
+    if (!genreName) return '';
+    return genreName
+      .replace(/['"{}[\]]/g, '') // Remove quotes, curly braces, square brackets
+      .replace(/^\s+|\s+$/g, '') // Trim whitespace
+      .replace(/^,|,$/, '') // Remove leading/trailing commas
+      .trim();
   };
 
   // Helper function to generate proper half-star rating distribution
@@ -613,6 +701,162 @@ function Statistics() {
     
     // Return all ratings from 5★ down to 0.5★ (reversed to show highest first)
     return fullRange.reverse();
+  };
+
+  // Combined Seasonal Card Component
+  const CombinedSeasonalCard = ({ seasonalData }) => {
+    if (loading) {
+      return (
+        <motion.div 
+          className="stats-chart-card stats-card-wide"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <div className="stats-card-skeleton">
+            <div className="stats-skeleton-icon"></div>
+            <div className="stats-skeleton-content">
+              <div className="stats-skeleton-title"></div>
+              <div className="stats-skeleton-value"></div>
+              <div className="stats-skeleton-subtitle"></div>
+            </div>
+          </div>
+        </motion.div>
+      );
+    }
+
+    if (!seasonalData || seasonalData.length === 0) return null;
+
+    const getSeasonIcon = (season) => {
+      switch (season.toLowerCase()) {
+        case 'spring':
+          return Flower2;
+        case 'summer':
+          return Sun;
+        case 'fall':
+        case 'autumn':
+          return Leaf;
+        case 'winter':
+          return Snowflake;
+        default:
+          return Calendar;
+      }
+    };
+
+    const getSeasonColor = (season) => {
+      switch (season.toLowerCase()) {
+        case 'spring':
+          return '#30D158'; // Apple Green
+        case 'summer':
+          return '#FF9F0A'; // Apple Orange
+        case 'fall':
+        case 'autumn':
+          return '#FF375F'; // Apple Red
+        case 'winter':
+          return '#007AFF'; // Apple Blue
+        default:
+          return '#8E8E93';
+      }
+    };
+
+    // Sort seasons in logical order: Spring, Summer, Fall, Winter
+    const seasonOrder = ['Spring', 'Summer', 'Fall', 'Winter'];
+    const sortedSeasons = [...seasonalData].sort((a, b) => {
+      return seasonOrder.indexOf(a.season_name || a.season) - seasonOrder.indexOf(b.season_name || b.season);
+    });
+
+    // Find best season
+    const seasonsWithRatings = seasonalData.filter(s => s.avg_rating && s.avg_rating > 0);
+    const bestSeason = seasonsWithRatings.length > 0 
+      ? seasonsWithRatings.reduce((prev, current) => 
+          (current.avg_rating > prev.avg_rating) ? current : prev
+        )
+      : null;
+
+    const totalFilms = sortedSeasons.reduce((sum, season) => sum + (season.film_count || 0), 0);
+    const averageRating = sortedSeasons.reduce((sum, season) => sum + (season.avg_rating || 0), 0) / sortedSeasons.length;
+
+    return (
+      <motion.div 
+        className="stats-chart-card stats-card-wide stats-seasonal-combined"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4, duration: 0.4 }}
+        whileHover={{ y: -2 }}
+      >
+        <div className="stats-card-header-with-icon">
+          <div className="stats-card-icon-header">
+            <CloudSnow size={20} />
+          </div>
+          <div>
+            <h3>Seasonal Patterns</h3>
+            <p>Your movie watching by season</p>
+          </div>
+          <div className="stats-quick-metrics">
+            <div className="stats-metric">
+              <span className="stats-metric-value">{totalFilms}</span>
+              <span className="stats-metric-label">Total Films</span>
+            </div>
+            {bestSeason && (
+              <div className="stats-metric">
+                <span className="stats-metric-value">{bestSeason.season_name || bestSeason.season}</span>
+                <span className="stats-metric-label">Best Season</span>
+              </div>
+            )}
+          </div>
+        </div>
+        
+        <div className="stats-seasonal-grid">
+          {sortedSeasons.map((season, index) => {
+            const Icon = getSeasonIcon(season.season_name || season.season);
+            const color = getSeasonColor(season.season_name || season.season);
+            
+            return (
+              <motion.div
+                key={season.season_name || season.season}
+                className="stats-seasonal-item"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 + (index * 0.1), duration: 0.4 }}
+                whileHover={{ y: -4, scale: 1.02 }}
+              >
+                <div 
+                  className="stats-seasonal-icon"
+                  style={{ backgroundColor: color }}
+                >
+                  <Icon size={20} color="white" />
+                </div>
+                <div className="stats-seasonal-content">
+                  <div className="stats-seasonal-season">{season.season_name || season.season}</div>
+                  <div className="stats-seasonal-films">{season.film_count || 0} films</div>
+                  <div className="stats-seasonal-details">
+                    <span className="stats-seasonal-percentage">{season.percentage || 0}%</span>
+                    <span className="stats-seasonal-rating">
+                      {season.avg_rating ? `${season.avg_rating}★` : '—'}
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+        
+        <div className="stats-seasonal-summary">
+          <div className="stats-seasonal-summary-item">
+            <span className="stats-seasonal-summary-label">Average Rating</span>
+            <span className="stats-seasonal-summary-value">{averageRating.toFixed(1)}★</span>
+          </div>
+          <div className="stats-seasonal-summary-divider"></div>
+          <div className="stats-seasonal-summary-item">
+            <span className="stats-seasonal-summary-label">Most Active</span>
+            <span className="stats-seasonal-summary-value">
+              {sortedSeasons.reduce((prev, current) => 
+                (current.film_count > prev.film_count) ? current : prev
+              ).season_name}
+            </span>
+          </div>
+        </div>
+      </motion.div>
+    );
   };
 
   // Handle clicking on rewatched movie posters
@@ -673,19 +917,22 @@ function Statistics() {
             </p>
           </div>
 
-          {/* Stats Grid - Masonry Layout */}
-          <div className="stats-masonry-grid">
+          {/* Stats Grid - FlexMasonry Layout */}
+          <div className="stats-flex-masonry" ref={masonryRef}>
             
-            {/* Hero Stats Row */}
-            <div className="stats-hero-row">
+            {/* Hero Stats - Large Cards */}
+            <div className="stats-masonry-item stats-masonry-large">
               <CompactStatCard
                 icon={Film}
                 title="Movies Watched"
                 value={formatNumber(stats.basic?.uniqueFilms)}
-                subtitle={`${stats.basic?.totalEntries || 0} total entries`}
+                subtitle={`${stats.basic?.totalSessions || 0} total entries`}
                 color="blue"
                 size="large"
               />
+            </div>
+
+            <div className="stats-masonry-item stats-masonry-large">
               <CompactStatCard
                 icon={Star}
                 title="Average Rating"
@@ -694,6 +941,9 @@ function Statistics() {
                 color="purple"
                 size="large"
               />
+            </div>
+
+            <div className="stats-masonry-item stats-masonry-large">
               <CompactStatCard
                 icon={Clock}
                 title="Total Runtime"
@@ -704,517 +954,558 @@ function Statistics() {
               />
             </div>
 
-            {/* Rating Distribution Card */}
-            <motion.div 
-              className="stats-chart-card stats-card-wide"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-            >
-              <div className="stats-card-header-with-icon">
-                <div className="stats-card-icon-header">
-                  <Star size={20} />
-                </div>
-                <div>
-                  <h3>Rating Distribution</h3>
-                  <p>How you rate your movies</p>
-                </div>
-                <div className="stats-quick-metrics">
-                  <div className="stats-metric">
-                    <span className="stats-metric-value">{getRatingValue(stats.basic?.ratingStats, 'median_rating')}</span>
-                    <span className="stats-metric-label">Median</span>
-                  </div>
-                  <div className="stats-metric">
-                    <span className="stats-metric-value">{getRatingValue(stats.basic?.ratingStats, 'mode_rating')}</span>
-                    <span className="stats-metric-label">Most Common</span>
-                  </div>
-                </div>
-              </div>
-              <AnimatedMiniChart
-                data={getRatingDistributionData()}
-                color="purple"
-                showValues={true}
+            <div className="stats-masonry-item stats-masonry-large">
+              <CompactStatCard
+                icon={Calendar}
+                title="Active Years"
+                value={stats.basic?.watchSpan?.watch_span || '—'}
+                subtitle="From first to latest"
+                color="indigo"
+                size="large"
               />
-            </motion.div>
+            </div>
 
-            {/* Quick Stats Cards */}
-            <CompactStatCard
-              icon={Trophy}
-              title="Top Genre"
-              value={stats.genres?.genreStats?.[0]?.genre_name || '—'}
-              subtitle={stats.genres?.genreStats?.[0]?.film_count ? `${stats.genres.genreStats[0].film_count} films` : 'Most watched'}
-              color="orange"
-            />
-
-            <RewardPieChart
-              rewatchData={stats.rewatches}
-              color="red"
-            />
-
-            <CompactStatCard
-              icon={Calendar}
-              title="Active Years"
-              value={stats.basic?.watchSpan?.watch_span || '—'}
-              subtitle="From first to latest"
-              color="indigo"
-            />
-
-            {/* Viewing Patterns Chart */}
-            <motion.div 
-              className="stats-chart-card"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-            >
-              <div className="stats-card-header-with-icon">
-                <div className="stats-card-icon-header">
-                  <Eye size={20} />
-                </div>
-                <div>
-                  <h3>Viewing Patterns</h3>
-                  <p>Movies per year</p>
-                </div>
-              </div>
-              <AnimatedMiniChart
-                data={stats.time?.filmsPerYear?.map(item => ({
-                  label: item.year.toString(),
-                  value: item.film_count,
-                  unit: 'films'
-                }))}
-                color="green"
-                showValues={true}
-              />
-            </motion.div>
-
-            {/* Day of Week Chart */}
-            <motion.div 
-              className="stats-chart-card"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.35 }}
-            >
-              <div className="stats-card-header-with-icon">
-                <div className="stats-card-icon-header">
-                  <Calendar size={20} />
-                </div>
-                <div>
-                  <h3>Weekly Patterns</h3>
-                  <p>Films watched by day</p>
-                </div>
-              </div>
-              <AnimatedMiniChart
-                data={stats.dayOfWeek?.map(item => ({
-                  label: item.day_name?.substring(0, 3) || item.day_of_week,
-                  value: item.film_count || item.count,
-                  unit: 'films'
-                }))}
-                color="teal"
-                showValues={true}
-              />
-            </motion.div>
-
-            <CompactStatCard
-              icon={Clock}
-              title="Avg Runtime"
-              value={stats.time?.runtimeStats?.average_runtime ? `${Math.round(stats.time.runtimeStats.average_runtime)}min` : '—'}
-              subtitle="Typical length"
-              color="purple"
-            />
-
-            <CompactStatCard
-              icon={Calendar}
-              title="Era Preference"
-              value={stats.releaseYears?.releaseYearAnalysis?.average_release_year ? Math.round(stats.releaseYears.releaseYearAnalysis.average_release_year) : '—'}
-              subtitle="Average year"
-              color="blue"
-            />
-
-            {/* Genre Preferences Chart */}
-            <motion.div 
-              className="stats-chart-card"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.45 }}
-            >
-              <div className="stats-card-header-with-icon">
-                <div className="stats-card-icon-header">
-                  <Trophy size={20} />
-                </div>
-                <div>
-                  <h3>Top Genres</h3>
-                  <p>Most watched categories</p>
-                </div>
-              </div>
-              <AnimatedMiniChart
-                data={stats.genres?.genreStats?.slice(0, 5).map(item => ({
-                  label: item.genre_name,
-                  value: item.film_count,
-                  unit: 'films'
-                }))}
-                color="orange"
-                showValues={true}
-              />
-            </motion.div>
-
-            {/* Directors Chart */}
-            {stats.directors?.directorStats && (
+            {/* Rating Distribution Card - Extra Wide */}
+            <div className="stats-masonry-item stats-masonry-extra-wide">
               <motion.div 
                 className="stats-chart-card"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.55 }}
+                transition={{ delay: 0.2 }}
               >
                 <div className="stats-card-header-with-icon">
                   <div className="stats-card-icon-header">
-                    <Users size={20} />
+                    <Star size={20} />
                   </div>
                   <div>
-                    <h3>Top Directors</h3>
-                    <p>Most watched filmmakers</p>
-                  </div>
-                </div>
-                <AnimatedMiniChart
-                  data={stats.directors.directorStats.slice(0, 5).map(item => ({
-                    label: item.director_name || 'Unknown',
-                    value: item.film_count,
-                    unit: 'films'
-                  }))}
-                  color="red"
-                  showValues={true}
-                />
-              </motion.div>
-            )}
-
-            {/* Runtime Distribution Chart */}
-            {stats.runtime?.distribution && (
-              <motion.div 
-                className="stats-chart-card stats-card-two-wide"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.60 }}
-              >
-                <div className="stats-card-header-with-icon">
-                  <div className="stats-card-icon-header">
-                    <Clock size={20} />
-                  </div>
-                  <div>
-                    <h3>Runtime Distribution</h3>
-                    <p>Unique movies by length</p>
+                    <h3>Rating Distribution</h3>
+                    <p>How you rate your movies</p>
                   </div>
                   <div className="stats-quick-metrics">
                     <div className="stats-metric">
-                      <span className="stats-metric-value">{stats.runtime?.stats?.total_runtime ? Math.round(stats.runtime.stats.total_runtime / 60) : 0}h</span>
-                      <span className="stats-metric-label">Total</span>
+                      <span className="stats-metric-value">{getRatingValue(stats.basic?.ratingStats, 'median_rating')}</span>
+                      <span className="stats-metric-label">Median</span>
                     </div>
                     <div className="stats-metric">
-                      <span className="stats-metric-value">{stats.runtime?.stats?.average_runtime ? Math.round(stats.runtime.stats.average_runtime) : 0}m</span>
-                      <span className="stats-metric-label">Avg</span>
+                      <span className="stats-metric-value">{getRatingValue(stats.basic?.ratingStats, 'mode_rating')}</span>
+                      <span className="stats-metric-label">Most Common</span>
                     </div>
                   </div>
                 </div>
-                <RuntimeDistributionChart
-                  runtimeData={stats.runtime.distribution}
+                <AnimatedMiniChart
+                  data={getRatingDistributionData()}
+                  color="purple"
+                  showValues={true}
                 />
               </motion.div>
-            )}
+            </div>
 
-            {/* Release Years Chart */}
-            <motion.div 
-              className="stats-chart-card"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.65 }}
-            >
-              <div className="stats-card-header-with-icon">
-                <div className="stats-card-icon-header">
-                  <Calendar size={20} />
-                </div>
-                <div>
-                  <h3>By Decade</h3>
-                  <p>When movies were made</p>
-                </div>
-              </div>
-              <AnimatedMiniChart
-                data={stats.releaseYears?.filmsByDecade?.slice(-5).map(item => ({
-                  label: `${item.decade}s`,
-                  value: item.film_count,
-                  unit: 'films'
-                }))}
-                color="indigo"
-                showValues={true}
+            {/* Quick Stats Cards - Small */}
+            {/* <div className="stats-masonry-item stats-masonry-small">
+              <CompactStatCard
+                icon={Trophy}
+                title="Top Genre"
+                value={stats.genres?.[0]?.genre_name || '—'}
+                subtitle={stats.genres?.[0]?.film_count ? `${stats.genres[0].film_count} films` : 'Most watched'}
+                color="orange"
               />
-            </motion.div>
-
-            {/* Most Rewatched */}
-            {stats.rewatches?.top_rewatched && (
+            </div> */}
+            
+            {/* By Decade Chart - Small */}
+            <div className="stats-masonry-item stats-masonry-small">
               <motion.div 
-                className="stats-chart-card stats-card-wide stats-rewatched-grid"
+                className="stats-chart-card"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.75 }}
-              >
-                <div className="stats-card-header-with-icon">
-                  <div className="stats-card-icon-header">
-                    <RotateCcw size={20} />
-                  </div>
-                  <div>
-                    <h3>Most Rewatched</h3>
-                    <p>Movies you love to see again</p>
-                  </div>
-                </div>
-                
-                <div className="stats-rewatched-posters">
-                  {stats.rewatches.top_rewatched.slice(0, 5).map((item, index) => (
-                    <motion.div
-                      key={index}
-                      className="stats-rewatched-item"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.8 + (index * 0.1), duration: 0.4 }}
-                      whileHover={{ y: -4, scale: 1.02 }}
-                      onClick={() => handleMovieClick(item.title)}
-                    >
-                      <div className="stats-rewatched-poster">
-                        {item.poster_url ? (
-                          <img 
-                            src={item.poster_url} 
-                            alt={item.title}
-                            onError={(e) => {
-                              e.target.style.display = 'none';
-                              e.target.nextSibling.style.display = 'flex';
-                            }}
-                          />
-                        ) : null}
-                        <div className="stats-rewatched-fallback" style={{ display: item.poster_url ? 'none' : 'flex' }}>
-                          <Film size={32} />
-                        </div>
-                      </div>
-                      <div className="stats-rewatched-count">
-                        <span className="stats-rewatched-number">{item.watch_count}</span>
-                        <span className="stats-rewatched-label">times</span>
-                      </div>
-                      <div className="stats-rewatched-title">{item.title}</div>
-                    </motion.div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-
-            {/* Earliest and Latest Films */}
-            {stats.earliestLatest && (stats.earliestLatest.earliest_film || stats.earliestLatest.latest_film) && (
-              <motion.div 
-                className="stats-chart-card stats-card-two-wide stats-earliest-latest-grid"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.85 }}
+                transition={{ delay: 0.65 }}
               >
                 <div className="stats-card-header-with-icon">
                   <div className="stats-card-icon-header">
                     <Calendar size={20} />
                   </div>
                   <div>
-                    <h3>First & Latest</h3>
-                    <p>Your movie watching journey</p>
+                    <h3>By Decade</h3>
+                    <p>When movies were made</p>
                   </div>
                 </div>
-                
-                <div className="stats-earliest-latest-films">
-                  {stats.earliestLatest.earliest_film && (
-                    <motion.div
-                      className="stats-earliest-latest-item"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.9, duration: 0.4 }}
-                      whileHover={{ y: -4, scale: 1.02 }}
-                      onClick={() => handleMovieClick(stats.earliestLatest.earliest_film.title)}
-                    >
-                      <div className="stats-earliest-latest-poster">
-                        {stats.earliestLatest.earliest_film.poster_url ? (
-                          <img 
-                            src={stats.earliestLatest.earliest_film.poster_url} 
-                            alt={stats.earliestLatest.earliest_film.title}
-                            onError={(e) => {
-                              e.target.style.display = 'none';
-                              e.target.nextSibling.style.display = 'flex';
-                            }}
-                          />
-                        ) : null}
-                        <div className="stats-rewatched-fallback" style={{ display: stats.earliestLatest.earliest_film.poster_url ? 'none' : 'flex' }}>
-                          <Film size={32} />
-                        </div>
-                      </div>
-                      <div className="stats-earliest-latest-info">
-                        <div className="stats-earliest-latest-label">
-                          <ArrowUp size={16} />
-                          <span>First Watched</span>
-                        </div>
-                        <div className="stats-earliest-latest-title">{stats.earliestLatest.earliest_film.title}</div>
-                        <div className="stats-earliest-latest-date">
-                          {new Date(stats.earliestLatest.earliest_film.watched_date).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric'
-                          })}
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {stats.earliestLatest.latest_film && (
-                    <motion.div
-                      className="stats-earliest-latest-item"
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 1.0, duration: 0.4 }}
-                      whileHover={{ y: -4, scale: 1.02 }}
-                      onClick={() => handleMovieClick(stats.earliestLatest.latest_film.title)}
-                    >
-                      <div className="stats-earliest-latest-poster">
-                        {stats.earliestLatest.latest_film.poster_url ? (
-                          <img 
-                            src={stats.earliestLatest.latest_film.poster_url} 
-                            alt={stats.earliestLatest.latest_film.title}
-                            onError={(e) => {
-                              e.target.style.display = 'none';
-                              e.target.nextSibling.style.display = 'flex';
-                            }}
-                          />
-                        ) : null}
-                        <div className="stats-rewatched-fallback" style={{ display: stats.earliestLatest.latest_film.poster_url ? 'none' : 'flex' }}>
-                          <Film size={32} />
-                        </div>
-                      </div>
-                      <div className="stats-earliest-latest-info">
-                        <div className="stats-earliest-latest-label">
-                          <ArrowDown size={16} />
-                          <span>Latest Watched</span>
-                        </div>
-                        <div className="stats-earliest-latest-title">{stats.earliestLatest.latest_film.title}</div>
-                        <div className="stats-earliest-latest-date">
-                          {new Date(stats.earliestLatest.latest_film.watched_date).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric'
-                          })}
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </div>
+                <AnimatedMiniChart
+                  data={(() => {
+                    if (!stats.decades) return [];
+                    
+                    // Create a complete range from 1910s to the latest decade
+                    const currentYear = new Date().getFullYear();
+                    const currentDecade = Math.floor(currentYear / 10) * 10;
+                    const decades = [];
+                    
+                    for (let decade = 1910; decade <= currentDecade; decade += 10) {
+                      const existing = stats.decades.find(item => item.decade === decade);
+                      decades.push({
+                        label: `${decade}s`,
+                        value: existing ? existing.film_count : 0,
+                        unit: 'films'
+                      });
+                    }
+                    
+                    // Reverse to show latest decades first (most recent at top)
+                    return decades.reverse();
+                  })()}
+                  color="indigo"
+                  showValues={true}
+                  showTooltips={true}
+                />
               </motion.div>
-            )}
+            </div>
 
-            {/* Longest Viewing Streak */}
-            {stats.streaks?.streaks && stats.streaks.streaks.length > 0 && (
+            {/* Rewatches Pie Chart - Medium */}
+            <div className="stats-masonry-item stats-masonry-medium">
+              <RewardPieChart
+                rewatchData={stats.rewatches}
+                color="red"
+              />
+            </div>
+
+            <div className="stats-masonry-item stats-masonry-medium">
+              <div className="stats-stacked-cards">
+                <CompactStatCard
+                  icon={Clock}
+                  title="Avg Runtime"
+                  value={stats.time?.runtimeStats?.average_runtime ? `${Math.round(stats.time.runtimeStats.average_runtime)}min` : '—'}
+                  subtitle="Typical length"
+                  color="purple"
+                />
+                <CompactStatCard
+                  icon={Calendar}
+                  title="Era Preference"
+                  value={stats.releaseYears?.average_release_year ? Math.round(stats.releaseYears.average_release_year) : '—'}
+                  subtitle="Average year"
+                  color="blue"
+                />
+              </div>
+            </div>
+
+            {/* Viewing Patterns Chart - Medium */}
+            <div className="stats-masonry-item stats-masonry-medium">
               <motion.div 
-                className="stats-chart-card stats-card-full-width stats-streak-showcase"
+                className="stats-chart-card"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.95 }}
+                transition={{ delay: 0.3 }}
               >
-                <div className="stats-streak-header">
-                  <div className="stats-streak-header-main">
-                    <div className="stats-card-icon-header">
-                      <TrendingUp size={20} />
-                    </div>
-                    <div className="stats-streak-header-content">
-                      <h3>Longest Viewing Streak</h3>
-                      <p>Your most dedicated movie-watching period</p>
-                    </div>
+                <div className="stats-card-header-with-icon">
+                  <div className="stats-card-icon-header">
+                    <Eye size={20} />
                   </div>
-                  <div className="stats-streak-badge-large">
-                    <span className="stats-streak-number-large">{stats.streaks.streaks[0].length}</span>
-                    <span className="stats-streak-label-large">consecutive days</span>
+                  <div>
+                    <h3>Viewing Patterns</h3>
+                    <p>Movies per year</p>
                   </div>
                 </div>
+                <AnimatedMiniChart
+                  data={stats.time?.filmsPerYear?.map(item => ({
+                    label: item.year.toString(),
+                    value: item.film_count,
+                    unit: 'films'
+                  }))}
+                  color="green"
+                  showValues={true}
+                />
+              </motion.div>
+            </div>
 
-                <div className="stats-streak-period">
-                  <div className="stats-streak-period-item">
-                    <span className="stats-streak-period-label">Started</span>
-                    <span className="stats-streak-period-date">
-                      {new Date(stats.streaks.streaks[0].startDate).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </span>
+            {/* Day of Week Chart - Medium */}
+            <div className="stats-masonry-item stats-masonry-medium">
+              <motion.div 
+                className="stats-chart-card"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.35 }}
+              >
+                <div className="stats-card-header-with-icon">
+                  <div className="stats-card-icon-header">
+                    <Calendar size={20} />
                   </div>
-                  <div className="stats-streak-divider"></div>
-                  <div className="stats-streak-period-item">
-                    <span className="stats-streak-period-label">Ended</span>
-                    <span className="stats-streak-period-date">
-                      {new Date(stats.streaks.streaks[0].endDate).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </span>
-                  </div>
-                  <div className="stats-streak-divider"></div>
-                  <div className="stats-streak-period-item">
-                    <span className="stats-streak-period-label">Total Films</span>
-                    <span className="stats-streak-period-value">{stats.streaks.streaks[0].totalFilms}</span>
+                  <div>
+                    <h3>Weekly Patterns</h3>
+                    <p>Films watched by day</p>
                   </div>
                 </div>
-                
-                <div className="stats-streak-gallery">
-                  <div className="stats-streak-gallery-header">
-                    <h4>All Films Watched</h4>
-                    <span className="stats-streak-gallery-subtitle">
-                      {(stats.streaks.streaks[0].totalFilms / stats.streaks.streaks[0].length).toFixed(1)} films per day average
-                    </span>
+                <AnimatedMiniChart
+                  data={stats.dayOfWeek?.map(item => ({
+                    label: item.day_name?.substring(0, 3) || item.day_of_week,
+                    value: item.film_count || item.count,
+                    unit: 'films'
+                  }))}
+                  color="teal"
+                  showValues={true}
+                />
+              </motion.div>
+            </div>
+
+            {/* Seasonal Patterns - Wide */}
+            <div className="stats-masonry-item stats-masonry-wide">
+              <CombinedSeasonalCard seasonalData={stats.seasonal} />
+            </div>
+
+            {/* Directors Chart - Wide */}
+            {stats.directors && stats.directors.length > 0 && (
+              <div className="stats-masonry-item stats-masonry-wide">
+                <motion.div 
+                  className="stats-chart-card"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.55 }}
+                >
+                  <div className="stats-card-header-with-icon">
+                    <div className="stats-card-icon-header">
+                      <Users size={20} />
+                    </div>
+                    <div>
+                      <h3>Top Directors</h3>
+                      <p>Most watched filmmakers</p>
+                    </div>
+                  </div>
+                  <AnimatedMiniChart
+                    data={stats.directors.slice(0, 20).map(item => ({
+                      label: item.director_name || 'Unknown',
+                      value: item.unique_films,
+                      unit: 'films'
+                    }))}
+                    color="red"
+                    showValues={true}
+                    showTooltips={true}
+                  />
+                </motion.div>
+              </div>
+            )}
+
+            {/* Runtime Distribution Chart - Wide */}
+            {/* {stats.runtime?.distribution && (
+              <div className="stats-masonry-item stats-masonry-wide">
+                <motion.div 
+                  className="stats-chart-card"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.60 }}
+                >
+                  <div className="stats-card-header-with-icon">
+                    <div className="stats-card-icon-header">
+                      <Clock size={20} />
+                    </div>
+                    <div>
+                      <h3>Runtime Distribution</h3>
+                      <p>Unique movies by length</p>
+                    </div>
+                    <div className="stats-quick-metrics">
+                      <div className="stats-metric">
+                        <span className="stats-metric-value">{stats.runtime?.stats?.total_runtime ? Math.round(stats.runtime.stats.total_runtime / 60) : 0}h</span>
+                        <span className="stats-metric-label">Total</span>
+                      </div>
+                      <div className="stats-metric">
+                        <span className="stats-metric-value">{stats.runtime?.stats?.average_runtime ? Math.round(stats.runtime.stats.average_runtime) : 0}m</span>
+                        <span className="stats-metric-label">Avg</span>
+                      </div>
+                    </div>
+                  </div>
+                  <RuntimeDistributionChart
+                    runtimeData={stats.runtime.distribution}
+                  />
+                </motion.div>
+              </div>
+            )} */}
+
+
+
+            {/* Most Rewatched - Wide */}
+            {stats.rewatches?.top_rewatched && (
+              <div className="stats-masonry-item stats-masonry-wide">
+                <motion.div 
+                  className="stats-chart-card stats-rewatched-grid"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.75 }}
+                >
+                  <div className="stats-card-header-with-icon">
+                    <div className="stats-card-icon-header">
+                      <RotateCcw size={20} />
+                    </div>
+                    <div>
+                      <h3>Most Rewatched</h3>
+                      <p>Movies you love to see again</p>
+                    </div>
                   </div>
                   
-                  <div className="stats-streak-films-grid">
-                    {stats.streaks.streaks[0].allFilms.map((film, index) => (
+                  <div className="stats-rewatched-posters">
+                    {stats.rewatches.top_rewatched.slice(0, 5).map((item, index) => (
                       <motion.div
-                        key={`${film.title}-${film.watched_date}-${index}`}
-                        className="stats-streak-film-card"
+                        key={index}
+                        className="stats-rewatched-item"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ 
-                          delay: 1.0 + (index * 0.05), 
-                          duration: 0.4,
-                          ease: [0.25, 0.46, 0.45, 0.94]
-                        }}
+                        transition={{ delay: 0.8 + (index * 0.1), duration: 0.4 }}
                         whileHover={{ y: -4, scale: 1.02 }}
-                        onClick={() => handleMovieClick(film.title)}
+                        onClick={() => handleMovieClick(item.title)}
                       >
-                        <div className="stats-streak-film-poster">
-                          {film.poster_url ? (
+                        <div className="stats-rewatched-poster">
+                          {item.poster_url ? (
                             <img 
-                              src={film.poster_url} 
-                              alt={film.title}
+                              src={item.poster_url} 
+                              alt={item.title}
                               onError={(e) => {
                                 e.target.style.display = 'none';
                                 e.target.nextSibling.style.display = 'flex';
                               }}
                             />
                           ) : null}
-                          <div className="stats-streak-film-fallback" style={{ display: film.poster_url ? 'none' : 'flex' }}>
-                            <Film size={24} />
+                          <div className="stats-rewatched-fallback" style={{ display: item.poster_url ? 'none' : 'flex' }}>
+                            <Film size={32} />
                           </div>
-                          {film.rating && (
-                            <div className="stats-streak-film-rating">
-                              <Star size={12} />
-                              <span>{film.rating}</span>
-                            </div>
-                          )}
                         </div>
-                        <div className="stats-streak-film-info">
-                          <div className="stats-streak-film-title">{film.title}</div>
-                          <div className="stats-streak-film-date">
-                            {new Date(film.watched_date).toLocaleDateString('en-US', {
+                        <div className="stats-rewatched-count">
+                          <span className="stats-rewatched-number">{item.watch_count}</span>
+                          <span className="stats-rewatched-label">times</span>
+                        </div>
+                        <div className="stats-rewatched-title">{item.title}</div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+              </div>
+            )}
+
+            {/* Earliest and Latest Films - Wide */}
+            {stats.earliestLatest && (stats.earliestLatest.earliest_film || stats.earliestLatest.latest_film) && (
+              <div className="stats-masonry-item stats-masonry-wide">
+                <motion.div 
+                  className="stats-chart-card stats-earliest-latest-grid"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.85 }}
+                >
+                  <div className="stats-card-header-with-icon">
+                    <div className="stats-card-icon-header">
+                      <Calendar size={20} />
+                    </div>
+                    <div>
+                      <h3>First & Latest</h3>
+                      <p>Your movie watching journey</p>
+                    </div>
+                  </div>
+                  
+                  <div className="stats-earliest-latest-films">
+                    {stats.earliestLatest.earliest_film && (
+                      <motion.div
+                        className="stats-earliest-latest-item"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.9, duration: 0.4 }}
+                        whileHover={{ y: -4, scale: 1.02 }}
+                        onClick={() => handleMovieClick(stats.earliestLatest.earliest_film.title)}
+                      >
+                        <div className="stats-earliest-latest-poster">
+                          {stats.earliestLatest.earliest_film.poster_url ? (
+                            <img 
+                              src={stats.earliestLatest.earliest_film.poster_url} 
+                              alt={stats.earliestLatest.earliest_film.title}
+                              onError={(e) => {
+                                e.target.style.display = 'none';
+                                e.target.nextSibling.style.display = 'flex';
+                              }}
+                            />
+                          ) : null}
+                          <div className="stats-rewatched-fallback" style={{ display: stats.earliestLatest.earliest_film.poster_url ? 'none' : 'flex' }}>
+                            <Film size={32} />
+                          </div>
+                        </div>
+                        <div className="stats-earliest-latest-info">
+                          <div className="stats-earliest-latest-date">
+                            {new Date(stats.earliestLatest.earliest_film.watched_date).toLocaleDateString('en-US', {
+                              year: 'numeric',
                               month: 'short',
                               day: 'numeric'
                             })}
                           </div>
+                          <div className="stats-earliest-latest-title">{stats.earliestLatest.earliest_film.title}</div>
                         </div>
                       </motion.div>
-                    ))}
+                    )}
+
+                    {stats.earliestLatest.latest_film && (
+                      <motion.div
+                        className="stats-earliest-latest-item"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 1.0, duration: 0.4 }}
+                        whileHover={{ y: -4, scale: 1.02 }}
+                        onClick={() => handleMovieClick(stats.earliestLatest.latest_film.title)}
+                      >
+                        <div className="stats-earliest-latest-poster">
+                          {stats.earliestLatest.latest_film.poster_url ? (
+                            <img 
+                              src={stats.earliestLatest.latest_film.poster_url} 
+                              alt={stats.earliestLatest.latest_film.title}
+                              onError={(e) => {
+                                e.target.style.display = 'none';
+                                e.target.nextSibling.style.display = 'flex';
+                              }}
+                            />
+                          ) : null}
+                          <div className="stats-rewatched-fallback" style={{ display: stats.earliestLatest.latest_film.poster_url ? 'none' : 'flex' }}>
+                            <Film size={32} />
+                          </div>
+                        </div>
+                        <div className="stats-earliest-latest-info">
+                          <div className="stats-earliest-latest-date">
+                            {new Date(stats.earliestLatest.latest_film.watched_date).toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric'
+                            })}
+                          </div>
+                          <div className="stats-earliest-latest-title">{stats.earliestLatest.latest_film.title}</div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </div>
+                </motion.div>
+              </div>
+            )}
+
+            {/* Interactive Movie Timeline - Full Width */}
+            <div className="stats-masonry-item stats-masonry-full">
+              <motion.div 
+                className="stats-chart-card"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.9 }}
+              >
+                <div className="stats-card-header-with-icon">
+                  <div className="stats-card-icon-header">
+                    <Film size={20} />
+                  </div>
+                  <div>
+                    <h3>Movie Timeline</h3>
+                    <p>Journey through your cinematic adventures</p>
                   </div>
                 </div>
+                <div style={{ minHeight: '400px' }}>
+                  <MovieTimeline onMovieClick={handleMovieClick} />
+                </div>
               </motion.div>
+            </div>
+
+            {/* Longest Viewing Streak - Full Width */}
+            {stats.streaks?.streaks && stats.streaks.streaks.length > 0 && (
+              <div className="stats-masonry-item stats-masonry-full">
+                <motion.div 
+                  className="stats-chart-card stats-streak-showcase"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.95 }}
+                >
+                  <div className="stats-streak-header">
+                    <div className="stats-streak-header-main">
+                      <div className="stats-card-icon-header">
+                        <TrendingUp size={20} />
+                      </div>
+                      <div className="stats-streak-header-content">
+                        <h3>Longest Viewing Streak</h3>
+                        <p>Your most dedicated movie-watching period</p>
+                      </div>
+                    </div>
+                    <div className="stats-streak-badge-large">
+                      <span className="stats-streak-number-large">{stats.streaks.streaks[0].length}</span>
+                      <span className="stats-streak-label-large">consecutive days</span>
+                    </div>
+                  </div>
+
+                  <div className="stats-streak-period">
+                    <div className="stats-streak-period-item">
+                      <span className="stats-streak-period-label">Started</span>
+                      <span className="stats-streak-period-date">
+                        {new Date(stats.streaks.streaks[0].startDate).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
+                      </span>
+                    </div>
+                    <div className="stats-streak-divider"></div>
+                    <div className="stats-streak-period-item">
+                      <span className="stats-streak-period-label">Ended</span>
+                      <span className="stats-streak-period-date">
+                        {new Date(stats.streaks.streaks[0].endDate).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
+                      </span>
+                    </div>
+                    <div className="stats-streak-divider"></div>
+                    <div className="stats-streak-period-item">
+                      <span className="stats-streak-period-label">Total Films</span>
+                      <span className="stats-streak-period-value">{stats.streaks.streaks[0].totalFilms}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="stats-streak-gallery">
+                    <div className="stats-streak-gallery-header">
+                      <h4>All Films Watched</h4>
+                      <span className="stats-streak-gallery-subtitle">
+                        {(stats.streaks.streaks[0].totalFilms / stats.streaks.streaks[0].length).toFixed(1)} films per day average
+                      </span>
+                    </div>
+                    
+                    <div className="stats-streak-films-grid">
+                      {stats.streaks.streaks[0].allFilms.map((film, index) => (
+                        <motion.div
+                          key={`${film.title}-${film.watched_date}-${index}`}
+                          className="stats-streak-film-card"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ 
+                            delay: 1.0 + (index * 0.05), 
+                            duration: 0.4,
+                            ease: [0.25, 0.46, 0.45, 0.94]
+                          }}
+                          whileHover={{ y: -4, scale: 1.02 }}
+                          onClick={() => handleMovieClick(film.title)}
+                        >
+                          <div className="stats-streak-film-poster">
+                            {film.poster_url ? (
+                              <img 
+                                src={film.poster_url} 
+                                alt={film.title}
+                                onError={(e) => {
+                                  e.target.style.display = 'none';
+                                  e.target.nextSibling.style.display = 'flex';
+                                }}
+                              />
+                            ) : null}
+                            <div className="stats-streak-film-fallback" style={{ display: film.poster_url ? 'none' : 'flex' }}>
+                              <Film size={24} />
+                            </div>
+                            {film.rating && (
+                              <div className="stats-streak-film-rating">
+                                <Star size={12} />
+                                <span>{film.rating}</span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="stats-streak-film-info">
+                            <div className="stats-streak-film-title">{film.title}</div>
+                            <div className="stats-streak-film-date">
+                              {new Date(film.watched_date).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric'
+                              })}
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
             )}
           </div>
         </motion.div>

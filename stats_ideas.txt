@@ -48,7 +48,7 @@
 	•	Title and runtime (e.g., runtime ≥ 3 hours).
 	•	Shortest Film Watched
 	•	Title and runtime (e.g., shorts ≤ 40 minutes).
-	•	Total Hours Watched This Year / Month
+	•	Total Hours Watched This Year / Month ********************************************************
 	•	Aggregate runtime for the current calendar window.
 	•	Distribution of Runtime (Bins)
 	•	Number of films in runtime buckets (e.g., <90 min, 90–120 min, 120–150 min, >150 min).

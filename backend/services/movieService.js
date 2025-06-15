@@ -191,7 +191,7 @@ class MovieService {
   /**
    * Fetch movie data from TMDB and save to database
    */
-  async fetchAndSaveMovie(title, year = null, userRating = null, detailedRating = null, watchDate = null, isRewatch = false) {
+  async fetchAndSaveMovie(title, year = null, userRating = null, detailedRating = null, watchDate = null, isRewatch = false, notes = null, tags = null) {
     this._checkDatabase();
     
     try {
@@ -228,7 +228,9 @@ class MovieService {
         rating: userRating,
         ratings100: detailedRating,
         watched_date: watchDate,
-        rewatch: isRewatch ? 'Yes' : 'No'
+        rewatch: isRewatch ? 'Yes' : 'No',
+        reviews: notes,
+        tags: tags
       };
 
       // Save movie to database

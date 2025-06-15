@@ -200,6 +200,10 @@ class ApiService {
   async getRuntimeStats() {
     return this.request('/stats/runtime');
   }
+
+  async getSeasonalStats() {
+    return this.request('/stats/seasonal');
+  }
 }
 
 export default new ApiService(); 

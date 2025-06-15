@@ -4,6 +4,7 @@
 }
 
 .hero h1 {
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 48px;
   font-weight: var(--font-weight-bold);
   margin-bottom: 16px;
@@ -30,6 +31,7 @@
 }
 
 .hero-content h1 {
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 48px;
   font-weight: var(--font-weight-bold);
   margin-bottom: 16px;
@@ -38,6 +40,7 @@
 }
 
 .hero-content h1.overview-title {
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 56px;
   font-weight: var(--font-weight-bold);
   margin-bottom: 20px;

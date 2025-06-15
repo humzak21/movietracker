@@ -1,181 +1,107 @@
-# Movie Tracker - Full-Stack Application
+# Movie Tracker
 
-A modern, interactive movie tracking application built with React frontend and Node.js backend, deployed on Railway.
+A modern, full-stack movie tracking application that helps you catalog, rate, and analyze your movie watching habits with rich data from The Movie Database (TMDB).
 
-## 🚀 Quick Start
+## ✨ Features
 
-### Development Setup
+- **Movie Management**: Add, edit, delete, and organize your movie collection
+- **TMDB Integration**: Automatic movie data fetching with posters, cast, crew, and metadata
+- **Dual Rating System**: Rate movies on both 1-5 star and 0-100 detailed scales
+- **Advanced Search**: Search your collection by title, director, genre, or description
+- **Interactive Statistics**: Visualize your movie watching patterns with dynamic charts
+- **Batch Operations**: Add multiple movies efficiently
+- **Rewatch Tracking**: Mark and track movies you've watched multiple times
+- **Responsive Design**: Seamless experience across desktop and mobile devices
 
-1. **Clone the repository**
-   ```bash
-   git clone <your-repo-url>
-   cd movietracker
-   ```
+## 🛠️ Tech Stack
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   npm run install:backend
-   ```
+### Frontend
+- **React 18** - Modern UI library with hooks
+- **Vite** - Fast build tool and development server
+- **Chart.js** - Interactive data visualizations
+- **CSS Modules** - Scoped styling architecture
+- **Responsive Design** - Mobile-first approach
 
-3. **Set up environment variables**
-   ```bash
-   cp .env.example .env
-   cp .env.example backend/.env
-   ```
-   
-   Fill in your actual values in both `.env` files:
-   - `SUPABASE_URL` - Your Supabase project URL
-   - `SUPABASE_ANON_KEY` - Your Supabase anonymous key
-   - `SUPABASE_SERVICE_ROLE_KEY` - Your Supabase service role key
-   - `TMDB_API_KEY` - Your TMDB API key
+### Backend
+- **Node.js** - JavaScript runtime
+- **Express.js** - Web application framework
+- **Supabase** - PostgreSQL database with real-time features
+- **TMDB API** - Movie data integration
+- **Rate Limiting** - API protection and quota management
 
-4. **Start development servers**
-   ```bash
-   npm run dev
-   ```
-   
-   This starts both frontend (http://localhost:5173) and backend (http://localhost:3001) concurrently.
+### Database Schema
+- **Movies**: Core movie data from TMDB
+- **Directors**: Director information and relationships
+- **Genres**: Movie genres and categorization
+- **User Ratings**: Personal ratings and watch history
+- **Relational Design**: Normalized data structure
 
-## 🚂 Railway Deployment
+### Deployment
+- **Railway** - Cloud platform for full-stack deployment
+- **Environment Management** - Separate staging and production environments
+- **Automatic Deployments** - CI/CD from GitHub
+- **Custom Domains** - HTTPS-enabled custom domain support
 
-### One-Click Deploy
+## 🎬 Core Functionality
 
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/your-template-id)
+### Movie Collection Management
+- Add movies by searching TMDB database
+- Automatic metadata population (runtime, release date, cast, crew)
+- High-quality poster and backdrop images
+- Comprehensive movie details and descriptions
 
-### Manual Deployment
+### Rating & Review System
+- **Star Rating**: Quick 1-5 star ratings
+- **Detailed Rating**: Precise 0-100 scale scoring
+- **Watch Date Tracking**: Record when you watched each movie
+- **Rewatch Support**: Track multiple viewings of the same movie
+- **Personal Notes**: Add custom notes and thoughts
 
-1. **Create a Railway account** at [railway.app](https://railway.app)
+### Analytics & Statistics
+- **Rating Distribution**: Visualize your rating patterns
+- **Genre Analysis**: See your favorite movie genres
+- **Watching Trends**: Track your movie consumption over time
+- **Director Insights**: Discover your preferred directors
+- **Comprehensive Stats**: Total movies, average ratings, and more
 
-2. **Connect your GitHub repository**
-   - Go to Railway dashboard
-   - Click "New Project"
-   - Select "Deploy from GitHub repo"
-   - Choose your movie tracker repository
+### Search & Discovery
+- **Smart Search**: Find movies by title, director, or genre
+- **Filter Options**: Sort by rating, date, genre, or director
+- **TMDB Integration**: Discover new movies from trending lists
+- **Batch Import**: Add multiple movies from CSV or manual entry
 
-3. **Configure environment variables**
-   
-   In Railway dashboard, go to your project → Variables tab and add:
-   
-   ```
-   NODE_ENV=production
-   SUPABASE_URL=your_supabase_project_url
-   SUPABASE_ANON_KEY=your_supabase_anon_key
-   SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
-   TMDB_API_KEY=your_tmdb_api_key
-   FRONTEND_URL=https://your-app-name.railway.app
-   ```
+## 🏗️ Architecture
 
-4. **Deploy**
-   - Railway will automatically detect the Node.js app
-   - It will run `npm run start:production` which builds the frontend and starts the backend
-   - Your app will be available at `https://your-app-name.railway.app`
+The application follows a modern full-stack architecture:
 
-### Environment Variables Setup
+- **Frontend**: React SPA with component-based architecture
+- **Backend**: RESTful API with Express.js
+- **Database**: PostgreSQL via Supabase with real-time capabilities
+- **External APIs**: TMDB for movie data enrichment
+- **Deployment**: Containerized deployment on Railway platform
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `NODE_ENV` | Set to `production` for Railway | ✅ |
-| `SUPABASE_URL` | Your Supabase project URL | ✅ |
-| `SUPABASE_ANON_KEY` | Supabase anonymous key | ✅ |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key | ✅ |
-| `TMDB_API_KEY` | The Movie Database API key | ✅ |
-| `FRONTEND_URL` | Your Railway app URL (for CORS) | ✅ |
+## 📊 Data Sources
 
-## 🏗️ Project Structure
+- **The Movie Database (TMDB)**: Movie metadata, posters, cast, crew
+- **User Input**: Personal ratings, watch dates, notes
+- **Calculated Metrics**: Statistics and analytics derived from user data
 
-```
-movietracker/
-├── src/                    # React frontend source
-│   ├── components/         # React components
-│   ├── pages/             # Page components
-│   ├── hooks/             # Custom React hooks
-│   ├── services/          # API services
-│   └── utils/             # Utility functions
-├── backend/               # Node.js backend
-│   ├── controllers/       # Route controllers
-│   ├── routes/           # API routes
-│   ├── services/         # Business logic
-│   └── config/           # Configuration files
-├── public/               # Static assets
-├── dist/                 # Built frontend (generated)
-├── railway.json          # Railway configuration
-├── Procfile              # Process configuration
-└── package.json          # Dependencies and scripts
-```
+## 🔒 Security & Performance
 
-## 🛠️ Available Scripts
+- **Rate Limiting**: Protects against API abuse
+- **Environment Variables**: Secure credential management
+- **CORS Configuration**: Proper cross-origin resource sharing
+- **Database Security**: Row-level security with Supabase
+- **Optimized Queries**: Efficient database operations
 
-### Root Level
-- `npm run dev` - Start both frontend and backend in development
-- `npm run build` - Build frontend for production
-- `npm run start` - Start production server
-- `npm run start:production` - Build and start production (used by Railway)
+## 📱 User Experience
 
-### Frontend Only
-- `npm run dev:frontend` - Start frontend development server
-- `npm run preview` - Preview built frontend
+- **Intuitive Interface**: Clean, modern design focused on usability
+- **Fast Performance**: Optimized loading and smooth interactions
+- **Mobile Responsive**: Full functionality on all device sizes
+- **Real-time Updates**: Live data synchronization
+- **Accessibility**: Keyboard navigation and screen reader support
 
-### Backend Only
-- `npm run dev:backend` - Start backend development server
+---
 
-## 🔧 API Endpoints
-
-### Movies
-- `GET /api/movies` - Get all movies
-- `POST /api/movies` - Add a new movie
-- `PUT /api/movies/:id` - Update a movie
-- `DELETE /api/movies/:id` - Delete a movie
-
-### TMDB Integration
-- `GET /api/tmdb/search/movie?query=<title>` - Search movies
-- `GET /api/tmdb/movie/:id` - Get movie details
-
-### Health Check
-- `GET /health` - Server health status
-
-## 🗄️ Database
-
-This application uses Supabase as the database. Make sure you have:
-
-1. A Supabase project created
-2. The movies table set up with proper schema
-3. Row Level Security (RLS) configured if needed
-
-## 🎬 Features
-
-- **Movie Management**: Add, edit, delete, and view movies
-- **TMDB Integration**: Automatic movie data fetching from The Movie Database
-- **Interactive Charts**: Visualize your movie statistics
-- **Responsive Design**: Works on desktop and mobile
-- **Real-time Updates**: Live data synchronization with Supabase
-
-## 🚨 Troubleshooting
-
-### Common Issues
-
-1. **Build fails on Railway**
-   - Check that all environment variables are set
-   - Ensure Node.js version is 18+ (specified in package.json engines)
-
-2. **API calls fail**
-   - Verify CORS settings in backend/server.js
-   - Check that FRONTEND_URL matches your Railway domain
-
-3. **Database connection issues**
-   - Verify Supabase credentials
-   - Check Supabase project status
-
-### Development Issues
-
-1. **Frontend can't connect to backend**
-   - Ensure backend is running on port 3001
-   - Check CORS configuration
-
-2. **Environment variables not loading**
-   - Verify .env files exist in both root and backend directories
-   - Restart development servers after changing .env
-
-## 📝 License
-
-MIT License - see LICENSE file for details
+*Built with ❤️ for movie enthusiasts who want to track and analyze their cinematic journey.*

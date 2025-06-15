@@ -18,6 +18,13 @@ railway/README.md
 backend/railway/README.md
 backend/README.md
 AUTHENTICATION_SETUP.md
+RAILWAY_DEPLOYMENT.md
+RAILWAY_OOM_FIX.md
+STATISTICS_GUIDE.md
+CSS_MODULARIZATION_GUIDE.md
+PROJECT_SUMMARY.md
+old_statistics.css
+stats_ideas.txt
 
 # cursor ignore
 .cursorignore
@@ -123,3 +130,6 @@ api/
 cleanup-*.sh
 setup-*.sh
 security-*.sh
+
+# Private documentation
+PRIVATE_README.md

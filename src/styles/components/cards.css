@@ -345,6 +345,7 @@
   }
 
 .movie-title {
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 16px; /* Increased from 15px */
   font-weight: var(--font-weight-semibold);
   margin: 0;
@@ -470,6 +471,7 @@
 }
 
 .chart-title {
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 20px;
   font-weight: var(--font-weight-semibold);
   margin-bottom: 24px;
@@ -863,6 +865,7 @@
 }
 
 .recent-movies h2 {
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 36px;
   font-weight: var(--font-weight-bold);
   text-align: center;
